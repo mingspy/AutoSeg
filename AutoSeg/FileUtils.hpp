@@ -41,7 +41,8 @@ file_read_int32 (FILE *file, int *o_val)
 {
     unsigned char   buff[4];
 
-    if (fread (buff, 4, 1, file) == 1) {
+    if (fread (buff, 4, 1, file) == 1)
+    {
         *o_val = (buff[0] << 24) | (buff[1] << 16) |  (buff[2] << 8) | buff[3];
         return true;
     }
@@ -79,7 +80,8 @@ file_read_int16 (FILE *file, short *o_val)
 {
     unsigned char   buff[2];
 
-    if (fread (buff, 2, 1, file) == 1) {
+    if (fread (buff, 2, 1, file) == 1)
+    {
         *o_val = (buff[0] << 8) | buff[1];
         return true;
     }

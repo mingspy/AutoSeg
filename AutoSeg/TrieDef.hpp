@@ -24,81 +24,95 @@
 
 using namespace std;
 
-namespace mingspy{
+namespace mingspy
+{
 #define min(a,b) ((a) < (b) ? (a):(b))
 
-    typedef wchar_t TrieChar;
+typedef wchar_t TrieChar;
 
-    const int TRIE_INDEX_ERROR = 0; 
-    const void * TRIE_DATA_ERROR = NULL;
-    const int TRIE_CHILD_MAX = 65536; // how many children a char can have in dat.
-    
-    /**
-    * The length of a TrieStr
-    */
-    int TrieStrLen(const TrieChar * str){
-        if(str != NULL){
-            const TrieChar * p = str;
-            int len = 0;
-            while(*p++ != TrieChar(0)){
-                len ++;
-            }
-            return len;
+const int TRIE_INDEX_ERROR = 0;
+const void * TRIE_DATA_ERROR = NULL;
+const int TRIE_CHILD_MAX = 65536; // how many children a char can have in dat.
+
+/**
+* The length of a TrieStr
+*/
+int TrieStrLen(const TrieChar * str)
+{
+    if(str != NULL)
+    {
+        const TrieChar * p = str;
+        int len = 0;
+        while(*p++ != TrieChar(0))
+        {
+            len ++;
         }
-        return 0;
+        return len;
     }
+    return 0;
+}
 
-    /**
-    * Tail data delete call back functions
-    */
-    typedef void (*TailDataFree)(void * );
+/**
+* Tail data delete call back functions
+*/
+typedef void (*TailDataFree)(void * );
 
-    void TrieCharFreeFunc(void * ptr){
-        TrieChar * p = (TrieChar *) ptr;
-        delete [] p;
-    }
+void TrieCharFreeFunc(void * ptr)
+{
+    TrieChar * p = (TrieChar *) ptr;
+    delete [] p;
+}
 
-   
-    /**
-    * Write data to a given file, which used for tail to serialize.
-    */
-    typedef void (*TailDataWriteToFile)(FILE * file, const void * data);
 
-    /*
-    * Reads data from given file, which used for tail unserialize.
-    */
-    typedef void *(*TailDataReadFromFile)(FILE * file);
+/**
+* Write data to a given file, which used for tail to serialize.
+*/
+typedef void (*TailDataWriteToFile)(FILE * file, const void * data);
 
-    void WriteTrieStrToFile(FILE * file, const void * str){
-        if(str != NULL){
+/*
+* Reads data from given file, which used for tail unserialize.
+*/
+typedef void *(*TailDataReadFromFile)(FILE * file);
 
-            int len = TrieStrLen((TrieChar *)str) + 1;
-            assert(len < 0xffff);
-            if(!file_write_int16(file, len)){
-                assert(false);
-            }
-            if(fwrite(str, sizeof(TrieChar), len, file) != len){
-                assert(false);
-            }
-        }else{
+void WriteTrieStrToFile(FILE * file, const void * str)
+{
+    if(str != NULL)
+    {
+
+        int len = TrieStrLen((TrieChar *)str) + 1;
+        assert(len < 0xffff);
+        if(!file_write_int16(file, len))
+        {
+            assert(false);
+        }
+        if(fwrite(str, sizeof(TrieChar), len, file) != len)
+        {
             assert(false);
         }
     }
-
-    void * ReadTrieStrFromFile(FILE * file){
-        unsigned short len;
-        if(!file_read_int16(file, (short *)&len)){
-            assert(false);
-            return NULL;
-        }
-        TrieChar * str = new TrieChar[len];
-        if(fread(str, sizeof(TrieChar), len, file) != len){
-            assert(false);
-            delete [] str;
-            return NULL;
-        }
-
-        return str;
+    else
+    {
+        assert(false);
     }
+}
+
+void * ReadTrieStrFromFile(FILE * file)
+{
+    unsigned short len;
+    if(!file_read_int16(file, (short *)&len))
+    {
+        assert(false);
+        return NULL;
+    }
+    TrieChar * str = new TrieChar[len];
+    if(fread(str, sizeof(TrieChar), len, file) != len)
+    {
+        assert(false);
+        delete [] str;
+        return NULL;
+    }
+
+    return str;
+}
 }
 

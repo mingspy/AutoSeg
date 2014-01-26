@@ -13,5 +13,48 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="头文件\DAT">
+      <UniqueIdentifier>{11b7c97a-5e2a-4243-ac89-75c4bd73b74c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Seg">
+      <UniqueIdentifier>{64be55f6-4c87-4e69-9175-aca8ed8f0b0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\matrix">
+      <UniqueIdentifier>{5ac88db5-44ee-438c-beb4-880b9a12ca6e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DATrie.hpp">
+      <Filter>头文件\DAT</Filter>
+    </ClInclude>
+    <ClInclude Include="DoubleArray.hpp">
+      <Filter>头文件\DAT</Filter>
+    </ClInclude>
+    <ClInclude Include="FileUtils.hpp">
+      <Filter>头文件\DAT</Filter>
+    </ClInclude>
+    <ClInclude Include="Tail.hpp">
+      <Filter>头文件\DAT</Filter>
+    </ClInclude>
+    <ClInclude Include="TrieDef.hpp">
+      <Filter>头文件\DAT</Filter>
+    </ClInclude>
+    <ClInclude Include="Attribute.hpp">
+      <Filter>头文件\matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="SparseInstance.hpp">
+      <Filter>头文件\matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.hpp">
+      <Filter>头文件\matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="SqureMatrix.hpp">
+      <Filter>头文件\matrix</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="test.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

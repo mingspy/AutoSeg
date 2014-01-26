@@ -10,6 +10,20 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Attribute.hpp" />
+    <ClInclude Include="DATrie.hpp" />
+    <ClInclude Include="DoubleArray.hpp" />
+    <ClInclude Include="FileUtils.hpp" />
+    <ClInclude Include="Matrix.hpp" />
+    <ClInclude Include="SparseInstance.hpp" />
+    <ClInclude Include="SqureMatrix.hpp" />
+    <ClInclude Include="Tail.hpp" />
+    <ClInclude Include="TrieDef.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="test.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{217D0FD0-7D1B-44DA-AF8D-205540C6B813}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -73,8 +87,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
