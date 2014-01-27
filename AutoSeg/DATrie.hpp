@@ -22,6 +22,9 @@
 #include "TrieDef.hpp"
 #include "Tail.hpp"
 #include "DoubleArray.hpp"
+#include "MemLeaksCheck.h"
+
+
 namespace mingspy
 {
 
@@ -34,7 +37,7 @@ private:
     bool is_dirty;
 
 public:
-    DATrie(TailDataFree fn = TrieCharFreeFunc):is_dirty(false)
+    DATrie(TailDataFree fn = NULL):is_dirty(false)
     {
         tail.setDataFreer(fn);
     }
@@ -53,7 +56,7 @@ public:
      *         for the given key in trie. If key does not exist in trie, it will
      *         be appended. If it does, its current data will be overwritten.
      */
-    bool add(const TrieChar * key, void * val)
+    inline bool add(const TrieChar * key, void * val)
     {
         if (key == NULL)
             return false;
@@ -157,7 +160,7 @@ public:
         return tail.getData(s);
     }
 
-    bool containsPrefix(const TrieChar * prefix)
+    bool containsPrefix(const TrieChar * prefix) const
     {
         if(prefix == NULL) return false;
         /* walk through branches */
@@ -190,19 +193,24 @@ public:
         return true;
     }
 
-    void setDataFreer( TailDataFree fn )
+    inline void setDataFreer( TailDataFree fn )
     {
         tail.setDataFreer(fn);
     }
 
-    void setDataWriter( TailDataWriteToFile fn )
+    inline void setDataWriter( WriteTailDataToFile fn )
     {
         tail.setDataWriter(fn);
     }
 
-    void setDataReader( TailDataReadFromFile fn )
+    inline void setDataReader( ReadTailDataFromFile fn )
     {
         tail.setDataReader(fn);
+    }
+
+    inline void setMemPool( MemoryPool<>* mem_pool ) 
+    {
+        tail.setMemPool(mem_pool);
     }
 
     bool writeToFile(const char * file)
@@ -213,13 +221,18 @@ public:
             return false;
         }
 
-        if(!da.writeToFile(pfile) || !tail.writeToFile(pfile))
-        {
-            fclose(pfile);
-            return false;
-        }
+        bool res = writeToFile(pfile);
+
         fflush(pfile);
         fclose(pfile);
+        return res;
+    }
+
+    bool writeToFile(FILE * pfile){
+        if(!da.writeToFile(pfile) || !tail.writeToFile(pfile))
+        {
+           return false;
+        }
         return true;
     }
 
@@ -231,23 +244,29 @@ public:
             return false;
         }
 
+        bool res = readFromFile(pfile);
+
+        fclose(pfile);
+        return res;
+    }
+
+    bool readFromFile(FILE * pfile){
         if(!da.readFromFile(pfile) || !tail.readFromFile(pfile))
         {
             fclose(pfile);
             return false;
         }
 
-        fclose(pfile);
-        return true;
+        return false;
     }
 
 private:
-    bool isSeparate(int s)
+    inline bool isSeparate(int s) const
     {
         return da.getBase(s) < 0;
     }
 
-    int getTailIndex(int s)
+    inline int getTailIndex(int s) const
     {
         return -da.getBase(s);
     }
@@ -314,7 +333,7 @@ private:
         return true;
     }
 
-    void setTailIndex(int s, int v)
+    inline void setTailIndex(int s, int v)
     {
         da.setBase(s, -v);
     }

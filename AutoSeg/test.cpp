@@ -2,51 +2,18 @@
 #include<iostream>
 #include<fstream>
 #include <string>
-#include "DATrie.hpp"
 #include <Windows.h>
+#include "SparseInstance.hpp"
+#include "Matrix.hpp"
+#include "WordDictionary.hpp"
+#include "DictFileBuilder.hpp"
+#include "DATrie.hpp"
+#include "MemLeaksCheck.h"
 using namespace mingspy;
 using namespace std;
 
-class Data{
-public:
-    string d;
-    ~Data(){
-        cout<<"hhh"<<endl;
-    }
-};
 
-void free_Data(void * data){
-    Data * p = (Data *)data;
-    delete p;
-}
-
-/**
-* In windows using MultibyeToWideChar. 
-* In unix using iconv_open
-*/
-wstring Utf8ToUnicode( const string& str )
-{
-    int  len = 0;
-    len = str.length();
-    int  unicodeLen = ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,NULL,0); 
-    wchar_t *  pUnicode; 
-    pUnicode = new  wchar_t[unicodeLen+1]; 
-    memset(pUnicode,0,(unicodeLen+1)*sizeof(wchar_t)); 
-    ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,(LPWSTR)pUnicode,unicodeLen ); 
-    wstring  rt; 
-    rt = ( wchar_t* )pUnicode;
-    delete  pUnicode;
-    return  rt; 
-}
-
-int main(void){
-    #if _MSC_VER > 1000
-    cout<<"windows!"<<_MSC_VER<<endl;
-    #else
-    cout<<"not windows, end."<<endl;
-    return -1;
-    #endif
-
+void testDAT(){
     DATrie trie(NULL);
     ifstream inf;
     inf.open("../words.txt"); //reading utf-8 file.
@@ -57,6 +24,7 @@ int main(void){
         wstring word = Utf8ToUnicode(line);
         //wcout<<word<<endl;
         words.push_back(word);
+        if(++i == 100) break;
     }
     inf.close();
 
@@ -106,10 +74,73 @@ int main(void){
                 }
             }
         }
-      
+
     }
     end_time = GetTickCount();
     cout<<"notfound = "<<notfound<<"used :"<<(end_time - start_time)<<endl;
-   
+}
+
+void testSparseInstance(){
+    SparseInstance instance;
+    instance.setValue(20, 20.01);
+    instance.setValue(10,10.33);
+    instance.setValue(30,30);
+    instance.setValue(60,60);
+    instance.setValue(60,600);
+    instance.setValue(50,50);
+    instance.setValue(1,1);
+    cout<<"get(20)="<<instance.getValue(20)<<endl;
+    cout<<"get(0)="<<instance.getValue(0)<<endl;
+    cout<<"get(200)="<<instance.getValue(200)<<endl;
+    instance.removeAttr(5);
+    instance.removeAttr(30);
+    cout<<instance<<endl;
+    FILE * file = fopen("e:/tmp/instance.data","wb+");
+    WriteInstanceDataToFile(file, &instance);
+    fseek(file, 0, SEEK_SET);
+    SparseInstance *i = (SparseInstance *)ReadInstanceDataFromFile(file, NULL);
+    cout<<*i<<endl;
+    delete i;
+}
+
+void testMatrix(){
+    Matrix matrix;
+    cout<<matrix.val(0,0)<<endl;
+}
+
+void testWordDictionary() 
+{
+    //DictFileBuilder::buildDict("..\\data\\coreWordInfo.txt","..\\data\\core.dic");
+
+
+    DWORD start_time = GetTickCount();
+    WordDictionary * dict = new WordDictionary("..\\data\\core.dic");
+    DWORD end_time = GetTickCount();
+    cout<<"load dictionary used"<<(end_time - start_time)<<endl;
+    cout<<*dict->getWordInfo(L"вия╞")<<endl;
+
+    start_time = GetTickCount();
+    delete dict;
+    end_time = GetTickCount();
+    cout<<"unload dictionary used"<<(end_time - start_time)<<endl;
+}
+
+
+int main(void){
+    #if _MSC_VER > 1000
+    cout<<"windows!"<<_MSC_VER<<endl;
+    #else
+    cout<<"not windows, end."<<endl;
+    return -1;
+    #endif
+    CheckMemLeaks();
+    {
+        testSparseInstance();
+        testMatrix();
+        testWordDictionary();
+
+    } 
+    cout<<"Press enter to return."<<endl;
+    getchar();
     return 0;
 }

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * libdatrie - Double-Array Trie Library
+ * file utils
  * Copyright (C) 2006  Theppitak Karoonboonyanan <thep@linux.thai.net>
  *
  * This library is free software; you can redistribute it and/or
@@ -29,6 +29,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
+#include <string>
+#include "StrUtils.hpp"
+#include <windows.h>
+using namespace std;
 
 /* ==================== BEGIN IMPLEMENTATION PART ====================  */
 
@@ -113,6 +118,52 @@ file_write_int8 (FILE *file, char val)
 }
 
 
+/**
+* In windows using MultibyeToWideChar. 
+* In unix using iconv_open
+*/
+wstring Utf8ToUnicode( const string& str )
+{
+    int  len = 0;
+    len = str.length();
+    int  unicodeLen = ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,NULL,0); 
+    wchar_t *  pUnicode; 
+    pUnicode = new  wchar_t[unicodeLen+1]; 
+    memset(pUnicode,0,(unicodeLen+1)*sizeof(wchar_t)); 
+    ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,(LPWSTR)pUnicode,unicodeLen ); 
+    wstring  rt; 
+    rt = ( wchar_t* )pUnicode;
+    delete  pUnicode;
+    return  rt; 
+}
+
+class UTF8FileReader{
+private:
+    ifstream inf;
+    wstring lastLine;
+public:
+    UTF8FileReader(const string & file){        
+        inf.open(file);
+    }
+    ~UTF8FileReader(){
+        inf.close();
+    }
+
+    wstring * getLine(){
+        string line;
+        do{
+            if(getline(inf,line)){
+                line = trim(line);
+                if(!line.empty()){
+                    lastLine = Utf8ToUnicode(line);
+                    return &lastLine;
+                }
+            }
+        }while(!inf.eof());
+
+        return NULL;
+    }
+};
 /*
 vi:ts=4:ai:expandtab
 */

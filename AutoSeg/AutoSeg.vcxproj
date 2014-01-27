@@ -13,13 +13,18 @@
   <ItemGroup>
     <ClInclude Include="Attribute.hpp" />
     <ClInclude Include="DATrie.hpp" />
+    <ClInclude Include="DictFileBuilder.hpp" />
     <ClInclude Include="DoubleArray.hpp" />
     <ClInclude Include="FileUtils.hpp" />
     <ClInclude Include="Matrix.hpp" />
+    <ClInclude Include="MemLeaksCheck.h" />
+    <ClInclude Include="MemoryPool.hpp" />
     <ClInclude Include="SparseInstance.hpp" />
     <ClInclude Include="SqureMatrix.hpp" />
+    <ClInclude Include="StrUtils.hpp" />
     <ClInclude Include="Tail.hpp" />
     <ClInclude Include="TrieDef.hpp" />
+    <ClInclude Include="WordDictionary.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp" />

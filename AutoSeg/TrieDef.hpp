@@ -21,6 +21,8 @@
 #include <iostream>
 #include <cassert>
 #include "FileUtils.hpp"
+#include "MemoryPool.hpp"
+#include "MemLeaksCheck.h"
 
 using namespace std;
 
@@ -67,12 +69,16 @@ void TrieCharFreeFunc(void * ptr)
 /**
 * Write data to a given file, which used for tail to serialize.
 */
-typedef void (*TailDataWriteToFile)(FILE * file, const void * data);
+typedef void (*WriteTailDataToFile)(FILE * file, const void * data);
 
 /*
 * Reads data from given file, which used for tail unserialize.
+* if the pmem != null, must allocate att the needed datas on pmem.
+* And the allocate data will be release by pmem at once.
+* MemoryPool only safe when used to save simple objects that not 
+* holds other objects which need to free.
 */
-typedef void *(*TailDataReadFromFile)(FILE * file);
+typedef void *(*ReadTailDataFromFile)(FILE * file, MemoryPool<> * pmem);
 
 void WriteTrieStrToFile(FILE * file, const void * str)
 {
@@ -96,7 +102,7 @@ void WriteTrieStrToFile(FILE * file, const void * str)
     }
 }
 
-void * ReadTrieStrFromFile(FILE * file)
+void * ReadTrieStrFromFile(FILE * file, MemoryPool<> * pmem)
 {
     unsigned short len;
     if(!file_read_int16(file, (short *)&len))
@@ -104,11 +110,19 @@ void * ReadTrieStrFromFile(FILE * file)
         assert(false);
         return NULL;
     }
-    TrieChar * str = new TrieChar[len];
+    TrieChar * str = NULL;
+    if(pmem){
+        str = (TrieChar *)pmem->allocAligned(len * sizeof(TrieChar));
+    }else{
+        str = new TrieChar[len];
+    }
+
     if(fread(str, sizeof(TrieChar), len, file) != len)
     {
         assert(false);
-        delete [] str;
+        if(!pmem){
+            delete [] str;
+        }
         return NULL;
     }
 

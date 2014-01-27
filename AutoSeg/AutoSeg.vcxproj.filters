@@ -22,15 +22,18 @@
     <Filter Include="头文件\matrix">
       <UniqueIdentifier>{5ac88db5-44ee-438c-beb4-880b9a12ca6e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Dicts">
+      <UniqueIdentifier>{56625775-f101-4b55-9612-c0d546c516aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\memory">
+      <UniqueIdentifier>{a5378a54-3f28-401b-912a-f035b1ed8b2f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DATrie.hpp">
       <Filter>头文件\DAT</Filter>
     </ClInclude>
     <ClInclude Include="DoubleArray.hpp">
-      <Filter>头文件\DAT</Filter>
-    </ClInclude>
-    <ClInclude Include="FileUtils.hpp">
       <Filter>头文件\DAT</Filter>
     </ClInclude>
     <ClInclude Include="Tail.hpp">
@@ -50,6 +53,24 @@
     </ClInclude>
     <ClInclude Include="SqureMatrix.hpp">
       <Filter>头文件\matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="FileUtils.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DictFileBuilder.hpp">
+      <Filter>头文件\Dicts</Filter>
+    </ClInclude>
+    <ClInclude Include="StrUtils.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="WordDictionary.hpp">
+      <Filter>头文件\Dicts</Filter>
+    </ClInclude>
+    <ClInclude Include="MemLeaksCheck.h">
+      <Filter>头文件\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPool.hpp">
+      <Filter>头文件\memory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

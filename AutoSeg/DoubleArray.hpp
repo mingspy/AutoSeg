@@ -20,8 +20,11 @@
 
 #include <iostream>
 #include <memory>
-#include "TrieDef.hpp"
 #include <vector>
+#include "TrieDef.hpp"
+#include "MemLeaksCheck.h"
+
+
 using namespace std;
 
 namespace mingspy
@@ -71,27 +74,27 @@ public:
     }
 
 
-    int getRoot()
+    inline int getRoot() const
     {
         return DA_ROOT;
     }
 
-    int getBase(int position)
+    inline int getBase(int position) const
     {
         return position < num_cells ? _cell[position].base : TRIE_INDEX_ERROR;
     }
 
-    int getCheck(int position)
+    inline int getCheck(int position) const
     {
         return position < num_cells ? _cell[position].check : TRIE_INDEX_ERROR;
     }
 
-    void setBase(int position, int value)
+    inline void setBase(int position, int value)
     {
         _cell[position].base = value;
     }
 
-    bool isWorkable(int s, int c)
+    inline bool isWorkable(int s, int c) const
     {
         return getCheck(getBase(s) + c) == s;
     }
@@ -106,7 +109,7 @@ public:
      * @param c
      * @return
      */
-    bool walk(int * s, TrieChar c)
+    inline bool walk(int * s, TrieChar c) const
     {
         int next = getBase(*s) + c;
         if (getCheck(next) == *s)

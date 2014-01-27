@@ -23,6 +23,8 @@
 #include <cassert>
 #include "TrieDef.hpp"
 #include "FileUtils.hpp"
+#include "MemoryPool.hpp"
+#include "MemLeaksCheck.h"
 
 using namespace std;
 namespace mingspy
@@ -46,8 +48,9 @@ private:
     TailBlock * tails;
     int first_free;
     TailDataFree _data_free_func;
-    TailDataWriteToFile _data_writer;
-    TailDataReadFromFile _data_reader;
+    WriteTailDataToFile _data_writer;
+    ReadTailDataFromFile _data_reader;
+    MemoryPool<> * pmem;
 public:
     Tail()
     {
@@ -60,21 +63,26 @@ public:
         _data_free_func = NULL;
         _data_writer = NULL;
         _data_reader = NULL;
+        pmem = NULL;
     }
 
-    void setDataFreer( TailDataFree fn )
+    inline void setDataFreer( TailDataFree fn )
     {
         _data_free_func = fn;
     }
 
-    void setDataWriter( TailDataWriteToFile fn )
+    inline void setDataWriter( WriteTailDataToFile fn )
     {
         _data_writer = fn;
     }
 
-    void setDataReader( TailDataReadFromFile fn )
+    inline void setDataReader( ReadTailDataFromFile fn )
     {
         _data_reader = fn;
+    }
+
+    inline void setMemPool(MemoryPool<> * pmemory){
+        pmem = pmemory;
     }
 
     ~Tail()
@@ -94,7 +102,7 @@ public:
      *         Get suffix from tail with given index. The returned string is
      *         allocated. The caller should free it with free().
      */
-    TrieChar * getSuffix(int index)
+    inline TrieChar * getSuffix(int index) const
     {
         index -= TAIL_START_BLOCKNO;
         return (index < num_tails) ? tails[index].suffix : NULL;
@@ -121,13 +129,19 @@ public:
              * it's overwritten
              */
             int len = TrieStrLen(suffix);
-            TrieChar * tmp = new TrieChar[len + 1];
+            TrieChar * tmp = NULL;
+            if(!pmem){
+                tmp = new TrieChar[len + 1];
+            }else{
+                tmp = (TrieChar *)pmem->allocAligned((len + 1) * sizeof(TrieChar));
+            }
             memcpy(tmp, suffix, (len+1)*sizeof(TrieChar));
 
-            if(tails[index].suffix != NULL)
+            if(tails[index].suffix != NULL&&!pmem)
             {
                 delete [] tails[index].suffix;
             }
+
             tails[index].suffix = tmp;
             return true;
         }
@@ -165,7 +179,7 @@ public:
      * @return the data associated to the suffix entry
      *         Get data associated to suffix entry index in tail data.
      */
-    void * getData(int index)
+    inline void * getData(int index)
     {
         index -= TAIL_START_BLOCKNO;
         return (index < num_tails) ? tails[index].data : NULL;
@@ -184,7 +198,7 @@ public:
      * @return bool indicating success
      *         Set data associated to suffix entry index in tail data.
      */
-    bool setData(int index, void * data)
+    inline bool setData(int index, void * data)
     {
         index -= TAIL_START_BLOCKNO;
         if (index < num_tails)
@@ -270,7 +284,7 @@ public:
      *         updated to the next character. Otherwise, it returns false, and
      *         *suffix_idx is left unchanged.
      */
-    bool walkChar(int s, int * suffix_idx, TrieChar c)
+    inline bool walkChar(int s, int * suffix_idx, TrieChar c) const
     {
         int suffix_char;
 
@@ -354,7 +368,7 @@ public:
         {
             if(tails[i].data != NULL)
             {
-                void * data = _data_reader(file);
+                void * data = _data_reader(file, pmem);
                 if(!data)
                 {
                     goto exit_in_loop;
@@ -364,7 +378,7 @@ public:
 
             if(tails[i].suffix != NULL)
             {
-                TrieChar * str = (TrieChar *)ReadTrieStrFromFile(file);
+                TrieChar * str = (TrieChar *)ReadTrieStrFromFile(file, pmem);
                 if(!str)
                 {
                     goto exit_in_loop;
@@ -391,16 +405,18 @@ private:
     {
         if(tails != NULL)
         {
-            for(int i = 1; i < num_tails; i++)
-            {
-                if(_data_free_func != NULL && tails[i].data != NULL)
+            if(!pmem){
+                for(int i = 1; i < num_tails; i++)
                 {
-                    _data_free_func(tails[i].data);
-                }
+                    if(_data_free_func != NULL && tails[i].data != NULL)
+                    {
+                        _data_free_func(tails[i].data);
+                    }
 
-                if(tails[i].suffix != NULL)
-                {
-                    delete [] tails[i].suffix;
+                    if(tails[i].suffix != NULL)
+                    {
+                        delete [] tails[i].suffix;
+                    }
                 }
             }
             free(tails);
