@@ -37,59 +37,96 @@ namespace mingspy{
     
     class Tokenizer{
     public:
+        virtual void maxSplit(const wstring &str, vector<Token> & result){
+            vector<Token> atoms;
+            atomSplit(str,atoms);
+            maxMatch(str, atoms, result);
+        }
+
+        virtual void fullSplit(const wstring &str, vector<Token> & result){
+            vector<Token> atoms;
+            atomSplit(str,atoms);
+            fullMatch(str,atoms,result);
+        }
+
+        void output(const wstring &str, const vector<Token> & tokens, vector<wstring>& result){
+            for(int i = 0; i < tokens.size(); i++){
+                result.push_back(str.substr(tokens[i]._off, tokens[i]._len));
+            }
+        }
+
         void analysis(const wstring & str){
-            vector<wstring> results;
-            int len = str.length();
-            const WordDictionary &core = DictFactory::CoreDict();
-            for(int i = 0; i < len; ){
-                // merge number and alpha
-                wtype itype = getWcharType(str.at(i));
-                int j = i + 1;
-                if(itype == DIGIT || itype == ALPHA){
-                    while(j < len){
-                        wtype jtype = getWcharType(str.at(j++));
-                        if(jtype != itype){
-                            break;
-                        }
-                        
-                    }
-                }
+        }
 
-                for(j-=i; j <= len - i; j ++){
-                    wstring word = str.substr(i, j);
-                    if(!core.existPrefix(word)){
-                        break;
-                    }
-                }
+    protected:
+        virtual bool exists(const wstring & word){
+            return DictFactory::CoreDict().getWordInfo(word) != NULL;
+        }
 
-                if(j != 1){
-                    j --;
-                }
-
-                results.push_back(str.substr(i,j));
-
-                if(itype == DIGIT || itype == ALPHA){
-                    i += j;
-                }else{
-                    i++;
-                }
-
-            }
-
-            for(int i = 0; i < results.size(); i++){
-                wcout<<results[i]<<L"|";
-            }
-            wcout<<endl;
+        virtual bool existPrefix(const wstring & word){
+            return DictFactory::CoreDict().existPrefix(word);
         }
 
         /*
-        * Split atoms from the given str:
+        * try to find all the possible words.
+        * assume str = "ABCDE";
+        * and AB ABC BCD E in the word dictionary;
+        * the result will be :AB, ABC,BCD,D,E
+        */
+        void fullMatch(const wstring &str, const vector<Token> & atoms, vector<Token> &result){
+            
+            const int atome_size = atoms.size();
+            int lastj = -1;
+            for(int i = 0; i < atome_size; i++){
+                
+                for(int j = i + 1; j < atome_size; j++){
+                    wstring word = str.substr(
+                        atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
+                    if(exists(word)){
+                        result.push_back(
+                            Token(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off));
+                        lastj = j;
+                    }else if(!existPrefix(word)){
+                        break;
+                    }
+                }
+                if(i > lastj){
+                    result.push_back(
+                            Token(atoms[i]._off, atoms[i]._len));
+                }
+                
+            }
+           
+        }
+
+        /*
+        * try to split the str with huge words.
+        * assume str = "ABCDE";
+        * and AB ABC BCD E in the word dictionary;
+        * the result will be : ABC,D,E
+        */
+        void maxMatch(const wstring &str, const vector<Token> & atoms, vector<Token> &result){
+            for(int i = 0; i < atoms.size(); ){
+                int j = i + 1;
+                for(; j < atoms.size(); j++){
+                    wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
+                    if(!existPrefix(word)){
+                        break;
+                    }
+                }
+                result.push_back(Token(atoms[i]._off, atoms[j-1]._off + atoms[j-1]._len - atoms[i]._off));
+                i = j;
+            }
+        }
+
+        /*
+        * Split atoms from given str:
         * Atoms are in form of:
         *   A Chinese char
         *   An English str
         *   A number
         */
-        static void atomSplit(const wstring & str, vector<Token> & atoms){
+        void atomSplit(const wstring & str, vector<Token> & atoms){
             int len = str.length();
             for(int i = 0; i < len; ){
                 // merge number and alpha

@@ -143,8 +143,16 @@ int main(void){
         //testWordDictionary();
         
         vector<Token> atoms;
-        Tokenizer::atomSplit(L"in 1998年，something important happened.",atoms);
-        //Tokenizer tokenizer;
+        vector<wstring> words;
+        wstring str = L"in 1998年，something important happened,中华人民共和国正式﹌成立了";
+        Tokenizer tokenizer;
+        tokenizer.maxSplit(str, atoms);
+        tokenizer.output(str,atoms, words);
+        atoms.clear();
+        words.clear();
+        tokenizer.fullSplit(str, atoms);
+        tokenizer.output(str,atoms, words);
+        
         //tokenizer.analysis(L"他说的确在理");
         //tokenizer.analysis(L"中华人民共和国正式成立了，在今天");   
     } 
