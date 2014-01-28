@@ -1,5 +1,4 @@
 /*
- * DATcpp - Double-Array Trie Library
  * Copyright (C) 2014  mingspy@163.com
  *
  * This library is free software; you can redistribute it and/or
@@ -127,7 +126,7 @@ public:
      *         is found and o_data is not NULL, *o_data is set to the data
      *         associated to key.
      */
-    void * retrieve(const TrieChar * key)
+    void * retrieve(const TrieChar * key) const
     {
         if(key == NULL) return NULL;
         /* walk through branches */

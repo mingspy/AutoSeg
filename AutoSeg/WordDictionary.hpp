@@ -1,5 +1,4 @@
 /*
- * Dictionary Library
  * Copyright (C) 2014  mingspy@163.com
  *
  * This library is free software; you can redistribute it and/or
@@ -87,7 +86,7 @@ namespace mingspy{
             return datrie.add(word.c_str(), info);
         }
 
-        const SparseInstance * getWordInfo(const wstring & word){
+        const SparseInstance * getWordInfo(const wstring & word) const{
             return (const SparseInstance *)datrie.retrieve(word.c_str());
         }
 

@@ -72,6 +72,18 @@
     <ClInclude Include="MemoryPool.hpp">
       <Filter>头文件\memory</Filter>
     </ClInclude>
+    <ClInclude Include="Tokenizer.hpp">
+      <Filter>头文件\Seg</Filter>
+    </ClInclude>
+    <ClInclude Include="DictFactory.hpp">
+      <Filter>头文件\Dicts</Filter>
+    </ClInclude>
+    <ClInclude Include="ResGuard.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="wcharHelper.hpp">
+      <Filter>头文件\Seg</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">

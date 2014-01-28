@@ -9,9 +9,10 @@
 #include "DictFileBuilder.hpp"
 #include "DATrie.hpp"
 #include "MemLeaksCheck.h"
-using namespace mingspy;
-using namespace std;
+#include "Tokenizer.hpp"
 
+using namespace std;
+using namespace mingspy;
 
 void testDAT(){
     DATrie trie(NULL);
@@ -128,19 +129,26 @@ void testWordDictionary()
 
 int main(void){
     #if _MSC_VER > 1000
-    cout<<"windows!"<<_MSC_VER<<endl;
+    wcout<<"windows!"<<_MSC_VER<<endl;
     #else
     cout<<"not windows, end."<<endl;
     return -1;
     #endif
+
+
     CheckMemLeaks();
     {
-        testSparseInstance();
-        testMatrix();
-        testWordDictionary();
-
+        //testSparseInstance();
+        //testMatrix();
+        //testWordDictionary();
+        
+        vector<Token> atoms;
+        Tokenizer::atomSplit(L"in 1998年，something important happened.",atoms);
+        //Tokenizer tokenizer;
+        //tokenizer.analysis(L"他说的确在理");
+        //tokenizer.analysis(L"中华人民共和国正式成立了，在今天");   
     } 
-    cout<<"Press enter to return."<<endl;
+    wcout<<L"Press enter to return."<<endl;
     getchar();
     return 0;
 }

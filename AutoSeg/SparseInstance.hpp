@@ -1,5 +1,4 @@
 /*
- * Matrix Library
  * Copyright (C) 2014  mingspy@163.com
  *
  * This library is free software; you can redistribute it and/or

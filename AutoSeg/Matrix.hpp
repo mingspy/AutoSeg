@@ -1,5 +1,4 @@
 /*
- * Matrix Library
  * Copyright (C) 2014  mingspy@163.com
  *
  * This library is free software; you can redistribute it and/or
@@ -17,6 +16,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #pragma once
+
 #include <iostream>
 #include <list>
 #include "Attribute.hpp"

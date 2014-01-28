@@ -13,17 +13,21 @@
   <ItemGroup>
     <ClInclude Include="Attribute.hpp" />
     <ClInclude Include="DATrie.hpp" />
+    <ClInclude Include="DictFactory.hpp" />
     <ClInclude Include="DictFileBuilder.hpp" />
     <ClInclude Include="DoubleArray.hpp" />
     <ClInclude Include="FileUtils.hpp" />
     <ClInclude Include="Matrix.hpp" />
     <ClInclude Include="MemLeaksCheck.h" />
     <ClInclude Include="MemoryPool.hpp" />
+    <ClInclude Include="ResGuard.hpp" />
     <ClInclude Include="SparseInstance.hpp" />
     <ClInclude Include="SqureMatrix.hpp" />
     <ClInclude Include="StrUtils.hpp" />
     <ClInclude Include="Tail.hpp" />
+    <ClInclude Include="Tokenizer.hpp" />
     <ClInclude Include="TrieDef.hpp" />
+    <ClInclude Include="wcharHelper.hpp" />
     <ClInclude Include="WordDictionary.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -69,6 +73,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>chcp 65001 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

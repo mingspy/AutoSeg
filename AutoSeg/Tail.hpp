@@ -1,5 +1,4 @@
 /*
- * DATcpp - Double-Array Trie Library
  * Copyright (C) 2014  mingspy@163.com
  *
  * This library is free software; you can redistribute it and/or
@@ -179,7 +178,7 @@ public:
      * @return the data associated to the suffix entry
      *         Get data associated to suffix entry index in tail data.
      */
-    inline void * getData(int index)
+    inline void * getData(int index) const
     {
         index -= TAIL_START_BLOCKNO;
         return (index < num_tails) ? tails[index].data : NULL;
