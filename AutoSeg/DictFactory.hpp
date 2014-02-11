@@ -17,21 +17,21 @@
  */
 #pragma once
 #include <stdlib.h>
-
+#include <iostream>
 #include "WordDictionary.hpp"
 #include "ResGuard.hpp"
 
-
+using namespace std;
 namespace mingspy{
     class DictFactory{
     private:
         static WordDictionary * _coreDict;
         static bool _loaded;
         static ResGuard _resGard;
-        static void initialize(){
+        static void initialize(const string & dir){
             ResGuard::Lock lock(_resGard);
             if(_loaded) return;
-            _coreDict = new WordDictionary("../data/core.dic");
+            _coreDict = new WordDictionary(dir+"core.dic");
             _loaded = true;
             atexit(clean);
         }
@@ -39,7 +39,7 @@ namespace mingspy{
         
         static const WordDictionary & CoreDict(){
             if(!_coreDict){
-                initialize();
+                initialize("../data/");
             }
             return *_coreDict;
         }
