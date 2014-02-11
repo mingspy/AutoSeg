@@ -112,5 +112,16 @@ public class LineFileReader {
 		}
 		return line;
 	}
+	
+	public void close(){
+		if(reader != null){
+			try{
+				reader.close();
+				reader = null;
+			}catch(Exception e){
+				
+			}
+		}
+	}
 
 }
