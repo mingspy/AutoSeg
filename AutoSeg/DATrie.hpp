@@ -180,7 +180,7 @@ public:
         int suffix_idx = 0;
         for (; ; p++)
         {
-            if (0 == p)
+            if (0 == *p)
                 return true;
             if (!tail.walkChar(s, &suffix_idx, *p))
             {

@@ -163,7 +163,22 @@ public:
 
         return NULL;
     }
+
+    static size_t size(const string& filename){
+        ifstream file (filename,   ios::in|ios::binary|ios::ate);
+        if(!file.good()){
+            return 0;
+        }
+
+        file.seekg(0, ios::end);
+        long length = file.tellg();
+        file.close();
+        return length;
+    }
+
+private:
+    UTF8FileReader();
+    UTF8FileReader(const UTF8FileReader &);
+    UTF8FileReader & operator = (const UTF8FileReader &);
 };
-/*
-vi:ts=4:ai:expandtab
-*/
+

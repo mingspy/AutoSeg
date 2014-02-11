@@ -26,22 +26,33 @@ namespace mingspy{
     class DictFactory{
     private:
         static WordDictionary * _coreDict;
+        static WordDictionary * _inverseCoreDict;
         static bool _loaded;
         static ResGuard _resGard;
+        
+    public:
         static void initialize(const string & dir){
             ResGuard::Lock lock(_resGard);
             if(_loaded) return;
             _coreDict = new WordDictionary(dir+"core.dic");
+            _inverseCoreDict = new WordDictionary(dir+"inverseCore.dic");
+            
             _loaded = true;
             atexit(clean);
         }
-    public:
-        
+
         static const WordDictionary & CoreDict(){
             if(!_coreDict){
                 initialize("../data/");
             }
             return *_coreDict;
+        }
+
+        static const WordDictionary & InverseCoreDict(){
+            if(!_inverseCoreDict){
+                initialize("../data/");
+            }
+            return *_inverseCoreDict;
         }
 
         static void clean(){
@@ -51,12 +62,17 @@ namespace mingspy{
                     delete _coreDict;
                     _coreDict = NULL;
                 }
+                if(_inverseCoreDict){
+                    delete _inverseCoreDict;
+                    _inverseCoreDict = NULL;
+                }
                 _loaded = false;
             }
         }
     };
     
     WordDictionary * DictFactory::_coreDict = NULL;
+    WordDictionary * DictFactory::_inverseCoreDict = NULL;
     bool DictFactory::_loaded = false;
     ResGuard DictFactory::_resGard;
 }

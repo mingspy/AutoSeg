@@ -17,9 +17,11 @@
     <ClInclude Include="DictFileBuilder.hpp" />
     <ClInclude Include="DoubleArray.hpp" />
     <ClInclude Include="FileUtils.hpp" />
+    <ClInclude Include="InverseTokenizer.hpp" />
     <ClInclude Include="Matrix.hpp" />
     <ClInclude Include="MemLeaksCheck.h" />
     <ClInclude Include="MemoryPool.hpp" />
+    <ClInclude Include="MSTimer.hpp" />
     <ClInclude Include="ResGuard.hpp" />
     <ClInclude Include="SparseInstance.hpp" />
     <ClInclude Include="SqureMatrix.hpp" />

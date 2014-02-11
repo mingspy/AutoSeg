@@ -53,6 +53,9 @@ namespace mingspy{
             datrie.setDataWriter(WriteInstanceDataToFile);
             FILE * pfile = fopen(file.c_str(),"rb");
             assert(pfile != NULL);
+            if(!pfile){
+                return;
+            }
 
             readFromFile(pfile);
             fclose(pfile);
