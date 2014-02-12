@@ -34,7 +34,7 @@ namespace mingspy
 class Attribute
 {
 private:
-    const wstring _name;
+    wstring _name;
     int _index;
     int _value;
 public:

@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <string>
+#include <stdlib.h>
 #include <vector>
 #include <algorithm>
 #include "WordDictionary.hpp"
@@ -51,6 +52,8 @@ public:
         if(natureindex == wstring::npos)
         {
             cerr<<"can't find the natures, maybe not a dictionary words file."<<endl;
+            wcerr<<L"the line is:"<<line<<endl;
+            wcerr<<L"the natureHead is:"<<natureHead<<endl;
             return false;
         }
 
@@ -91,7 +94,7 @@ public:
                         wstring::size_type freqIndex = infos[i].find_first_of(freqSeperator);
                         wstring nature = infos[i].substr(0,freqIndex);
                         wstring freq = infos[i].substr(freqIndex + 1);
-                        double d_freq = stod(freq);
+                        double d_freq = wcstod(freq.c_str(), NULL);
                         int index = dict.getNatureIndex(nature);
                         if(index == -1)
                         {
@@ -112,10 +115,10 @@ public:
             }
         }
 
-        long load_word_end_time = timer.elapsed();
+        double load_word_end_time = timer.elapsed();
         cout<<"\n all words added. now write to file."<<endl;
         bool result = dict.writeToFile(output);
-        long end_time = timer.elapsed();
+        double end_time = timer.elapsed();
         cout<<"build finished! total used:"<<(end_time)
             <<"ms\n   load words:"<<word_count<<" used:"<<(load_word_end_time)
             <<"ms\n   serialize used:"<<(end_time - load_word_end_time)<<endl;
@@ -180,7 +183,7 @@ public:
                         wstring::size_type freqIndex = infos[i].find_first_of(freqSeperator);
                         wstring nature = infos[i].substr(0,freqIndex);
                         wstring freq = infos[i].substr(freqIndex + 1);
-                        double d_freq = stod(freq);
+                        double d_freq = wcstod(freq.c_str(), NULL);
                         int index = dict.getNatureIndex(nature);
                         if(index == -1)
                         {
@@ -202,10 +205,10 @@ public:
             }
         }
 
-        long load_word_end_time = timer.elapsed();
+        double load_word_end_time = timer.elapsed();
         cout<<"\n all words added. now write to file."<<endl;
         bool result = dict.writeToFile(output);
-        long end_time = timer.elapsed();
+        double end_time = timer.elapsed();
         cout<<"build finished! total used:"<<(end_time)
             <<"ms\n   load words:"<<word_count<<" used:"<<(load_word_end_time)
             <<"ms\n   serialize used:"<<(end_time - load_word_end_time)<<endl;

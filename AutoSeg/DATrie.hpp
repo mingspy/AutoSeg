@@ -24,6 +24,7 @@
 #include "MemLeaksCheck.h"
 
 
+
 namespace mingspy
 {
 
@@ -55,10 +56,8 @@ public:
      *         for the given key in trie. If key does not exist in trie, it will
      *         be appended. If it does, its current data will be overwritten.
      */
-    inline bool add(const TrieChar * key, void * val)
+    inline bool add(const wstring & key, void * val)
     {
-        if (key == NULL)
-            return false;
         return storeConditionally(key, val, true);
     }
     /**
@@ -72,14 +71,13 @@ public:
     * @return boolean value indicating whether the key exists and is removed
     *         Delete an entry for the given key from trie.
     */
-    bool remove(const TrieChar * key)
+    bool remove(const wstring & key)
     {
-        if(key == NULL) return false;
         int t;
         /* walk through branches */
         int s = da.getRoot();
-        int keylen = TrieStrLen(key);
-        const TrieChar * p = key;
+        int keylen = key.length();
+        const wchar_t * p = key.c_str();
         for (; !isSeparate(s); p++)
         {
             if (!da.walk(&s, *p))
@@ -126,12 +124,11 @@ public:
      *         is found and o_data is not NULL, *o_data is set to the data
      *         associated to key.
      */
-    void * retrieve(const TrieChar * key) const
+    void * retrieve(const wstring & key) const
     {
-        if(key == NULL) return NULL;
         /* walk through branches */
         int s = da.getRoot();
-        const TrieChar * p = key;
+        const wchar_t * p = key.c_str();
         for (; !isSeparate(s); p++)
         {
             if (!da.walk(&s, *p))
@@ -159,12 +156,11 @@ public:
         return tail.getData(s);
     }
 
-    bool containsPrefix(const TrieChar * prefix) const
+    bool containsPrefix(const wstring & prefix) const
     {
-        if(prefix == NULL) return false;
         /* walk through branches */
         int s = da.getRoot();
-        const TrieChar * p = prefix;
+        const wchar_t * p = prefix.c_str();
         for (; !isSeparate(s); p++)
         {
             if (0 == *p)
@@ -289,16 +285,16 @@ private:
      *         multi-thread applications, as race condition can be avoided.
      *         Available since: 0.2.4
      */
-    bool storeIfAbsent(const TrieChar * key, void * data)
+    bool storeIfAbsent(const wstring & key, void * data)
     {
         return storeConditionally(key, data, false);
     }
 
-    bool storeConditionally(const TrieChar * key, void * data, bool is_overwrite)
+    bool storeConditionally(const wstring & key, void * data, bool is_overwrite)
     {
         /* walk through branches */
         int s = da.getRoot();
-        const TrieChar * p = key;
+        const wchar_t * p = key.c_str();
         for (; !isSeparate(s); p++)
         {
             if (!da.walk(&s, *p))
@@ -310,7 +306,7 @@ private:
         }
 
         /* walk through tail */
-        const TrieChar * sep = p;
+        const wchar_t * sep = p;
         int t = getTailIndex(s);
         int suffix_idx = 0;
         for (; ; p++)
@@ -339,7 +335,7 @@ private:
         da.setBase(s, -v);
     }
 
-    bool branchInBranch(int sep_node, const TrieChar * suffix, void * data)
+    bool branchInBranch(int sep_node, const wchar_t * suffix, void * data)
     {
         int new_da, new_tail;
 
@@ -359,17 +355,17 @@ private:
         return true;
     }
 
-    bool branchInTail(int sep_node,const TrieChar * suffix, void * data)
+    bool branchInTail(int sep_node,const wchar_t * suffix, void * data)
     {
 
         /* adjust separate point in old path */
         int old_tail = getTailIndex(sep_node);
-        TrieChar * old_suffix = tail.getSuffix(old_tail);
+        wchar_t * old_suffix = tail.getSuffix(old_tail);
         if (old_suffix == NULL)
             return false;
 
         int s = sep_node;
-        TrieChar * p = old_suffix;
+        wchar_t * p = old_suffix;
         for (; *p == *suffix; p++, suffix ++)
         {
             int t = da.insertBranch(s, *suffix);

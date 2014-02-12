@@ -21,9 +21,11 @@
 #if _MSC_VER > 1000
 #include <hash_map>
 #else 
+#include "CodeUtils.hpp"
 // in linux..
 #include <ext/hash_map>
 using namespace __gnu_cxx;
+using namespace std;
 
 namespace __gnu_cxx
 {
@@ -32,6 +34,15 @@ namespace __gnu_cxx
         size_t operator()(const string& s) const
         {
             return __stl_hash_string(s.c_str());
+        }
+    };
+
+    template<> struct hash<wstring>
+    {
+        size_t operator()(const wstring& s) const
+        {
+            string str = ws2s(s);
+            return __stl_hash_string(str.c_str());
         }
     };
 }

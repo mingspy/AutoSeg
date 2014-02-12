@@ -93,12 +93,13 @@ public:
             return natures[index];
         }
         //return NATURE_UNDEF;
-        return L"UNDEF";
+        static wstring UNDEF = L"UNDEF";
+        return UNDEF;
     }
 
     bool addWordInfo(const wstring & word, SparseInstance * info)
     {
-        return datrie.add(word.c_str(), info);
+        return datrie.add(word, info);
     }
 
     const SparseInstance * getWordInfo(const wstring & word) const
@@ -108,7 +109,7 @@ public:
 
     bool existPrefix(const wstring & prefix) const
     {
-        return datrie.containsPrefix(prefix.c_str());
+        return datrie.containsPrefix(prefix);
     }
 
     bool writeToFile(const string & file)

@@ -16,6 +16,14 @@
 using namespace std;
 using namespace mingspy;
 
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
 void testDAT()
 {
     DATrie trie(NULL);
@@ -62,7 +70,7 @@ void testDAT()
 
     // test retrieve...
     int notfound = 0;
-    TrieChar * p = NULL;
+    wchar_t * p = NULL;
     timer.restart();
     for(int j = 0; j < words.size(); j++)
     {
@@ -73,7 +81,7 @@ void testDAT()
         }
         else
         {
-            p = static_cast<TrieChar *>(result);
+            p = static_cast<wchar_t *>(result);
             if(p == NULL || words[j] != p)
             {
                 notfound ++;
@@ -154,13 +162,13 @@ void testSegment()
 }
 
 void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
-                       const vector<vector<wstring>>& refer_datas,
+                       const vector<vector<wstring> >& refer_datas,
                        Tokenizer & tokenizer)
 {
     wstring punctuations = L"£ª£¬¡££¿£¨£©¡±¡°£«£«£«£­£­£­£­£®£¥¡¢£¯£½£¾¡À£¥¡Á¡Á¡Á¡ª¡ª¡ª¡ª¡ª¡ª¡ª£­¡®¡¯¡­¡­¡ë\
 ¡ù¡ú¡Î¡Ã¡Ù¢Ù¢Ú¢Û¢Ü¢Ý¢Þ¢ß¢à¢Æ¢Ç©¤¡õ¡ø¡÷¡ð¡ñ¡ï¡¢¡£¡±¡´¡µ¡¶¡·¡º¡»¡²¡³";
     MSTimer timer;
-    vector<vector<wstring>> seg_results;
+    vector<vector<wstring> > seg_results;
     for(int i = 0; i < test_datas.size(); i++)
     {
         vector<Token> tokens;
@@ -170,9 +178,9 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
         seg_results.push_back(words);
     }
 
-    long elapsed = timer.elapsed();
+    double elapsed = timer.elapsed();
     cout<<"segment "<<test_size<<" bytes data used "<<elapsed<<"ms, speed "
-        <<(test_size/1024.0/1024.0/((elapsed+0.0000001)/1000.0))<<"m/s"
+        <<(test_size/1024.0/1024.0/elapsed)<<"m/s"
         <<endl;
     // estimates
 
@@ -224,8 +232,8 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
 void estimateSegmetors()
 {
     MSTimer timer;
-    //DictFileBuilder::buildDict("../data/estimate/coreWordInfo.txt","../data/estimate/core.dic");
-    //DictFileBuilder::buildInverseDict("../data/estimate/coreWordInfo.txt","../data/estimate/inverseCore.dic");
+    DictFileBuilder::buildDict("../data/estimate/coreWordInfo.txt","../data/estimate/core.dic");
+    DictFileBuilder::buildInverseDict("../data/estimate/coreWordInfo.txt","../data/estimate/inverseCore.dic");
     DictFactory::initialize("../data/estimate/");
     cout<<"load dict "<<timer<<endl;
     timer.restart();
@@ -244,7 +252,7 @@ void estimateSegmetors()
     cout<<"load test data "<<timer<<endl;
     timer.restart();
     // load refer data.
-    vector<vector<wstring>> refer_datas;
+    vector<vector<wstring> > refer_datas;
     {
         wstring * line;
         UTF8FileReader referDataReader("../data/estimate/test_refer.txt");
@@ -271,11 +279,13 @@ void estimateSegmetors()
 
     cout<<endl
         <<"estimate forward tokenizer."<<endl;
-    estimateTokenizer(test_datas,test_size,refer_datas, Tokenizer());
+    Tokenizer tokenizer;
+    estimateTokenizer(test_datas,test_size,refer_datas, tokenizer);
 
     cout<<endl
         <<"estimate inverse tokenizer."<<endl;
-    estimateTokenizer(test_datas,test_size,refer_datas, InverseTokenizer());
+    InverseTokenizer inverTokenizer;
+    estimateTokenizer(test_datas,test_size,refer_datas, inverTokenizer);
 
 }
 
@@ -285,7 +295,6 @@ int main(void)
     wcout<<"windows!"<<_MSC_VER<<endl;
 #else
     cout<<"not windows, end."<<endl;
-    return -1;
 #endif
 
     CheckMemLeaks();

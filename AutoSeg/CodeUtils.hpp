@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <string>
+#include <stdlib.h>
 #include <vector>
 #include "MemLeaksCheck.h"
 #if _MSC_VER > 1000
@@ -34,6 +35,31 @@
 #endif
 
 using namespace std;
+
+std::string ws2s(const std::wstring& ws)
+{
+    const wchar_t* _Source = ws.c_str();
+    size_t _Dsize = wcstombs(0,_Source,0) + 1; 
+    char *_Dest = new char[_Dsize];
+    memset(_Dest,0,_Dsize);
+    wcstombs(_Dest,_Source,_Dsize);
+    std::string result = _Dest;
+    delete []_Dest;
+
+    return result;
+}
+
+std::wstring s2ws(const std::string& s)
+{
+    const char* _Source = s.c_str();
+    size_t _Dsize = mbstowcs(0,_Source,0) + 1; 
+    wchar_t *_Dest = new wchar_t[_Dsize];
+    wmemset(_Dest, 0, _Dsize);
+    mbstowcs(_Dest,_Source,_Dsize);
+    std::wstring result = _Dest;
+    delete []_Dest;
+    return result;
+}
 
 #if _MSC_VER > 1000
 wstring Utf8ToUnicode( const string& str )
@@ -71,10 +97,12 @@ wstring Utf8ToUnicode( const string& str )
     int  len = str.length();
     wchar_t * pUnicode = new  wchar_t[len+1];
     
-    code_convert("UTF-8", "UTF-16", str.c_str(), len, (char *)pUnicode, (len+1)*sizeof(wchar_t));
+    code_convert("UTF-8", "WCHAR_T", str.c_str(), len, (char *)pUnicode, (len+1)*sizeof(wchar_t));
     wstring  rt = ( wchar_t* )pUnicode;
 
     delete []  pUnicode;
+
     return  rt;
+
 }
 #endif

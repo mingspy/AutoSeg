@@ -25,6 +25,15 @@
 #include "FileUtils.hpp"
 #include "MemoryPool.hpp"
 #include "MemLeaksCheck.h"
+#include <wchar.h>
+
+#ifndef SIZE_MAX
+#ifdef _WIN64 
+#define SIZE_MAX _UI64_MAX
+#else
+#define SIZE_MAX UINT_MAX
+#endif
+#endif
 
 using namespace std;
 namespace mingspy
@@ -37,7 +46,7 @@ class Tail
     public :
         int next_free;
         void * data;
-        TrieChar * suffix;
+        wchar_t * suffix;
     };
 
 private:
@@ -103,7 +112,7 @@ public:
      *         Get suffix from tail with given index. The returned string is
      *         allocated. The caller should free it with free().
      */
-    inline TrieChar * getSuffix(int index) const
+    inline wchar_t * getSuffix(int index) const
     {
         index -= TAIL_START_BLOCKNO;
         return (index < num_tails) ? tails[index].suffix : NULL;
@@ -120,7 +129,7 @@ public:
      *            : the new suffix
      *            Set suffix of existing entry of given index in tail.
      */
-    bool setSuffix(int index, const TrieChar * suffix)
+    bool setSuffix(int index, const wchar_t * suffix)
     {
         index -= TAIL_START_BLOCKNO;
         if (index < num_tails)
@@ -129,17 +138,18 @@ public:
              * suffix and tails[index].suffix may overlap; so, dup it before
              * it's overwritten
              */
-            int len = TrieStrLen(suffix);
-            TrieChar * tmp = NULL;
+            
+            int len = wcslen(suffix);
+            wchar_t * tmp = NULL;
             if(!pmem)
             {
-                tmp = new TrieChar[len + 1];
+                tmp = new wchar_t[len + 1];
             }
             else
             {
-                tmp = (TrieChar *)pmem->allocAligned((len + 1) * sizeof(TrieChar));
+                tmp = (wchar_t *)pmem->allocAligned((len + 1) * sizeof(wchar_t));
             }
-            memcpy(tmp, suffix, (len+1)*sizeof(TrieChar));
+            memcpy(tmp, suffix, (len+1)*sizeof(wchar_t));
 
             if(tails[index].suffix != NULL&&!pmem)
             {
@@ -164,7 +174,7 @@ public:
      *
      *         Add a new suffix entry to tail.
      */
-    int addSuffix(const TrieChar * suffix)
+    int addSuffix(const wchar_t * suffix)
     {
         int new_block = allocBlock();
         setSuffix(new_block, suffix);
@@ -248,9 +258,9 @@ public:
      *         successful walk, and the function returns the total number of
      *         character successfully walked.
      */
-    int walkStr(int s, int * suffix_idx, TrieChar * str, int len)
+    int walkStr(int s, int * suffix_idx, wchar_t * str, int len)
     {
-        TrieChar * suffix = getSuffix(s);
+        wchar_t * suffix = getSuffix(s);
         if (suffix == NULL)
             return 0;
 
@@ -262,7 +272,7 @@ public:
                 break;
             ++i;
             /* stop and stay at null-terminator */
-            if ((TrieChar)0 == suffix[j])
+            if ((wchar_t)0 == suffix[j])
                 break;
             ++j;
         }
@@ -288,11 +298,11 @@ public:
      *         updated to the next character. Otherwise, it returns false, and
      *         *suffix_idx is left unchanged.
      */
-    inline bool walkChar(int s, int * suffix_idx, TrieChar c) const
+    inline bool walkChar(int s, int * suffix_idx, wchar_t c) const
     {
         int suffix_char;
 
-        TrieChar * suffix = getSuffix(s);
+        wchar_t * suffix = getSuffix(s);
         if (suffix == NULL)
             return false;
 
@@ -382,7 +392,7 @@ public:
 
             if(tails[i].suffix != NULL)
             {
-                TrieChar * str = (TrieChar *)ReadTrieStrFromFile(file, pmem);
+                wchar_t * str = (wchar_t *)ReadTrieStrFromFile(file, pmem);
                 if(!str)
                 {
                     goto exit_in_loop;
@@ -488,4 +498,3 @@ private:
 
 };
 }
-

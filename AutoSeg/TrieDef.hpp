@@ -18,6 +18,7 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 #include <cassert>
 #include "FileUtils.hpp"
 #include "MemoryPool.hpp"
@@ -27,9 +28,8 @@ using namespace std;
 
 namespace mingspy
 {
-#define min(a,b) ((a) < (b) ? (a):(b))
 
-typedef wchar_t TrieChar;
+//typedef wchar_t TrieChar;
 
 const int TRIE_INDEX_ERROR = 0;
 const void * TRIE_DATA_ERROR = NULL;
@@ -37,7 +37,7 @@ const int TRIE_CHILD_MAX = 65536; // how many children a char can have in dat.
 
 /**
 * The length of a TrieStr
-*/
+
 int TrieStrLen(const TrieChar * str)
 {
     if(str != NULL)
@@ -52,6 +52,7 @@ int TrieStrLen(const TrieChar * str)
     }
     return 0;
 }
+*/
 
 /**
 * Tail data delete call back functions
@@ -60,7 +61,7 @@ typedef void (*TailDataFree)(void * );
 
 void TrieCharFreeFunc(void * ptr)
 {
-    TrieChar * p = (TrieChar *) ptr;
+    wchar_t * p = (wchar_t *) ptr;
     delete [] p;
 }
 
@@ -83,14 +84,14 @@ void WriteTrieStrToFile(FILE * file, const void * str)
 {
     if(str != NULL)
     {
-
-        int len = TrieStrLen((TrieChar *)str) + 1;
+        wstring wstr = (wchar_t *)str;
+        int len = wstr.length() + 1;
         assert(len < 0xffff);
         if(!file_write_int16(file, len))
         {
             assert(false);
         }
-        if(fwrite(str, sizeof(TrieChar), len, file) != len)
+        if(fwrite(str, sizeof(wchar_t), len, file) != len)
         {
             assert(false);
         }
@@ -109,17 +110,17 @@ void * ReadTrieStrFromFile(FILE * file, MemoryPool<> * pmem)
         assert(false);
         return NULL;
     }
-    TrieChar * str = NULL;
+    wchar_t * str = NULL;
     if(pmem)
     {
-        str = (TrieChar *)pmem->allocAligned(len * sizeof(TrieChar));
+        str = (wchar_t *)pmem->allocAligned(len * sizeof(wchar_t));
     }
     else
     {
-        str = new TrieChar[len];
+        str = new wchar_t[len];
     }
 
-    if(fread(str, sizeof(TrieChar), len, file) != len)
+    if(fread(str, sizeof(wchar_t), len, file) != len)
     {
         assert(false);
         if(!pmem)

@@ -108,9 +108,9 @@ public:
      * @param c
      * @return
      */
-    inline bool walk(int * s, TrieChar c) const
+    inline bool walk(int * s, wchar_t c) const
     {
-        int next = getBase(*s) + c;
+        int next = getBase(*s) + (unsigned)c;
         if (getCheck(next) == *s)
         {
             *s = next;
@@ -153,7 +153,7 @@ public:
 
                 int new_base;
                 /* relocate BASE[s] */
-                vector<TrieChar> symbols;
+                vector<wchar_t> symbols;
                 findAllChildren(s, symbols);
                 symbols.push_back(c);
                 new_base = findFreeBase(symbols);
@@ -168,7 +168,7 @@ public:
         else
         {
             int new_base;
-            vector<TrieChar>symbols;
+            vector<wchar_t>symbols;
             symbols.push_back(c);
             new_base = findFreeBase(symbols);
 
@@ -267,6 +267,8 @@ public:
                 || sig != DA_SIGNATURE
                 || !file_read_int32(file, &num_cells))
         {
+            cerr<<"error: read Double Array signature failed!!!"<<endl;
+            cerr<<"DA_SIG="<<DA_SIGNATURE<<" read sig ="<<sig<<endl;
             goto exist_read;
         }
 
@@ -274,11 +276,13 @@ public:
         _cell = (Cell *) malloc(num_cells * sizeof(Cell));
         if(!_cell)
         {
+            cerr<<"error: malloc cells failed!!!"<<endl;
             goto exist_read;
         }
 
         if(fread(_cell, sizeof(Cell), num_cells, file) != num_cells)
         {
+            cerr<<"error: read cell failed!!!"<<endl;
             goto exist_read;
         }
 
@@ -374,7 +378,7 @@ private:
     void relocateBase(int s, int new_base)
     {
         int old_base = getBase(s);
-        vector<TrieChar> symbols;
+        vector<wchar_t> symbols;
         findAllChildren(s, symbols);
 
         for (int i = 0; i < symbols.size(); i++)
@@ -412,7 +416,7 @@ private:
         setBase(s, new_base);
     }
 
-    int findFreeBase(const vector<TrieChar> & children)
+    int findFreeBase(const vector<wchar_t> & children)
     {
         /* find first free cell that is beyond the first symbol */
         int first_child = children[0];
@@ -456,11 +460,11 @@ private:
      * @param children
      * @return
      */
-    bool fitAllChildren(int base, const vector<TrieChar> & children)
+    bool fitAllChildren(int base, const vector<wchar_t> & children)
     {
         for (int i = 0; i < children.size(); i++)
         {
-            TrieChar sym = children[i];
+            wchar_t sym = children[i];
 
             /*
              * if (base + sym) > TRIE_INDEX_MAX which means it's overflow, or
@@ -478,14 +482,14 @@ private:
      * @param s
      * @return
      */
-    void findAllChildren(int s, vector<TrieChar> & children)
+    void findAllChildren(int s, vector<wchar_t> & children)
     {
         int base = getBase(s);
         int max_c = min(TRIE_CHILD_MAX, TRIE_INDEX_MAX - base);
         for (int c = 0; c < max_c; c++)
         {
             if (getCheck(base + c) == s)
-                children.push_back((TrieChar) c);
+                children.push_back((wchar_t) c);
         }
     }
 

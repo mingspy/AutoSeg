@@ -44,15 +44,15 @@ public:
         start_time = clock();
     }
 
-    long elapsed()
+    double elapsed()
     {
         end_time = clock();
-        return end_time - start_time;
+        return (double)(end_time - start_time) / CLOCKS_PER_SEC;
     }
 
     friend ostream & operator<< (ostream & out, MSTimer & timer)
     {
-        out<<" elapsed:"<<timer.elapsed()<<" ms.";
+        out<<" elapsed:"<<timer.elapsed()<<"s.";
         return out;
     }
 };
