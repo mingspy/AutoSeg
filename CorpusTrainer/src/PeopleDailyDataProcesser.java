@@ -48,7 +48,7 @@ public class PeopleDailyDataProcesser {
 		List<Entry<String, CoreWordInfo>> res = sorter.sortByKeyASC(coreWords);
 		// out put
 		LineFileWriter writer = new LineFileWriter(output);
-		String nature = "@词性\t";
+		String nature = "@WordPOS\t";
 		for (String na : natures) {
 			nature += na + ",";
 		}

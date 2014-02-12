@@ -20,6 +20,7 @@
 #include <iostream>
 #include <memory>
 #include <cassert>
+#include <limits.h>
 #include "TrieDef.hpp"
 #include "FileUtils.hpp"
 #include "MemoryPool.hpp"

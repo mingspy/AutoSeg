@@ -12,11 +12,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Attribute.hpp" />
+    <ClInclude Include="CodeUtils.hpp" />
     <ClInclude Include="DATrie.hpp" />
     <ClInclude Include="DictFactory.hpp" />
     <ClInclude Include="DictFileBuilder.hpp" />
     <ClInclude Include="DoubleArray.hpp" />
     <ClInclude Include="FileUtils.hpp" />
+    <ClInclude Include="HashMapDef.hpp" />
     <ClInclude Include="InverseTokenizer.hpp" />
     <ClInclude Include="Matrix.hpp" />
     <ClInclude Include="MemLeaksCheck.h" />

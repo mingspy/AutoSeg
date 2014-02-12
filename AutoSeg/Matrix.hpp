@@ -22,7 +22,8 @@
 #include "Attribute.hpp"
 #include "SparseInstance.hpp"
 #include <vector>
-#include <hash_map>
+#include "HashMapDef.hpp"
+
 using namespace std;
 
 namespace mingspy
@@ -112,4 +113,4 @@ public:
         _rows[row].setValue(col, val);
     }
 };
-};
+}

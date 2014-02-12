@@ -350,11 +350,13 @@ inline void * ReadInstanceDataFromFile(FILE * file, MemoryPool<> * pmem)
 {
     long old_pos = ftell(file);
     int num = 0;
+    SparseInstance * inst = NULL;
+
     if(!file_read_int32(file, &num))
     {
         goto exit_read;
     }
-    SparseInstance * inst = NULL;
+    
     if(pmem != NULL)
     {
         inst = (SparseInstance *)pmem->allocAligned(sizeof(SparseInstance));
@@ -405,3 +407,4 @@ exit_read:
     return NULL;
 }
 }
+

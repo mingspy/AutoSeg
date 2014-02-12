@@ -1,7 +1,5 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * file utils
- * Copyright (C) 2006  Theppitak Karoonboonyanan <thep@linux.thai.net>
+ * Copyright (C) 2014  mingspy@163.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,12 +16,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-/*
- * fileutils.h - File utility functions
- * Created: 2006-08-15
- * Author:  Theppitak Karoonboonyanan <thep@linux.thai.net>
- */
-
 #pragma once
 
 #include <string.h>
@@ -32,14 +24,10 @@
 #include <iostream>
 #include <string>
 #include "StrUtils.hpp"
-#include <windows.h>
+#include "CodeUtils.hpp"
+
+
 using namespace std;
-
-/* ==================== BEGIN IMPLEMENTATION PART ====================  */
-
-/*--------------------------------*
- *    FUNCTIONS IMPLEMENTATIONS   *
- *--------------------------------*/
 
 bool
 file_read_int32 (FILE *file, int *o_val)
@@ -118,25 +106,6 @@ file_write_int8 (FILE *file, char val)
 }
 
 
-/**
-* In windows using MultibyeToWideChar.
-* In unix using iconv_open
-*/
-wstring Utf8ToUnicode( const string& str )
-{
-    int  len = 0;
-    len = str.length();
-    int  unicodeLen = ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,NULL,0);
-    wchar_t *  pUnicode;
-    pUnicode = new  wchar_t[unicodeLen+1];
-    memset(pUnicode,0,(unicodeLen+1)*sizeof(wchar_t));
-    ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,(LPWSTR)pUnicode,unicodeLen );
-    wstring  rt;
-    rt = ( wchar_t* )pUnicode;
-    delete  pUnicode;
-    return  rt;
-}
-
 class UTF8FileReader
 {
 private:
@@ -145,7 +114,7 @@ private:
 public:
     UTF8FileReader(const string & file)
     {
-        inf.open(file);
+        inf.open(file.c_str());
     }
     ~UTF8FileReader()
     {
@@ -174,7 +143,7 @@ public:
 
     static size_t size(const string& filename)
     {
-        ifstream file (filename,   ios::in|ios::binary|ios::ate);
+        ifstream file (filename.c_str(),   ios::in|ios::binary|ios::ate);
         if(!file.good())
         {
             return 0;

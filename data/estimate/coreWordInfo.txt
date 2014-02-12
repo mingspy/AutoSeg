@@ -1,4 +1,4 @@
-@词性	Ag,Bg,Dg,Mg,Ng,Rg,Tg,Vg,Yg,a,ad,an,b,c,d,e,f,h,i,j,k,l,m,n,nr,ns,nt,nx,nz,o,p,q,r,s,t,u,v,vd,vn,w,y,z,
+@WordPOS	Ag,Bg,Dg,Mg,Ng,Rg,Tg,Vg,Yg,a,ad,an,b,c,d,e,f,h,i,j,k,l,m,n,nr,ns,nt,nx,nz,o,p,q,r,s,t,u,v,vd,vn,w,y,z,
 °	q:4,
 ±	w:16,
 ±％	w:11,m:7,

@@ -19,13 +19,13 @@
 
 #include <iostream>
 #include <string>
-#include <hash_map>
 #include "TrieDef.hpp"
 #include "DATrie.hpp"
 #include "SparseInstance.hpp"
 #include "MemoryPool.hpp"
 #include "MemLeaksCheck.h"
 
+#include "HashMapDef.hpp"
 
 namespace mingspy
 {

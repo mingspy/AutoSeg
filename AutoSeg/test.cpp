@@ -1,8 +1,8 @@
 
-#include<iostream>
-#include<fstream>
+#include <iostream>
+#include <fstream>
 #include <string>
-#include <Windows.h>
+#include <vector>
 #include "SparseInstance.hpp"
 #include "Matrix.hpp"
 #include "WordDictionary.hpp"
@@ -34,7 +34,7 @@ void testDAT()
     inf.close();
 
     // test add
-    DWORD start_time = GetTickCount();
+    MSTimer timer;
     i = 0;
     for(vector<wstring>::iterator it = words.begin(); it != words.end(); it ++)
     {
@@ -45,28 +45,25 @@ void testDAT()
             cout<<"\radded "<< i;
         }
     }
-    DWORD end_time = GetTickCount();
-    cout<<"\nadd words "<<words.size()<< " used : "<<(end_time - start_time)<<" ms"<<endl;
+    cout<<"\nadd words "<<words.size()<< timer<<endl;
 
+    timer.restart();
     // testing write to file.
     trie.setDataWriter(WriteTrieStrToFile);
-    start_time = GetTickCount();
     trie.writeToFile("e:/tmp/trie.dat");
-    end_time = GetTickCount();
-    cout<<"write datrie (words:"<<words.size()<< ") used : "<<(end_time - start_time)<<" ms"<<endl;
+    cout<<"write datrie (words:"<<words.size()<< ") "<<timer<<" ms"<<endl;
 
     // testing read from file.
-    start_time = GetTickCount();
+    timer.restart();
     DATrie trie2;
     trie2.setDataReader(ReadTrieStrFromFile);
     trie2.readFromFile("e:/tmp/trie.dat");
-    end_time = GetTickCount();
-    cout<<"read datrie (words:"<<words.size()<< ") used : "<<(end_time - start_time)<<" ms"<<endl;
+    cout<<"read datrie (words:"<<words.size()<< ") "<<timer<<endl;
 
     // test retrieve...
     int notfound = 0;
     TrieChar * p = NULL;
-    start_time = GetTickCount();
+    timer.restart();
     for(int j = 0; j < words.size(); j++)
     {
         void * result = trie2.retrieve(words[j].c_str());
@@ -91,8 +88,8 @@ void testDAT()
         }
 
     }
-    end_time = GetTickCount();
-    cout<<"notfound = "<<notfound<<"used :"<<(end_time - start_time)<<endl;
+
+    cout<<"notfound = "<<notfound<<timer<<endl;
 }
 
 void testSparseInstance()
@@ -129,17 +126,14 @@ void testWordDictionary()
 {
     //DictFileBuilder::buildDict("..\\data\\coreWordInfo.txt","..\\data\\core.dic");
 
-
-    DWORD start_time = GetTickCount();
+    MSTimer timer;
     WordDictionary * dict = new WordDictionary("..\\data\\core.dic");
-    DWORD end_time = GetTickCount();
-    cout<<"load dictionary used"<<(end_time - start_time)<<endl;
+    cout<<"load dictionary"<<timer<<endl;
     cout<<*dict->getWordInfo(L"×ÉÑ¯")<<endl;
 
-    start_time = GetTickCount();
+    timer.restart();
     delete dict;
-    end_time = GetTickCount();
-    cout<<"unload dictionary used"<<(end_time - start_time)<<endl;
+    cout<<"unload dictionary"<<timer<<endl;
 }
 
 void testSegment()
@@ -163,7 +157,8 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
                        const vector<vector<wstring>>& refer_datas,
                        Tokenizer & tokenizer)
 {
-    wstring punctuations = L"£ª£¬¡££¿£¨£©¡±¡°£«£«£«£­£­£­£­£®£¥¡¢£¯£½£¾¡À£¥¡Á¡Á¡Á¡ª¡ª¡ª¡ª¡ª¡ª¡ª£­¡®¡¯¡­¡­¡ë¡ù¡ú¡Î¡Ã¡Ù¢Ù¢Ú¢Û¢Ü¢Ý¢Þ¢ß¢à¢Æ¢Ç©¤¡õ¡ø¡÷¡ð¡ñ¡ï¡¢¡£¡±¡´¡µ¡¶¡·¡º¡»¡²¡³";
+    wstring punctuations = L"£ª£¬¡££¿£¨£©¡±¡°£«£«£«£­£­£­£­£®£¥¡¢£¯£½£¾¡À£¥¡Á¡Á¡Á¡ª¡ª¡ª¡ª¡ª¡ª¡ª£­¡®¡¯¡­¡­¡ë\
+¡ù¡ú¡Î¡Ã¡Ù¢Ù¢Ú¢Û¢Ü¢Ý¢Þ¢ß¢à¢Æ¢Ç©¤¡õ¡ø¡÷¡ð¡ñ¡ï¡¢¡£¡±¡´¡µ¡¶¡·¡º¡»¡²¡³";
     MSTimer timer;
     vector<vector<wstring>> seg_results;
     for(int i = 0; i < test_datas.size(); i++)
@@ -233,7 +228,7 @@ void estimateSegmetors()
     //DictFileBuilder::buildInverseDict("../data/estimate/coreWordInfo.txt","../data/estimate/inverseCore.dic");
     DictFactory::initialize("../data/estimate/");
     cout<<"load dict "<<timer<<endl;
-    timer.start();
+    timer.restart();
     // load test data.
     vector<wstring> test_datas;
     size_t test_size = UTF8FileReader::size("../data/estimate/test_data.txt");
@@ -247,7 +242,7 @@ void estimateSegmetors()
     }
 
     cout<<"load test data "<<timer<<endl;
-    timer.start();
+    timer.restart();
     // load refer data.
     vector<vector<wstring>> refer_datas;
     {

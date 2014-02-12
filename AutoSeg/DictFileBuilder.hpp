@@ -46,7 +46,7 @@ public:
             return false;
         }
 
-        wstring natureHead = L"@ДЪад\t";
+        wstring natureHead = L"@WordPOS\t";
         wstring::size_type natureindex = line->find(natureHead);
         if(natureindex == wstring::npos)
         {
@@ -135,7 +135,7 @@ public:
             return false;
         }
 
-        wstring natureHead = L"@ДЪад\t";
+        wstring natureHead = L"@WordPOS\t";
         wstring::size_type natureindex = line->find(natureHead);
         if(natureindex == wstring::npos)
         {

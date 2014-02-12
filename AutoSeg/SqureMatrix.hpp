@@ -26,3 +26,4 @@ class SqureMatrix : public Matrix
 
 };
 }
+

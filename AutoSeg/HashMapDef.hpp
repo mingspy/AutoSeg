@@ -15,46 +15,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-/*
-* implementation of ResGuard.
-* See <POSIX Muti-threads programming>
-* by xiuleili 2013-7-5
-*/
 
 #pragma once
-#include<iostream>
-#include<ctime>
-using namespace std;
 
-namespace mingspy
+#if _MSC_VER > 1000
+#include <hash_map>
+#else 
+// in linux..
+#include <ext/hash_map>
+using namespace __gnu_cxx;
+
+namespace __gnu_cxx
 {
-class MSTimer
-{
-private:
-    clock_t start_time;
-    clock_t end_time;
-public:
-    MSTimer()
+    template<> struct hash<string>
     {
-        start_time = clock();
-    }
-
-    void restart()
-    {
-        start_time = clock();
-    }
-
-    long elapsed()
-    {
-        end_time = clock();
-        return end_time - start_time;
-    }
-
-    friend ostream & operator<< (ostream & out, MSTimer & timer)
-    {
-        out<<" elapsed:"<<timer.elapsed()<<" ms.";
-        return out;
-    }
-};
-
+        size_t operator()(const string& s) const
+        {
+            return __stl_hash_string(s.c_str());
+        }
+    };
 }
+#endif
