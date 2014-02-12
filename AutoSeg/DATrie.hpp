@@ -207,7 +207,7 @@ public:
         tail.setDataReader(fn);
     }
 
-    inline void setMemPool( MemoryPool<>* mem_pool ) 
+    inline void setMemPool( MemoryPool<>* mem_pool )
     {
         tail.setMemPool(mem_pool);
     }
@@ -227,10 +227,11 @@ public:
         return res;
     }
 
-    bool writeToFile(FILE * pfile){
+    bool writeToFile(FILE * pfile)
+    {
         if(!da.writeToFile(pfile) || !tail.writeToFile(pfile))
         {
-           return false;
+            return false;
         }
         return true;
     }
@@ -249,7 +250,8 @@ public:
         return res;
     }
 
-    bool readFromFile(FILE * pfile){
+    bool readFromFile(FILE * pfile)
+    {
         if(!da.readFromFile(pfile) || !tail.readFromFile(pfile))
         {
             fclose(pfile);

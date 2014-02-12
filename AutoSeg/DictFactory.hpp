@@ -22,57 +22,68 @@
 #include "ResGuard.hpp"
 
 using namespace std;
-namespace mingspy{
-    class DictFactory{
-    private:
-        static WordDictionary * _coreDict;
-        static WordDictionary * _inverseCoreDict;
-        static bool _loaded;
-        static ResGuard _resGard;
-        
-    public:
-        static void initialize(const string & dir){
-            ResGuard::Lock lock(_resGard);
-            if(_loaded) return;
-            _coreDict = new WordDictionary(dir+"core.dic");
-            _inverseCoreDict = new WordDictionary(dir+"inverseCore.dic");
-            
-            _loaded = true;
-            atexit(clean);
-        }
+namespace mingspy
+{
+class DictFactory
+{
+private:
+    static WordDictionary * _coreDict;
+    static WordDictionary * _inverseCoreDict;
+    static bool _loaded;
+    static ResGuard _resGard;
 
-        static const WordDictionary & CoreDict(){
-            if(!_coreDict){
-                initialize("../data/");
-            }
-            return *_coreDict;
-        }
+public:
+    static void initialize(const string & dir)
+    {
+        ResGuard::Lock lock(_resGard);
+        if(_loaded) return;
+        _coreDict = new WordDictionary(dir+"core.dic");
+        _inverseCoreDict = new WordDictionary(dir+"inverseCore.dic");
 
-        static const WordDictionary & InverseCoreDict(){
-            if(!_inverseCoreDict){
-                initialize("../data/");
-            }
-            return *_inverseCoreDict;
-        }
+        _loaded = true;
+        atexit(clean);
+    }
 
-        static void clean(){
-            ResGuard::Lock lock(_resGard);
-            if(_loaded){
-                if(_coreDict){
-                    delete _coreDict;
-                    _coreDict = NULL;
-                }
-                if(_inverseCoreDict){
-                    delete _inverseCoreDict;
-                    _inverseCoreDict = NULL;
-                }
-                _loaded = false;
-            }
+    static const WordDictionary & CoreDict()
+    {
+        if(!_coreDict)
+        {
+            initialize("../data/");
         }
-    };
-    
-    WordDictionary * DictFactory::_coreDict = NULL;
-    WordDictionary * DictFactory::_inverseCoreDict = NULL;
-    bool DictFactory::_loaded = false;
-    ResGuard DictFactory::_resGard;
+        return *_coreDict;
+    }
+
+    static const WordDictionary & InverseCoreDict()
+    {
+        if(!_inverseCoreDict)
+        {
+            initialize("../data/");
+        }
+        return *_inverseCoreDict;
+    }
+
+    static void clean()
+    {
+        ResGuard::Lock lock(_resGard);
+        if(_loaded)
+        {
+            if(_coreDict)
+            {
+                delete _coreDict;
+                _coreDict = NULL;
+            }
+            if(_inverseCoreDict)
+            {
+                delete _inverseCoreDict;
+                _inverseCoreDict = NULL;
+            }
+            _loaded = false;
+        }
+    }
+};
+
+WordDictionary * DictFactory::_coreDict = NULL;
+WordDictionary * DictFactory::_inverseCoreDict = NULL;
+bool DictFactory::_loaded = false;
+ResGuard DictFactory::_resGard;
 }

@@ -80,7 +80,8 @@ public:
         _data_reader = fn;
     }
 
-    inline void setMemPool(MemoryPool<> * pmemory){
+    inline void setMemPool(MemoryPool<> * pmemory)
+    {
         pmem = pmemory;
     }
 
@@ -129,9 +130,12 @@ public:
              */
             int len = TrieStrLen(suffix);
             TrieChar * tmp = NULL;
-            if(!pmem){
+            if(!pmem)
+            {
                 tmp = new TrieChar[len + 1];
-            }else{
+            }
+            else
+            {
                 tmp = (TrieChar *)pmem->allocAligned((len + 1) * sizeof(TrieChar));
             }
             memcpy(tmp, suffix, (len+1)*sizeof(TrieChar));
@@ -404,7 +408,8 @@ private:
     {
         if(tails != NULL)
         {
-            if(!pmem){
+            if(!pmem)
+            {
                 for(int i = 1; i < num_tails; i++)
                 {
                     if(_data_free_func != NULL && tails[i].data != NULL)

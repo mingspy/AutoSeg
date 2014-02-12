@@ -74,7 +74,7 @@ typedef void (*WriteTailDataToFile)(FILE * file, const void * data);
 * Reads data from given file, which used for tail unserialize.
 * if the pmem != null, must allocate att the needed datas on pmem.
 * And the allocate data will be release by pmem at once.
-* MemoryPool only safe when used to save simple objects that not 
+* MemoryPool only safe when used to save simple objects that not
 * holds other objects which need to free.
 */
 typedef void *(*ReadTailDataFromFile)(FILE * file, MemoryPool<> * pmem);
@@ -110,16 +110,20 @@ void * ReadTrieStrFromFile(FILE * file, MemoryPool<> * pmem)
         return NULL;
     }
     TrieChar * str = NULL;
-    if(pmem){
+    if(pmem)
+    {
         str = (TrieChar *)pmem->allocAligned(len * sizeof(TrieChar));
-    }else{
+    }
+    else
+    {
         str = new TrieChar[len];
     }
 
     if(fread(str, sizeof(TrieChar), len, file) != len)
     {
         assert(false);
-        if(!pmem){
+        if(!pmem)
+        {
             delete [] str;
         }
         return NULL;

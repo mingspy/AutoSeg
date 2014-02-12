@@ -119,54 +119,64 @@ file_write_int8 (FILE *file, char val)
 
 
 /**
-* In windows using MultibyeToWideChar. 
+* In windows using MultibyeToWideChar.
 * In unix using iconv_open
 */
 wstring Utf8ToUnicode( const string& str )
 {
     int  len = 0;
     len = str.length();
-    int  unicodeLen = ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,NULL,0); 
-    wchar_t *  pUnicode; 
-    pUnicode = new  wchar_t[unicodeLen+1]; 
-    memset(pUnicode,0,(unicodeLen+1)*sizeof(wchar_t)); 
-    ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,(LPWSTR)pUnicode,unicodeLen ); 
-    wstring  rt; 
+    int  unicodeLen = ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,NULL,0);
+    wchar_t *  pUnicode;
+    pUnicode = new  wchar_t[unicodeLen+1];
+    memset(pUnicode,0,(unicodeLen+1)*sizeof(wchar_t));
+    ::MultiByteToWideChar( CP_UTF8,0,str.c_str(),-1,(LPWSTR)pUnicode,unicodeLen );
+    wstring  rt;
     rt = ( wchar_t* )pUnicode;
     delete  pUnicode;
-    return  rt; 
+    return  rt;
 }
 
-class UTF8FileReader{
+class UTF8FileReader
+{
 private:
     ifstream inf;
     wstring lastLine;
 public:
-    UTF8FileReader(const string & file){        
+    UTF8FileReader(const string & file)
+    {
         inf.open(file);
     }
-    ~UTF8FileReader(){
+    ~UTF8FileReader()
+    {
         inf.close();
     }
 
-    wstring * getLine(){
+    wstring * getLine()
+    {
         string line;
-        do{
-            if(getline(inf,line)){
+        do
+        {
+            if(getline(inf,line))
+            {
                 line = trim(line);
-                if(!line.empty()){
+                if(!line.empty())
+                {
                     lastLine = Utf8ToUnicode(line);
                     return &lastLine;
                 }
             }
-        }while(!inf.eof());
+        }
+        while(!inf.eof());
 
         return NULL;
     }
 
-    static size_t size(const string& filename){
+    static size_t size(const string& filename)
+    {
         ifstream file (filename,   ios::in|ios::binary|ios::ate);
-        if(!file.good()){
+        if(!file.good())
+        {
             return 0;
         }
 

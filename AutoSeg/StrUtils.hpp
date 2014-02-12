@@ -35,13 +35,14 @@ void split(const string& src, const string& separator, vector<string>& dest)
     {
         index = str.find_first_of(separator,start);
         if (index != string::npos)
-        {    
+        {
             substring = str.substr(start,index-start);
             dest.push_back(substring);
             start = str.find_first_not_of(separator,index);
             if (start == string::npos) return;
         }
-    }while(index != string::npos);
+    }
+    while(index != string::npos);
 
     //the last token
     substring = str.substr(start);
@@ -60,13 +61,14 @@ void split(const wstring& src, const wstring& separator, vector<wstring>& dest)
     {
         index = str.find_first_of(separator,start);
         if (index != wstring::npos)
-        {    
+        {
             substring = str.substr(start,index-start);
             dest.push_back(substring);
             start = str.find_first_not_of(separator,index);
             if (start == wstring::npos) return;
         }
-    }while(index != wstring::npos);
+    }
+    while(index != wstring::npos);
 
     //the last token
     substring = str.substr(start);
@@ -77,10 +79,12 @@ void split(const wstring& src, const wstring& separator, vector<wstring>& dest)
 const string trim(const string istring)
 {
     std::string::size_type first = istring.find_first_not_of(" \n\t\r\0xb");
-    if (first == std::string::npos) {
+    if (first == std::string::npos)
+    {
         return std::string();
     }
-    else {
+    else
+    {
         std::string::size_type last = istring.find_last_not_of(" \n\t\r\0xb");
         return istring.substr( first, last - first + 1);
     }
@@ -89,10 +93,12 @@ const string trim(const string istring)
 const wstring trim(const wstring istring)
 {
     std::wstring::size_type first = istring.find_first_not_of(L" \n\t\r\0xb");
-    if (first == std::wstring::npos) {
+    if (first == std::wstring::npos)
+    {
         return std::wstring();
     }
-    else {
+    else
+    {
         std::wstring::size_type last = istring.find_last_not_of(L" \n\t\r\0xb");
         return istring.substr( first, last - first + 1);
     }

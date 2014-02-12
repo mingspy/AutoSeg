@@ -16,14 +16,16 @@
 using namespace std;
 using namespace mingspy;
 
-void testDAT(){
+void testDAT()
+{
     DATrie trie(NULL);
     ifstream inf;
     inf.open("../words.txt"); //reading utf-8 file.
     string line;
     vector<wstring> words;
     int i = 0;
-    while(getline(inf, line)){
+    while(getline(inf, line))
+    {
         wstring word = Utf8ToUnicode(line);
         //wcout<<word<<endl;
         words.push_back(word);
@@ -34,11 +36,13 @@ void testDAT(){
     // test add
     DWORD start_time = GetTickCount();
     i = 0;
-    for(vector<wstring>::iterator it = words.begin(); it != words.end(); it ++){
+    for(vector<wstring>::iterator it = words.begin(); it != words.end(); it ++)
+    {
         i++;
         trie.add(it->c_str(),(void *)it->c_str());
-        if(i % 1000 == 0){
-            cout<<"\radded "<< i;    
+        if(i % 1000 == 0)
+        {
+            cout<<"\radded "<< i;
         }
     }
     DWORD end_time = GetTickCount();
@@ -63,16 +67,24 @@ void testDAT(){
     int notfound = 0;
     TrieChar * p = NULL;
     start_time = GetTickCount();
-    for(int j = 0; j < words.size(); j++){
+    for(int j = 0; j < words.size(); j++)
+    {
         void * result = trie2.retrieve(words[j].c_str());
-        if( result == NULL){
+        if( result == NULL)
+        {
             notfound ++;
-        }else {
+        }
+        else
+        {
             p = static_cast<TrieChar *>(result);
-            if(p == NULL || words[j] != p){
+            if(p == NULL || words[j] != p)
+            {
                 notfound ++;
-            }else{
-                if(j % 10000 == 0){
+            }
+            else
+            {
+                if(j % 10000 == 0)
+                {
                     wcout << *p <<endl;
                 }
             }
@@ -83,7 +95,8 @@ void testDAT(){
     cout<<"notfound = "<<notfound<<"used :"<<(end_time - start_time)<<endl;
 }
 
-void testSparseInstance(){
+void testSparseInstance()
+{
     SparseInstance instance;
     instance.setValue(20, 20.01);
     instance.setValue(10,10.33);
@@ -106,12 +119,13 @@ void testSparseInstance(){
     delete i;
 }
 
-void testMatrix(){
+void testMatrix()
+{
     Matrix matrix;
     cout<<matrix.val(0,0)<<endl;
 }
 
-void testWordDictionary() 
+void testWordDictionary()
 {
     //DictFileBuilder::buildDict("..\\data\\coreWordInfo.txt","..\\data\\core.dic");
 
@@ -128,7 +142,8 @@ void testWordDictionary()
     cout<<"unload dictionary used"<<(end_time - start_time)<<endl;
 }
 
-void testSegment(){
+void testSegment()
+{
     vector<Token> atoms;
     vector<wstring> words;
     wstring str = L"in 1998年，something important happened,中华人民共和国正式﹌成立了";
@@ -141,16 +156,18 @@ void testSegment(){
     tokenizer.output(str,atoms, words);
 
     //tokenizer.analysis(L"他说的确在理");
-    //tokenizer.analysis(L"中华人民共和国正式成立了，在今天");  
+    //tokenizer.analysis(L"中华人民共和国正式成立了，在今天");
 }
 
-void estimateTokenizer(const vector<wstring>& test_datas, int test_size, 
-        const vector<vector<wstring>>& refer_datas,
-        Tokenizer & tokenizer){
+void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
+                       const vector<vector<wstring>>& refer_datas,
+                       Tokenizer & tokenizer)
+{
     wstring punctuations = L"＊，。？（）”“＋＋＋－－－－．％、／＝＞±％×××———————－‘’……‰※→∥∶≠①②③④⑤⑥⑦⑧⑵⑶─□▲△○●★、。”〈〉《》『』〔〕";
     MSTimer timer;
-    vector<vector<wstring>> seg_results;  
-    for(int i = 0; i < test_datas.size(); i++){
+    vector<vector<wstring>> seg_results;
+    for(int i = 0; i < test_datas.size(); i++)
+    {
         vector<Token> tokens;
         vector<wstring> words;
         tokenizer.maxSplit(test_datas[i], tokens);
@@ -167,24 +184,31 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
     int refer_words = 0;
     int total_correct = 0;
     int total_segmented = 0;
-    for(int i = 0; i < seg_results.size(); i++){
+    for(int i = 0; i < seg_results.size(); i++)
+    {
         refer_words += refer_datas[i].size();
         total_segmented += seg_results[i].size();
-        for(int j = 0; j < refer_datas[i].size(); j++){
-            if(punctuations.find(refer_datas[i][j]) != wstring::npos){
+        for(int j = 0; j < refer_datas[i].size(); j++)
+        {
+            if(punctuations.find(refer_datas[i][j]) != wstring::npos)
+            {
                 refer_words --;
             }
         }
-        for(int j = 0; j < seg_results[i].size(); j++){
-            if(punctuations.find(seg_results[i][j]) != wstring::npos){
+        for(int j = 0; j < seg_results[i].size(); j++)
+        {
+            if(punctuations.find(seg_results[i][j]) != wstring::npos)
+            {
                 total_segmented --;
                 continue;
             }
 
             int m = max(0, j - 4);
             int n = min(j+4, refer_datas[i].size());
-            for(int k = m; k < n; k++){
-                if(seg_results[i][j] == refer_datas[i][k]){
+            for(int k = m; k < n; k++)
+            {
+                if(seg_results[i][j] == refer_datas[i][k])
+                {
                     total_correct ++;
                     break;
                 }
@@ -202,7 +226,8 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
     cout<<"\tf2 = "<<f2<<endl;
 }
 
-void estimateSegmetors(){
+void estimateSegmetors()
+{
     MSTimer timer;
     //DictFileBuilder::buildDict("../data/estimate/coreWordInfo.txt","../data/estimate/core.dic");
     //DictFileBuilder::buildInverseDict("../data/estimate/coreWordInfo.txt","../data/estimate/inverseCore.dic");
@@ -215,11 +240,12 @@ void estimateSegmetors(){
     {
         UTF8FileReader testDataReader("../data/estimate/test_data.txt");
         wstring * line;
-        while((line = testDataReader.getLine()) != NULL){
+        while((line = testDataReader.getLine()) != NULL)
+        {
             test_datas.push_back(*line);
         }
     }
-    
+
     cout<<"load test data "<<timer<<endl;
     timer.start();
     // load refer data.
@@ -227,15 +253,18 @@ void estimateSegmetors(){
     {
         wstring * line;
         UTF8FileReader referDataReader("../data/estimate/test_refer.txt");
-        while((line = referDataReader.getLine()) != NULL){
+        while((line = referDataReader.getLine()) != NULL)
+        {
             vector<wstring> words;
             refer_datas.push_back(words);
             split(*line, L"  ", words);
             vector<wstring> & refer = refer_datas[refer_datas.size() - 1];
-            for(int i = 0; i < words.size(); i++){
+            for(int i = 0; i < words.size(); i++)
+            {
                 int idx = words[i].find_first_of(L'/');
                 wstring word = words[i].substr(0,idx);
-                if(word[0] == L'['){
+                if(word[0] == L'[')
+                {
                     word = word.substr(1);
                 }
 
@@ -252,25 +281,26 @@ void estimateSegmetors(){
     cout<<endl
         <<"estimate inverse tokenizer."<<endl;
     estimateTokenizer(test_datas,test_size,refer_datas, InverseTokenizer());
-    
+
 }
 
-int main(void){
-    #if _MSC_VER > 1000
+int main(void)
+{
+#if _MSC_VER > 1000
     wcout<<"windows!"<<_MSC_VER<<endl;
-    #else
+#else
     cout<<"not windows, end."<<endl;
     return -1;
-    #endif
+#endif
 
     CheckMemLeaks();
     {
         //testSparseInstance();
         //testMatrix();
         //testWordDictionary();
-        
+
         estimateSegmetors();
-    } 
+    }
     wcout<<L"Press enter to return."<<endl;
     getchar();
     return 0;

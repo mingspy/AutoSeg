@@ -27,128 +27,150 @@
 #include "MemLeaksCheck.h"
 
 
-namespace mingspy{
+namespace mingspy
+{
 
-    //const wstring const NATURE_UNDEF = L"UNDEF";
+//const wstring const NATURE_UNDEF = L"UNDEF";
 
-    class WordDictionary{
-    private:
-        DATrie datrie;
-        vector<wstring> natures;
-        hash_map<wstring, int> nature_index;
-        MemoryPool<> mem_pool;
-    private:
-        static const int DICT_SIGNATURE = 0x112fd0ac;
-    public:
-        WordDictionary(){
-            datrie.setDataFreer(InstanceFreer);
-            datrie.setDataReader(ReadInstanceDataFromFile);
-            datrie.setDataWriter(WriteInstanceDataToFile);
+class WordDictionary
+{
+private:
+    DATrie datrie;
+    vector<wstring> natures;
+    hash_map<wstring, int> nature_index;
+    MemoryPool<> mem_pool;
+private:
+    static const int DICT_SIGNATURE = 0x112fd0ac;
+public:
+    WordDictionary()
+    {
+        datrie.setDataFreer(InstanceFreer);
+        datrie.setDataReader(ReadInstanceDataFromFile);
+        datrie.setDataWriter(WriteInstanceDataToFile);
+    }
+
+    // read binary data from a file.
+    WordDictionary(const string & file)
+    {
+        datrie.setMemPool(&mem_pool);
+        datrie.setDataReader(ReadInstanceDataFromFile);
+        datrie.setDataWriter(WriteInstanceDataToFile);
+        FILE * pfile = fopen(file.c_str(),"rb");
+        assert(pfile != NULL);
+        if(!pfile)
+        {
+            return;
         }
 
-        // read binary data from a file.
-        WordDictionary(const string & file){
-            datrie.setMemPool(&mem_pool);
-            datrie.setDataReader(ReadInstanceDataFromFile);
-            datrie.setDataWriter(WriteInstanceDataToFile);
-            FILE * pfile = fopen(file.c_str(),"rb");
-            assert(pfile != NULL);
-            if(!pfile){
-                return;
-            }
+        readFromFile(pfile);
+        fclose(pfile);
+    }
 
-            readFromFile(pfile);
-            fclose(pfile);
+    bool addNature(const wstring& nature)
+    {
+        if(nature_index.find(nature) != nature_index.end())
+        {
+            return false;
+        }
+        natures.push_back(nature);
+        nature_index[nature] = natures.size() - 1;
+        return true;
+    }
+
+    int getNatureIndex(const wstring &nature)
+    {
+        if(nature_index.find(nature) != nature_index.end())
+        {
+            return nature_index[nature];
+        }
+        return -1;
+    }
+
+    const wstring & getNature(int index)
+    {
+        if(index < natures.size())
+        {
+            return natures[index];
+        }
+        //return NATURE_UNDEF;
+        return L"UNDEF";
+    }
+
+    bool addWordInfo(const wstring & word, SparseInstance * info)
+    {
+        return datrie.add(word.c_str(), info);
+    }
+
+    const SparseInstance * getWordInfo(const wstring & word) const
+    {
+        return (const SparseInstance *)datrie.retrieve(word.c_str());
+    }
+
+    bool existPrefix(const wstring & prefix) const
+    {
+        return datrie.containsPrefix(prefix.c_str());
+    }
+
+    bool writeToFile(const string & file)
+    {
+        FILE * pfile = fopen(file.c_str(),"wb");
+        assert(pfile != NULL);
+        bool result = false;
+        int nature_size = natures.size();
+        if(!file_write_int32(pfile, DICT_SIGNATURE)
+                || !file_write_int32(pfile, nature_size))
+        {
+            goto end_write;
         }
 
-        bool addNature(const wstring& nature){
-            if(nature_index.find(nature) != nature_index.end()){
-                return false;
-            }
-            natures.push_back(nature);
-            nature_index[nature] = natures.size() - 1; 
-            return true;
+        for(int i = 0; i < nature_size; i++)
+        {
+            WriteTrieStrToFile(pfile, natures[i].c_str());
         }
 
-        int getNatureIndex(const wstring &nature){
-            if(nature_index.find(nature) != nature_index.end()){
-                return nature_index[nature];
-            }
-            return -1;
+        if(!datrie.writeToFile(pfile))
+        {
+            goto end_write;
         }
 
-        const wstring & getNature(int index){
-            if(index < natures.size()){
-                return natures[index];
-            }
-            //return NATURE_UNDEF;
-            return L"UNDEF";
+        result = true;
+end_write:
+        fclose(pfile);
+        return result;
+    }
+
+private:
+
+    void readFromFile(FILE * pfile)
+    {
+        // read header
+        int signature;
+        if(!file_read_int32(pfile, &signature) || signature != DICT_SIGNATURE)
+        {
+            assert(false);
+            return;
         }
 
-        bool addWordInfo(const wstring & word, SparseInstance * info){
-            return datrie.add(word.c_str(), info);
+        // read Natures.
+        int nature_size;
+        if(!file_read_int32(pfile, &nature_size)
+                || nature_size > 0x0fffffff
+                || nature_size < 0)
+        {
+            assert(false);
+            return;
         }
 
-        const SparseInstance * getWordInfo(const wstring & word) const{
-            return (const SparseInstance *)datrie.retrieve(word.c_str());
+        for(int i = 0; i < nature_size; i++)
+        {
+            wstring nature = (wchar_t *)ReadTrieStrFromFile(pfile, &mem_pool);
+            addNature(nature);
         }
+        // read dat
+        datrie.readFromFile(pfile);
+    }
 
-        bool existPrefix(const wstring & prefix) const{
-            return datrie.containsPrefix(prefix.c_str());
-        }
+};
 
-        bool writeToFile(const string & file){
-            FILE * pfile = fopen(file.c_str(),"wb");
-            assert(pfile != NULL);
-            bool result = false;
-            int nature_size = natures.size();
-            if(!file_write_int32(pfile, DICT_SIGNATURE) 
-                || !file_write_int32(pfile, nature_size)){
-                    goto end_write;
-            }
 
-            for(int i = 0; i < nature_size; i++){
-                WriteTrieStrToFile(pfile, natures[i].c_str());
-            }
-
-            if(!datrie.writeToFile(pfile)){
-                goto end_write;
-            }
-            
-            result = true;
-            end_write:
-            fclose(pfile);
-            return result;
-        }
-
-    private:
-
-        void readFromFile(FILE * pfile){
-            // read header
-            int signature;
-            if(!file_read_int32(pfile, &signature) || signature != DICT_SIGNATURE){
-                assert(false);
-                return;
-            }
-
-            // read Natures.
-            int nature_size;
-            if(!file_read_int32(pfile, &nature_size)
-                || nature_size > 0x0fffffff 
-                || nature_size < 0){
-                assert(false);
-                return;
-            }
-
-            for(int i = 0; i < nature_size; i++){
-                wstring nature = (wchar_t *)ReadTrieStrFromFile(pfile, &mem_pool);
-                addNature(nature);
-            }
-            // read dat
-            datrie.readFromFile(pfile);
-        }
-
-    };
-
-    
 }

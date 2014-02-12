@@ -36,66 +36,79 @@ protected:
     vector<Attribute> _attributes;
     hash_map<int, SparseInstance> _rows;
 public:
-    Matrix(){}
-    ~Matrix(){}
-    void addAtrribute(const Attribute & attr){
+    Matrix() {}
+    ~Matrix() {}
+    void addAtrribute(const Attribute & attr)
+    {
         _attributes.push_back(attr);
     }
 
     /*
     * add the row at the given index;
     */
-    void addRow(int row, const SparseInstance & instance){
+    void addRow(int row, const SparseInstance & instance)
+    {
         _rows[row] = instance;
     }
 
     /*
-    * Add a row, the rows number  
+    * Add a row, the rows number
     * will increment automatically.
     * This is used for add a sequence number of rows.
     */
-    int addRow(const SparseInstance & instance){
+    int addRow(const SparseInstance & instance)
+    {
         int row = _rows.size();
         _rows[row] = instance;
         return row;
     }
 
-    const Attribute & getAttribute(int index) const{
+    const Attribute & getAttribute(int index) const
+    {
         assert(index < _attributes.size());
         return _attributes[index];
     }
 
-    SparseInstance & getInstance(int index) {
+    SparseInstance & getInstance(int index)
+    {
         assert(index < _rows.size());
         return _rows[index];
     }
 
-    void removeRow(int index){
-        if(_rows.find(index) != _rows.end()){
+    void removeRow(int index)
+    {
+        if(_rows.find(index) != _rows.end())
+        {
             _rows.erase(index);
         }
     }
 
-    int getAttributeSize() const{
+    int getAttributeSize() const
+    {
         return _attributes.size();
     }
 
-    int getRowSize(){
+    int getRowSize()
+    {
         return _rows.size();
     }
 
-    SparseInstance & operator[](int index){
+    SparseInstance & operator[](int index)
+    {
         return _rows[index];
     }
 
-    double val(int row, int col) {
-        if(_rows.find(row) != _rows.end()){
+    double val(int row, int col)
+    {
+        if(_rows.find(row) != _rows.end())
+        {
             return _rows[row].getValue(col);
         }
         return 0;
     }
 
-    void setVal(int row, int col, double val){
+    void setVal(int row, int col, double val)
+    {
         _rows[row].setValue(col, val);
     }
 };

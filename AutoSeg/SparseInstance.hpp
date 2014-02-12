@@ -56,13 +56,17 @@ public:
         delete [] m_AttValues;
     }
 
-    SparseInstance(const SparseInstance & refer){
+    SparseInstance(const SparseInstance & refer)
+    {
         copyOf(refer);
     }
 
-    SparseInstance & operator=(const SparseInstance & refer){
-        if(&refer != this){
-            if(m_NumValues > 0){
+    SparseInstance & operator=(const SparseInstance & refer)
+    {
+        if(&refer != this)
+        {
+            if(m_NumValues > 0)
+            {
                 delete [] m_Indices;
                 delete [] m_AttValues;
                 copyOf(refer);
@@ -133,7 +137,8 @@ public:
     }
 
     // get the attribute indexes.
-    const int * getAttrIndices() const{
+    const int * getAttrIndices() const
+    {
         return m_Indices;
     }
 
@@ -156,7 +161,7 @@ public:
             m_AttValues[index] = value;
         }
         else
-        { 
+        {
             // need insert a new value after index.
             index ++; // now insert at index.
             if (value != 0)
@@ -171,11 +176,11 @@ public:
                     if(index  < m_NumValues )
                     {
                         memcpy(tempIndices + index + 1, m_Indices + index,
-                            (m_NumValues - index) * sizeof(int));
+                               (m_NumValues - index) * sizeof(int));
                         memcpy(tempValues + index + 1, m_AttValues + index ,
-                            (m_NumValues - index) * sizeof(double));
+                               (m_NumValues - index) * sizeof(double));
                     }
-                }  
+                }
 
                 tempIndices[index] = attIndex;
                 tempValues[index] = value;
@@ -205,12 +210,12 @@ public:
         {
             val =  m_AttValues[index];
         }
-        
+
         return val;
     }
 
     /**
-     * Remove the attribute at given attribute index. Here only mark the attribute 
+     * Remove the attribute at given attribute index. Here only mark the attribute
      * as the default value (0).
      *
      * @param attIndex the attribute' index
@@ -230,20 +235,27 @@ public:
         return old_value;
     }
 
-    friend ostream & operator<< (ostream & out, const SparseInstance & ins){
+    friend ostream & operator<< (ostream & out, const SparseInstance & ins)
+    {
         out<<"{size:"<<ins.m_NumValues<<", indices:[";
-        if(ins.m_NumValues > 0){
-            for(int i = 0; i < ins.m_NumValues; i++){
-                if(i > 0){
+        if(ins.m_NumValues > 0)
+        {
+            for(int i = 0; i < ins.m_NumValues; i++)
+            {
+                if(i > 0)
+                {
                     out<<",";
                 }
                 out<<ins.m_Indices[i];
             }
         }
         out<<"], attributes:[";
-        if(ins.m_NumValues > 0){
-            for(int i = 0; i < ins.m_NumValues; i++){
-                if(i > 0){
+        if(ins.m_NumValues > 0)
+        {
+            for(int i = 0; i < ins.m_NumValues; i++)
+            {
+                if(i > 0)
+                {
                     out<<",";
                 }
                 out<<ins.m_AttValues[i];
@@ -251,38 +263,47 @@ public:
         }
         out<<"]}";
         return out;
-    } 
+    }
 
-    private:
-        void copyOf(const SparseInstance & refer){
-            int attribute_num = 0;
-            for(int i = 0; i < refer.m_NumValues; i++){
-                if(refer.m_AttValues[i] != 0){
-                    attribute_num ++;
-                }
-            }
-            m_NumValues = attribute_num;
-            if(attribute_num > 0){
-                m_Indices = new int[attribute_num];
-                m_AttValues = new double[attribute_num];
-                int k = 0;
-                for(int i = 0; i < refer.m_NumValues; i++){
-                    if(refer.m_AttValues[i] != 0){
-                        m_AttValues[k] = refer.m_AttValues[i];
-                        m_Indices[k++] = refer.m_Indices[i];
-                    }
-                }
-            }else{
-                m_AttValues = NULL;
-                m_Indices = NULL;
+private:
+    void copyOf(const SparseInstance & refer)
+    {
+        int attribute_num = 0;
+        for(int i = 0; i < refer.m_NumValues; i++)
+        {
+            if(refer.m_AttValues[i] != 0)
+            {
+                attribute_num ++;
             }
         }
+        m_NumValues = attribute_num;
+        if(attribute_num > 0)
+        {
+            m_Indices = new int[attribute_num];
+            m_AttValues = new double[attribute_num];
+            int k = 0;
+            for(int i = 0; i < refer.m_NumValues; i++)
+            {
+                if(refer.m_AttValues[i] != 0)
+                {
+                    m_AttValues[k] = refer.m_AttValues[i];
+                    m_Indices[k++] = refer.m_Indices[i];
+                }
+            }
+        }
+        else
+        {
+            m_AttValues = NULL;
+            m_Indices = NULL;
+        }
+    }
 
-        friend void WriteInstanceDataToFile(FILE * file, const void * data);
-        friend  void * ReadInstanceDataFromFile(FILE * file,MemoryPool<> * pmem);
+    friend void WriteInstanceDataToFile(FILE * file, const void * data);
+    friend  void * ReadInstanceDataFromFile(FILE * file,MemoryPool<> * pmem);
 };
 
-inline void InstanceFreer(void * ptr){
+inline void InstanceFreer(void * ptr)
+{
     SparseInstance * inst = static_cast<SparseInstance *>(ptr);
     delete inst;
 }
@@ -290,20 +311,26 @@ inline void InstanceFreer(void * ptr){
 /**
 * Write data to a given file, which used for tail to serialize.
 */
-inline void WriteInstanceDataToFile(FILE * file, const void * data){
+inline void WriteInstanceDataToFile(FILE * file, const void * data)
+{
     long old_pos = ftell(file);
     SparseInstance * inst = static_cast<SparseInstance *>((void *)data);
-    if(inst != NULL){
-        if(!file_write_int32(file, inst->m_NumValues)){
+    if(inst != NULL)
+    {
+        if(!file_write_int32(file, inst->m_NumValues))
+        {
             goto exit_write;
         }
 
-        if(inst->m_NumValues > 0){
-            if(fwrite(inst->m_Indices, sizeof(int), inst->m_NumValues, file) != inst->m_NumValues){
+        if(inst->m_NumValues > 0)
+        {
+            if(fwrite(inst->m_Indices, sizeof(int), inst->m_NumValues, file) != inst->m_NumValues)
+            {
                 goto exit_write;
             }
-            
-            if(fwrite(inst->m_AttValues, sizeof(double), inst->m_NumValues, file) != inst->m_NumValues){
+
+            if(fwrite(inst->m_AttValues, sizeof(double), inst->m_NumValues, file) != inst->m_NumValues)
+            {
                 goto exit_write;
             }
         }
@@ -319,37 +346,51 @@ exit_write:
 /*
 * Reads data from given file, which used for tail unserialize.
 */
-inline void * ReadInstanceDataFromFile(FILE * file, MemoryPool<> * pmem){
+inline void * ReadInstanceDataFromFile(FILE * file, MemoryPool<> * pmem)
+{
     long old_pos = ftell(file);
     int num = 0;
-    if(!file_read_int32(file, &num)){
+    if(!file_read_int32(file, &num))
+    {
         goto exit_read;
     }
     SparseInstance * inst = NULL;
-    if(pmem != NULL){
+    if(pmem != NULL)
+    {
         inst = (SparseInstance *)pmem->allocAligned(sizeof(SparseInstance));
-    } else{
+    }
+    else
+    {
         inst = new SparseInstance();
     }
     inst->m_NumValues = num;
-    if(num > 0){
-        if(pmem != NULL){
+    if(num > 0)
+    {
+        if(pmem != NULL)
+        {
             inst->m_Indices = (int *)pmem->allocAligned(num * sizeof(int));
-        } else{
+        }
+        else
+        {
             inst->m_Indices = new int[num];
         }
-        
-        if(fread(inst->m_Indices, sizeof(int), inst->m_NumValues, file) != inst->m_NumValues){
+
+        if(fread(inst->m_Indices, sizeof(int), inst->m_NumValues, file) != inst->m_NumValues)
+        {
             goto exit_read_inst;
         }
 
-        if(pmem != NULL){
+        if(pmem != NULL)
+        {
             inst->m_AttValues = (double *)pmem->allocAligned(num * sizeof(double));
-        } else{
+        }
+        else
+        {
             inst->m_AttValues = new double[num];
         }
-      
-        if(fread(inst->m_AttValues, sizeof(double), inst->m_NumValues, file) != inst->m_NumValues){
+
+        if(fread(inst->m_AttValues, sizeof(double), inst->m_NumValues, file) != inst->m_NumValues)
+        {
             goto exit_read_inst;
         }
     }
