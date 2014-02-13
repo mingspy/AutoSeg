@@ -39,7 +39,7 @@ using namespace std;
 std::string ws2s(const std::wstring& ws)
 {
     const wchar_t* _Source = ws.c_str();
-    size_t _Dsize = wcstombs(0,_Source,0) + 1; 
+    size_t _Dsize = wcstombs(0,_Source,0) + 1;
     char *_Dest = new char[_Dsize];
     memset(_Dest,0,_Dsize);
     wcstombs(_Dest,_Source,_Dsize);
@@ -52,7 +52,7 @@ std::string ws2s(const std::wstring& ws)
 std::wstring s2ws(const std::string& s)
 {
     const char* _Source = s.c_str();
-    size_t _Dsize = mbstowcs(0,_Source,0) + 1; 
+    size_t _Dsize = mbstowcs(0,_Source,0) + 1;
     wchar_t *_Dest = new wchar_t[_Dsize];
     wmemset(_Dest, 0, _Dsize);
     mbstowcs(_Dest,_Source,_Dsize);
@@ -76,7 +76,7 @@ wstring Utf8ToUnicode( const string& str )
 }
 #else
 int code_convert(const char *from_charset,const char *to_charset,const char *inbuf, size_t inlen,
-    char *outbuf, size_t outlen)
+                 char *outbuf, size_t outlen)
 {
     const char **pin = &inbuf;
     char **pout = &outbuf;
@@ -96,7 +96,7 @@ wstring Utf8ToUnicode( const string& str )
 {
     int  len = str.length();
     wchar_t * pUnicode = new  wchar_t[len+1];
-    
+
     code_convert("UTF-8", "WCHAR_T", str.c_str(), len, (char *)pUnicode, (len+1)*sizeof(wchar_t));
     wstring  rt = ( wchar_t* )pUnicode;
 

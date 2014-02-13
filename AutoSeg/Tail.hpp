@@ -28,7 +28,7 @@
 #include <wchar.h>
 
 #ifndef SIZE_MAX
-#ifdef _WIN64 
+#ifdef _WIN64
 #define SIZE_MAX _UI64_MAX
 #else
 #define SIZE_MAX UINT_MAX
@@ -138,7 +138,7 @@ public:
              * suffix and tails[index].suffix may overlap; so, dup it before
              * it's overwritten
              */
-            
+
             int len = wcslen(suffix);
             wchar_t * tmp = NULL;
             if(!pmem)

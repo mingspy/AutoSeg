@@ -356,7 +356,7 @@ inline void * ReadInstanceDataFromFile(FILE * file, MemoryPool<> * pmem)
     {
         goto exit_read;
     }
-    
+
     if(pmem != NULL)
     {
         inst = (SparseInstance *)pmem->allocAligned(sizeof(SparseInstance));
