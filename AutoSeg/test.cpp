@@ -5,7 +5,7 @@
 #include <vector>
 #include "SparseInstance.hpp"
 #include "Matrix.hpp"
-#include "WordDictionary.hpp"
+#include "Dictionary.hpp"
 #include "DictFileBuilder.hpp"
 #include "DATrie.hpp"
 #include "MemLeaksCheck.h"
@@ -135,7 +135,7 @@ void testWordDictionary()
     //DictFileBuilder::buildDict("..\\data\\coreWordInfo.txt","..\\data\\core.dic");
 
     MSTimer timer;
-    WordDictionary * dict = new WordDictionary("..\\data\\core.dic");
+    Dictionary * dict = new Dictionary("..\\data\\core.dic");
     cout<<"load dictionary"<<timer<<endl;
     cout<<*dict->getWordInfo(L"咨询")<<endl;
 
@@ -232,8 +232,8 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
 void estimateSegmetors()
 {
     MSTimer timer;
-    DictFileBuilder::buildDict("../data/estimate/coreWordInfo.txt","../data/estimate/core.dic");
-    DictFileBuilder::buildInverseDict("../data/estimate/coreWordInfo.txt","../data/estimate/inverseCore.dic");
+    //DictFileBuilder::buildDict("../data/estimate/coreWordInfo.txt","../data/estimate/core.dic");
+    //DictFileBuilder::buildInverseDict("../data/estimate/coreWordInfo.txt","../data/estimate/inverseCore.dic");
     DictFactory::initialize("../data/estimate/");
     cout<<"load dict "<<timer<<endl;
     timer.restart();
@@ -294,7 +294,7 @@ int main(void)
 #if _MSC_VER > 1000
     wcout<<"windows!"<<_MSC_VER<<endl;
 #else
-    cout<<"not windows, end."<<endl;
+    cout<<"not windows!"<<endl;
 #endif
 
     CheckMemLeaks();
@@ -302,8 +302,13 @@ int main(void)
         //testSparseInstance();
         //testMatrix();
         //testWordDictionary();
-
         estimateSegmetors();
+
+        
+        //vector<Token> result;
+        //Tokenizer tokenizer;
+        //tokenizer.analysis(L"中华人民共和国", result);
+      
     }
     wcout<<L"Press enter to return."<<endl;
     getchar();

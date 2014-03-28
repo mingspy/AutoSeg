@@ -18,7 +18,7 @@
 #pragma once
 #include <stdlib.h>
 #include <iostream>
-#include "WordDictionary.hpp"
+#include "Dictionary.hpp"
 #include "ResGuard.hpp"
 
 using namespace std;
@@ -27,8 +27,8 @@ namespace mingspy
 class DictFactory
 {
 private:
-    static WordDictionary * _coreDict;
-    static WordDictionary * _inverseCoreDict;
+    static Dictionary * _coreDict;
+    static Dictionary * _inverseCoreDict;
     static bool _loaded;
     static ResGuard _resGard;
 
@@ -37,14 +37,14 @@ public:
     {
         ResGuard::Lock lock(_resGard);
         if(_loaded) return;
-        _coreDict = new WordDictionary(dir+"core.dic");
-        _inverseCoreDict = new WordDictionary(dir+"inverseCore.dic");
+        _coreDict = new Dictionary(dir+"core.dic");
+        _inverseCoreDict = new Dictionary(dir+"inverseCore.dic");
 
         _loaded = true;
         atexit(clean);
     }
 
-    static const WordDictionary & CoreDict()
+    static const Dictionary & CoreDict()
     {
         if(!_coreDict)
         {
@@ -53,7 +53,7 @@ public:
         return *_coreDict;
     }
 
-    static const WordDictionary & InverseCoreDict()
+    static const Dictionary & InverseCoreDict()
     {
         if(!_inverseCoreDict)
         {
@@ -82,8 +82,8 @@ public:
     }
 };
 
-WordDictionary * DictFactory::_coreDict = NULL;
-WordDictionary * DictFactory::_inverseCoreDict = NULL;
+Dictionary * DictFactory::_coreDict = NULL;
+Dictionary * DictFactory::_inverseCoreDict = NULL;
 bool DictFactory::_loaded = false;
 ResGuard DictFactory::_resGard;
 }

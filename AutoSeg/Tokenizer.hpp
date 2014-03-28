@@ -21,6 +21,7 @@
 #include <string>
 #include "DictFactory.hpp"
 #include "wcharHelper.hpp"
+#include "Matrix.hpp"
 using namespace std;
 
 namespace mingspy
@@ -40,20 +41,51 @@ struct Token
 class Tokenizer
 {
 public:
+    /*
+    * according dictionary, forward split the str. From the head char
+    * of input, this method will lookup the dictionary, then take the
+    * longest word from the str step by step.
+    * For example: "AB" "ABCD" "BCD" "BCDE" "EF" are
+    * words in dictionary; when given str="ABCDEF", the split result
+    * will be: ABCD/ EF/
+    * @param str : the input str to split.
+    * @param result : result words
+    */
     virtual void maxSplit(const wstring &str, vector<Token> & result)
     {
         vector<Token> atoms;
         atomSplit(str,atoms);
-        maxMatch(str, atoms, result);
+        maxMatch(DictFactory::CoreDict(),str, atoms, result);
     }
 
+    /*
+    * split out all possible words in the given str.
+    * @param str : the input str to split.
+    * @param result : result words.
+    */
     virtual void fullSplit(const wstring &str, vector<Token> & result)
     {
         vector<Token> atoms;
         atomSplit(str,atoms);
-        fullMatch(str,atoms,result);
+        fullMatch(DictFactory::CoreDict(),str,atoms,result);
     }
 
+    /*
+    * Split the word, and try to resolve ambiguities by one gram.
+    * @param str : the input str to split.
+    * @param result : result words.
+    */
+    void oneGramSplit(const wstring & str, vector<Token> & result)
+    {
+        Matrix matrix;
+        // max-full match
+        genWordGraph(DictFactory::CoreDict(), str, matrix);
+        // n-short path
+    }
+
+    /*
+    * Out put the split words to vector(result)
+    */
     void output(const wstring &str, const vector<Token> & tokens, vector<wstring>& result)
     {
         for(int i = 0; i < tokens.size(); i++)
@@ -62,20 +94,9 @@ public:
         }
     }
 
-    void analysis(const wstring & str)
-    {
-    }
+    
 
 protected:
-    virtual bool exists(const wstring & word)
-    {
-        return DictFactory::CoreDict().getWordInfo(word) != NULL;
-    }
-
-    virtual bool existPrefix(const wstring & word)
-    {
-        return DictFactory::CoreDict().existPrefix(word);
-    }
 
     /*
     * try to find all the possible words.
@@ -83,33 +104,29 @@ protected:
     * and AB ABC BCD E in the word dictionary;
     * the result will be :AB, ABC,BCD,D,E
     */
-    void fullMatch(const wstring &str, const vector<Token> & atoms, vector<Token> &result)
+    void fullMatch(const Dictionary & dict,
+        const wstring &str, const vector<Token> & atoms, vector<Token> &result)
     {
-
         const int atome_size = atoms.size();
         int lastj = -1;
         for(int i = 0; i < atome_size; i++)
         {
-
             for(int j = i + 1; j < atome_size; j++)
             {
-                wstring word = str.substr(
-                                   atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
-                if(exists(word))
+                wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
+                if(dict.getWordInfo(word))
                 {
-                    result.push_back(
-                        Token(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off));
+                    result.push_back(Token(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off));
                     lastj = j;
                 }
-                else if(!existPrefix(word))
+                else if(!dict.existPrefix(word))
                 {
                     break;
                 }
             }
             if(i > lastj)
             {
-                result.push_back(
-                    Token(atoms[i]._off, atoms[i]._len));
+                result.push_back(Token(atoms[i]._off, atoms[i]._len));
             }
 
         }
@@ -121,8 +138,14 @@ protected:
     * assume str = "ABCDE";
     * and AB ABC BCD E in the word dictionary;
     * the result will be : ABC,D,E
+    * @param dict: the dictionary to lookup.
+    * @param str : the input string.
+    * @param atoms: the atom split result of str
+    * @param result: save the split words.
     */
-    void maxMatch(const wstring &str, const vector<Token> & atoms, vector<Token> &result)
+    void maxMatch(const Dictionary & dict, 
+        const wstring &str, const vector<Token> & atoms, 
+        vector<Token> &result)
     {
         for(int i = 0; i < atoms.size(); )
         {
@@ -130,7 +153,7 @@ protected:
             for(; j < atoms.size(); j++)
             {
                 wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
-                if(!existPrefix(word))
+                if(!dict.existPrefix(word))
                 {
                     break;
                 }
@@ -146,6 +169,8 @@ protected:
     *   A Chinese char
     *   An English str
     *   A number
+    * @param str: the input string to split
+    * @param atoms: save the split result
     */
     void atomSplit(const wstring & str, vector<Token> & atoms)
     {
@@ -167,6 +192,65 @@ protected:
             else
             {
                 atoms.push_back(Token(i++, 1, (int)itype));
+            }
+        }
+    }
+
+    /* 
+    * According documents of ICTCLAS, generate all possible split path and save
+    * in to a word graph.
+    * In the graph, each word is a vertex, words are connected by edge.
+    * An edge from word1 to word2 exists only if: 
+    *     word1._off + word1._len = word2._off;
+    * In my implement, i use a sparse matrix to perform the graph, 
+    * suppose we have a dictionary has words: 
+    *    A B C D E F G AB AC ABC CD EF BC ...
+    * Given input string: "ABCDE"
+    * all possible split path will be:
+    *     A->B->C->D->E
+    *     A->BC->D->E
+    *     A->B->CD->E
+    *     AB->C->D->E
+    *     AB->CD->E
+    *     ABC->D->E
+    * save these path in a matrix will be as follows:
+    *      1     2     3     4     5
+    * -------------------------------
+    * 1|   A     AB    ABC
+    * 2|         B     BC 
+    * 3|               C     CD
+    * 4|                     D
+    * 5|                           E
+    *
+    */
+    void genWordGraph(const Dictionary & dict,const wstring &str, Matrix & matrix){
+        vector<Token> atoms;
+        atomSplit(str, atoms);
+
+        const int atome_size = atoms.size();
+        int lastj = -1;
+        const SparseInstance * info = NULL;
+        for(int i = 0; i < atome_size; i++)
+        {
+            for(int j = i; j < atome_size; j++)
+            {
+                wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
+                if((info = dict.getWordInfo(word)))
+                {
+                    double totalfrequnce = info->getSumValue();
+                    matrix.setVal(atoms[i]._off, atoms[j]._off + atoms[j]._len, totalfrequnce);
+                    lastj = j;
+                }
+                else if(!dict.existPrefix(word))
+                {
+                    break;
+                }
+            }
+
+            // add word that not exist in dictionary.
+            if(i > lastj)
+            {
+                matrix.setVal(atoms[i]._off, atoms[i]._off + atoms[i]._len, 0);
             }
         }
     }

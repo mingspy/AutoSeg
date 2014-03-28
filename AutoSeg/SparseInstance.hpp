@@ -32,8 +32,12 @@ namespace mingspy
 {
 
 class Matrix;
+
 /*
-* Instance is a row of a matrix.
+* SparseInstance is a vector used to save sparse data.
+* For example, a vector has thousands of dimension, 
+* however, for a instance only a few dimension has 
+* values.
 */
 class SparseInstance
 {
@@ -142,6 +146,17 @@ public:
         return m_Indices;
     }
 
+    const double * getAttrValues() const{
+        return m_AttValues;
+    }
+
+    double getSumValue() const {
+        double sum = 0;
+        for(int i = 0; i < m_NumValues; i++){
+            sum += m_AttValues[i];
+        }
+        return sum;
+    }
     /**
     * Sets a specific value in the instance to the given value (internal
     * floating-point format). Performs a deep copy of the vector of attribute
@@ -249,7 +264,7 @@ public:
                 out<<ins.m_Indices[i];
             }
         }
-        out<<"], attributes:[";
+        out<<"], values:[";
         if(ins.m_NumValues > 0)
         {
             for(int i = 0; i < ins.m_NumValues; i++)
@@ -346,7 +361,7 @@ exit_write:
 /*
 * Reads data from given file, which used for tail unserialize.
 */
-inline void * ReadInstanceDataFromFile(FILE * file, MemoryPool<> * pmem)
+void * ReadInstanceDataFromFile(FILE * file, MemoryPool<> * pmem)
 {
     long old_pos = ftell(file);
     int num = 0;

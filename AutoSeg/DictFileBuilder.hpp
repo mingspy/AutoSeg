@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
-#include "WordDictionary.hpp"
+#include "Dictionary.hpp"
 #include "FileUtils.hpp"
 #include "SparseInstance.hpp"
 #include "MemLeaksCheck.h"
@@ -60,7 +60,7 @@ public:
         wstring natures = line->substr(natureindex+natureHead.length());
         vector<wstring> vec;
         split(natures,L",",vec);
-        WordDictionary dict;
+        Dictionary dict;
         for(int i = 0; i < vec.size(); i++)
         {
             dict.addNature(vec[i]);
@@ -149,7 +149,7 @@ public:
         wstring natures = line->substr(natureindex+natureHead.length());
         vector<wstring> vec;
         split(natures,L",",vec);
-        WordDictionary dict;
+        Dictionary dict;
         for(int i = 0; i < vec.size(); i++)
         {
             dict.addNature(vec[i]);

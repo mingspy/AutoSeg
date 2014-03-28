@@ -32,7 +32,7 @@
     <ClInclude Include="Tokenizer.hpp" />
     <ClInclude Include="TrieDef.hpp" />
     <ClInclude Include="wcharHelper.hpp" />
-    <ClInclude Include="WordDictionary.hpp" />
+    <ClInclude Include="Dictionary.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp" />

@@ -25,6 +25,7 @@
 #include "HashMapDef.hpp"
 
 using namespace std;
+using namespace stdext;
 
 namespace mingspy
 {
@@ -34,15 +35,28 @@ namespace mingspy
 class Matrix
 {
 protected:
-    vector<Attribute> _attributes;
+    //vector<Attribute> _attributes;
     hash_map<int, SparseInstance> _rows;
 public:
     Matrix() {}
     ~Matrix() {}
+    /*
     void addAtrribute(const Attribute & attr)
     {
         _attributes.push_back(attr);
     }
+    const Attribute & getAttribute(int index) const
+    {
+        assert(index < _attributes.size());
+        return _attributes[index];
+    }
+
+    int getAttributeSize() const
+    {
+        return _attributes.size();
+    }
+
+    */
 
     /*
     * add the row at the given index;
@@ -64,13 +78,7 @@ public:
         return row;
     }
 
-    const Attribute & getAttribute(int index) const
-    {
-        assert(index < _attributes.size());
-        return _attributes[index];
-    }
-
-    SparseInstance & getInstance(int index)
+    SparseInstance & getRow(int index)
     {
         assert(index < _rows.size());
         return _rows[index];
@@ -82,11 +90,6 @@ public:
         {
             _rows.erase(index);
         }
-    }
-
-    int getAttributeSize() const
-    {
-        return _attributes.size();
     }
 
     int getRowSize()
@@ -111,6 +114,16 @@ public:
     void setVal(int row, int col, double val)
     {
         _rows[row].setValue(col, val);
+    }
+
+    friend ostream & operator<< (ostream & out, const Matrix & matrix) {
+        out<<"{matrix rows:"<<matrix._rows.size()<<endl;
+        for(hash_map<int, SparseInstance>::const_iterator it = matrix._rows.begin(); 
+            it != matrix._rows.end(); it++){
+            out<<"\t["<<it->first<<"]:"<<it->second<<endl;
+        }
+        out<<"}";
+        return out;
     }
 };
 }

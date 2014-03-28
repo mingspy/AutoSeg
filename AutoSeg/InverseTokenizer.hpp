@@ -36,7 +36,7 @@ public:
         wstring inverseStr(str.rbegin(),str.rend());
         vector<Token> atoms;
         atomSplit(inverseStr,atoms);
-        maxMatch(inverseStr, atoms, result);
+        maxMatch(DictFactory::InverseCoreDict(),inverseStr, atoms, result);
         reverseResult(result, str.length());
     }
 
@@ -45,20 +45,10 @@ public:
         wstring inverseStr(str.rbegin(),str.rend());
         vector<Token> atoms;
         atomSplit(inverseStr,atoms);
-        fullMatch(inverseStr,atoms,result);
+        fullMatch(DictFactory::InverseCoreDict(),inverseStr,atoms,result);
         reverseResult(result, str.length());
     }
 protected:
-    virtual bool exists(const wstring & word)
-    {
-        return DictFactory::InverseCoreDict().getWordInfo(word) != NULL;
-    }
-
-    virtual bool existPrefix(const wstring & word)
-    {
-        return DictFactory::InverseCoreDict().existPrefix(word);
-    }
-
     void reverseResult(vector<Token> & result, int strlen)
     {
         int i = 0;

@@ -63,9 +63,6 @@
     <ClInclude Include="StrUtils.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="WordDictionary.hpp">
-      <Filter>头文件\Dicts</Filter>
-    </ClInclude>
     <ClInclude Include="MemLeaksCheck.h">
       <Filter>头文件\memory</Filter>
     </ClInclude>
@@ -95,6 +92,9 @@
     </ClInclude>
     <ClInclude Include="CodeUtils.hpp">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Dictionary.hpp">
+      <Filter>头文件\Dicts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
