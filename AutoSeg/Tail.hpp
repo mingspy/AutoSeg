@@ -132,8 +132,7 @@ public:
     bool setSuffix(int index, const wchar_t * suffix)
     {
         index -= TAIL_START_BLOCKNO;
-        if (index < num_tails)
-        {
+        if (index < num_tails) {
             /*
              * suffix and tails[index].suffix may overlap; so, dup it before
              * it's overwritten
@@ -141,18 +140,14 @@ public:
 
             int len = wcslen(suffix);
             wchar_t * tmp = NULL;
-            if(!pmem)
-            {
+            if(!pmem) {
                 tmp = new wchar_t[len + 1];
-            }
-            else
-            {
+            } else {
                 tmp = (wchar_t *)pmem->allocAligned((len + 1) * sizeof(wchar_t));
             }
             memcpy(tmp, suffix, (len+1)*sizeof(wchar_t));
 
-            if(tails[index].suffix != NULL&&!pmem)
-            {
+            if(tails[index].suffix != NULL&&!pmem) {
                 delete [] tails[index].suffix;
             }
 
@@ -215,8 +210,7 @@ public:
     inline bool setData(int index, void * data)
     {
         index -= TAIL_START_BLOCKNO;
-        if (index < num_tails)
-        {
+        if (index < num_tails) {
             tails[index].data = data;
             return true;
         }
@@ -266,8 +260,7 @@ public:
 
         int i = 0;
         int j = *suffix_idx;
-        while (i < len)
-        {
+        while (i < len) {
             if (str[i] != suffix[j])
                 break;
             ++i;
@@ -307,8 +300,7 @@ public:
             return false;
 
         suffix_char = suffix[*suffix_idx];
-        if (suffix_char == c)
-        {
+        if (suffix_char == c) {
             if (0 != suffix_char)
                 *suffix_idx = *suffix_idx + 1;
             return true;
@@ -324,25 +316,20 @@ public:
     {
         if (!file_write_int32 (file, TAIL_SIGNATURE) ||
                 !file_write_int32 (file, first_free)  ||
-                !file_write_int32 (file, num_tails))
-        {
+                !file_write_int32 (file, num_tails)) {
             return false;
         }
 
-        if(fwrite(tails, sizeof(TailBlock), num_tails, file) != num_tails)
-        {
+        if(fwrite(tails, sizeof(TailBlock), num_tails, file) != num_tails) {
             return false;
         }
 
-        for (int i = 1; i < num_tails; i++)
-        {
-            if(tails[i].data != NULL)
-            {
+        for (int i = 1; i < num_tails; i++) {
+            if(tails[i].data != NULL) {
                 _data_writer(file, tails[i].data);
             }
 
-            if(tails[i].suffix != NULL)
-            {
+            if(tails[i].suffix != NULL) {
                 WriteTrieStrToFile(file, tails[i].suffix);
             }
         }
@@ -363,8 +350,7 @@ public:
         clear();
 
         if (!file_read_int32 (file, &first_free) ||
-                !file_read_int32 (file, &num_tails))
-        {
+                !file_read_int32 (file, &num_tails)) {
             goto exit_file_read;
         }
         if (num_tails > SIZE_MAX / sizeof (TailBlock))
@@ -373,28 +359,22 @@ public:
         if (!tails)
             goto exit_file_read;
 
-        if(fread(tails, sizeof(TailBlock), num_tails, file) != num_tails)
-        {
+        if(fread(tails, sizeof(TailBlock), num_tails, file) != num_tails) {
             free(tails);
             goto exit_file_read;
         }
-        for (i = 1; i < num_tails; i++)
-        {
-            if(tails[i].data != NULL)
-            {
+        for (i = 1; i < num_tails; i++) {
+            if(tails[i].data != NULL) {
                 void * data = _data_reader(file, pmem);
-                if(!data)
-                {
+                if(!data) {
                     goto exit_in_loop;
                 }
                 tails[i].data = data;
             }
 
-            if(tails[i].suffix != NULL)
-            {
+            if(tails[i].suffix != NULL) {
                 wchar_t * str = (wchar_t *)ReadTrieStrFromFile(file, pmem);
-                if(!str)
-                {
+                if(!str) {
                     goto exit_in_loop;
                 }
                 tails[i].suffix = str;
@@ -417,19 +397,14 @@ private:
 
     void clear()
     {
-        if(tails != NULL)
-        {
-            if(!pmem)
-            {
-                for(int i = 1; i < num_tails; i++)
-                {
-                    if(_data_free_func != NULL && tails[i].data != NULL)
-                    {
+        if(tails != NULL) {
+            if(!pmem) {
+                for(int i = 1; i < num_tails; i++) {
+                    if(_data_free_func != NULL && tails[i].data != NULL) {
                         _data_free_func(tails[i].data);
                     }
 
-                    if(tails[i].suffix != NULL)
-                    {
+                    if(tails[i].suffix != NULL) {
                         delete [] tails[i].suffix;
                     }
                 }
@@ -443,13 +418,10 @@ private:
     int allocBlock()
     {
         int block;
-        if (0 != first_free)
-        {
+        if (0 != first_free) {
             block = first_free;
             first_free = tails[block].next_free;
-        }
-        else
-        {
+        } else {
             block = num_tails;
             /*
             TailBlock * tmp = (TailBlock *)new TailBlock *[++num_tails];
@@ -471,13 +443,11 @@ private:
         block -= TAIL_START_BLOCKNO;
         if (block >= num_tails)
             return;
-        if(tails[block].suffix != NULL)
-        {
+        if(tails[block].suffix != NULL) {
             delete [] tails[block].suffix;
         }
 
-        if(tails[block].data != NULL && _data_free_func != NULL)
-        {
+        if(tails[block].data != NULL && _data_free_func != NULL) {
             _data_free_func(tails[block].data);
         }
         tails[block].data = NULL;

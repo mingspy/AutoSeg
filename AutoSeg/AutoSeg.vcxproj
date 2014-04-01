@@ -24,6 +24,7 @@
     <ClInclude Include="MemLeaksCheck.h" />
     <ClInclude Include="MemoryPool.hpp" />
     <ClInclude Include="MSTimer.hpp" />
+    <ClInclude Include="NShortPath.hpp" />
     <ClInclude Include="ResGuard.hpp" />
     <ClInclude Include="SparseInstance.hpp" />
     <ClInclude Include="SqureMatrix.hpp" />

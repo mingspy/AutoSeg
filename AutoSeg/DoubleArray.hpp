@@ -53,8 +53,7 @@ private:
     // How many cell it call allocate.
     static const int TRIE_INDEX_MAX = 0x0fffffff;
 private:
-    struct Cell
-    {
+    struct Cell {
         int base;
         int check;
     };
@@ -111,8 +110,7 @@ public:
     inline bool walk(int * s, wchar_t c) const
     {
         int next = getBase(*s) + (unsigned)c;
-        if (getCheck(next) == *s)
-        {
+        if (getCheck(next) == *s) {
             *s = next;
             return true;
         }
@@ -137,8 +135,7 @@ public:
 
         int base = getBase(s);
         int next;
-        if (base > 0)
-        {
+        if (base > 0) {
             next = base + c;
             /* if already there, do not actually insert */
             if (getCheck(next) == s)
@@ -148,8 +145,7 @@ public:
              * if (base + c) > TRIE_INDEX_MAX which means 'next' is overflow, or
              * cell [next] is not free, relocate to a free slot
              */
-            if (base > TRIE_INDEX_MAX - c || !checkFreeCell(next))
-            {
+            if (base > TRIE_INDEX_MAX - c || !checkFreeCell(next)) {
 
                 int new_base;
                 /* relocate BASE[s] */
@@ -164,9 +160,7 @@ public:
                 relocateBase(s, new_base);
                 next = new_base + c;
             }
-        }
-        else
-        {
+        } else {
             int new_base;
             vector<wchar_t>symbols;
             symbols.push_back(c);
@@ -217,8 +211,7 @@ public:
      */
     void pruneUpto(int p, int s)
     {
-        while (p != s && !hasChildren(s))
-        {
+        while (p != s && !hasChildren(s)) {
             int parent = getCheck(s);
             freeCell(s);
             s = parent;
@@ -233,8 +226,7 @@ public:
             return false;
 
         int max_c = min(TRIE_CHILD_MAX,TRIE_INDEX_MAX - base);
-        for (int c = 0; c < max_c; c++)
-        {
+        for (int c = 0; c < max_c; c++) {
             if (getCheck(base + c) == s)
                 return true;
         }
@@ -245,13 +237,11 @@ public:
     bool writeToFile(FILE * file)
     {
         if (!file_write_int32 (file, DA_SIGNATURE) ||
-                !file_write_int32 (file, num_cells))
-        {
+                !file_write_int32 (file, num_cells)) {
             return false;
         }
 
-        if(fwrite(_cell, sizeof(Cell), num_cells, file) != num_cells)
-        {
+        if(fwrite(_cell, sizeof(Cell), num_cells, file) != num_cells) {
             assert(false);
             return false;
         }
@@ -265,8 +255,7 @@ public:
         int sig;
         if(!file_read_int32(file, &sig)
                 || sig != DA_SIGNATURE
-                || !file_read_int32(file, &num_cells))
-        {
+                || !file_read_int32(file, &num_cells)) {
             cerr<<"error: read Double Array signature failed!!!"<<endl;
             cerr<<"DA_SIG="<<DA_SIGNATURE<<" read sig ="<<sig<<endl;
             goto exist_read;
@@ -274,14 +263,12 @@ public:
 
         free(_cell);
         _cell = (Cell *) malloc(num_cells * sizeof(Cell));
-        if(!_cell)
-        {
+        if(!_cell) {
             cerr<<"error: malloc cells failed!!!"<<endl;
             goto exist_read;
         }
 
-        if(fread(_cell, sizeof(Cell), num_cells, file) != num_cells)
-        {
+        if(fread(_cell, sizeof(Cell), num_cells, file) != num_cells) {
             cerr<<"error: read cell failed!!!"<<endl;
             goto exist_read;
         }
@@ -355,8 +342,7 @@ private:
         num_cells = to_index + 1;
 
         /* initialize new free list */
-        for (int i = new_begin; i < to_index; i++)
-        {
+        for (int i = new_begin; i < to_index; i++) {
             setCheck(i, -(i + 1));
             setBase(i + 1, -i);
         }
@@ -381,8 +367,7 @@ private:
         vector<wchar_t> symbols;
         findAllChildren(s, symbols);
 
-        for (int i = 0; i < symbols.size(); i++)
-        {
+        for (int i = 0; i < symbols.size(); i++) {
             int old_next = old_base + symbols[i];
             int new_next = new_base + symbols[i];
             int old_next_base = getBase(old_next);
@@ -397,13 +382,11 @@ private:
              * old_next must be given to new_next
              */
             /* preventing the case of TAIL pointer */
-            if (old_next_base > 0)
-            {
+            if (old_next_base > 0) {
                 int c, max_c;
 
                 max_c = min(TRIE_CHILD_MAX, TRIE_INDEX_MAX - old_next_base);
-                for (c = 0; c < max_c; c++)
-                {
+                for (c = 0; c < max_c; c++) {
                     if (getCheck(old_next_base + c) == old_next)
                         setCheck(old_next_base + c, new_next);
                 }
@@ -421,14 +404,11 @@ private:
         /* find first free cell that is beyond the first symbol */
         int first_child = children[0];
         int s = -getCheck(FREE_LIST_HEAD);
-        while (s != FREE_LIST_HEAD && s < first_child + DA_POOL_BEGIN)
-        {
+        while (s != FREE_LIST_HEAD && s < first_child + DA_POOL_BEGIN) {
             s = -getCheck(s);
         }
-        if (s == FREE_LIST_HEAD)
-        {
-            for (s = first_child + DA_POOL_BEGIN;; ++s)
-            {
+        if (s == FREE_LIST_HEAD) {
+            for (s = first_child + DA_POOL_BEGIN;; ++s) {
                 if (!extendPool(s))
                     return TRIE_INDEX_ERROR;
                 if (getCheck(s) < 0)
@@ -437,11 +417,9 @@ private:
         }
 
         /* search for next free cell that fits the symbols set */
-        while (!fitAllChildren(s - first_child, children))
-        {
+        while (!fitAllChildren(s - first_child, children)) {
             /* extend pool before getting exhausted */
-            if (-getCheck(s) == FREE_LIST_HEAD)
-            {
+            if (-getCheck(s) == FREE_LIST_HEAD) {
                 if (!extendPool(num_cells))
                     return TRIE_INDEX_ERROR;
             }
@@ -462,8 +440,7 @@ private:
      */
     bool fitAllChildren(int base, const vector<wchar_t> & children)
     {
-        for (int i = 0; i < children.size(); i++)
-        {
+        for (int i = 0; i < children.size(); i++) {
             wchar_t sym = children[i];
 
             /*
@@ -486,8 +463,7 @@ private:
     {
         int base = getBase(s);
         int max_c = min(TRIE_CHILD_MAX, TRIE_INDEX_MAX - base);
-        for (int c = 0; c < max_c; c++)
-        {
+        for (int c = 0; c < max_c; c++) {
             if (getCheck(base + c) == s)
                 children.push_back((wchar_t) c);
         }

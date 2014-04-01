@@ -32,8 +32,7 @@ void testDAT()
     string line;
     vector<wstring> words;
     int i = 0;
-    while(getline(inf, line))
-    {
+    while(getline(inf, line)) {
         wstring word = Utf8ToUnicode(line);
         //wcout<<word<<endl;
         words.push_back(word);
@@ -44,12 +43,10 @@ void testDAT()
     // test add
     MSTimer timer;
     i = 0;
-    for(vector<wstring>::iterator it = words.begin(); it != words.end(); it ++)
-    {
+    for(vector<wstring>::iterator it = words.begin(); it != words.end(); it ++) {
         i++;
         trie.add(it->c_str(),(void *)it->c_str());
-        if(i % 1000 == 0)
-        {
+        if(i % 1000 == 0) {
             cout<<"\radded "<< i;
         }
     }
@@ -72,24 +69,16 @@ void testDAT()
     int notfound = 0;
     wchar_t * p = NULL;
     timer.restart();
-    for(int j = 0; j < words.size(); j++)
-    {
+    for(int j = 0; j < words.size(); j++) {
         void * result = trie2.retrieve(words[j].c_str());
-        if( result == NULL)
-        {
+        if( result == NULL) {
             notfound ++;
-        }
-        else
-        {
+        } else {
             p = static_cast<wchar_t *>(result);
-            if(p == NULL || words[j] != p)
-            {
+            if(p == NULL || words[j] != p) {
                 notfound ++;
-            }
-            else
-            {
-                if(j % 10000 == 0)
-                {
+            } else {
+                if(j % 10000 == 0) {
                     wcout << *p <<endl;
                 }
             }
@@ -169,8 +158,7 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
 ※→∥∶≠①②③④⑤⑥⑦⑧⑵⑶─□▲△○●★、。”〈〉《》『』〔〕";
     MSTimer timer;
     vector<vector<wstring> > seg_results;
-    for(int i = 0; i < test_datas.size(); i++)
-    {
+    for(int i = 0; i < test_datas.size(); i++) {
         vector<Token> tokens;
         vector<wstring> words;
         tokenizer.maxSplit(test_datas[i], tokens);
@@ -187,31 +175,24 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
     int refer_words = 0;
     int total_correct = 0;
     int total_segmented = 0;
-    for(int i = 0; i < seg_results.size(); i++)
-    {
+    for(int i = 0; i < seg_results.size(); i++) {
         refer_words += refer_datas[i].size();
         total_segmented += seg_results[i].size();
-        for(int j = 0; j < refer_datas[i].size(); j++)
-        {
-            if(punctuations.find(refer_datas[i][j]) != wstring::npos)
-            {
+        for(int j = 0; j < refer_datas[i].size(); j++) {
+            if(punctuations.find(refer_datas[i][j]) != wstring::npos) {
                 refer_words --;
             }
         }
-        for(int j = 0; j < seg_results[i].size(); j++)
-        {
-            if(punctuations.find(seg_results[i][j]) != wstring::npos)
-            {
+        for(int j = 0; j < seg_results[i].size(); j++) {
+            if(punctuations.find(seg_results[i][j]) != wstring::npos) {
                 total_segmented --;
                 continue;
             }
 
             int m = max(0, j - 4);
             int n = min(j+4, refer_datas[i].size());
-            for(int k = m; k < n; k++)
-            {
-                if(seg_results[i][j] == refer_datas[i][k])
-                {
+            for(int k = m; k < n; k++) {
+                if(seg_results[i][j] == refer_datas[i][k]) {
                     total_correct ++;
                     break;
                 }
@@ -244,8 +225,7 @@ void estimateSegmetors()
     {
         UTF8FileReader testDataReader("../data/estimate/test_data.txt");
         wstring * line;
-        while((line = testDataReader.getLine()) != NULL)
-        {
+        while((line = testDataReader.getLine()) != NULL) {
             test_datas.push_back(*line);
         }
     }
@@ -257,18 +237,15 @@ void estimateSegmetors()
     {
         wstring * line;
         UTF8FileReader referDataReader("../data/estimate/test_refer.txt");
-        while((line = referDataReader.getLine()) != NULL)
-        {
+        while((line = referDataReader.getLine()) != NULL) {
             vector<wstring> words;
             refer_datas.push_back(words);
             split(*line, L"  ", words);
             vector<wstring> & refer = refer_datas[refer_datas.size() - 1];
-            for(int i = 0; i < words.size(); i++)
-            {
+            for(int i = 0; i < words.size(); i++) {
                 int idx = words[i].find_first_of(L'/');
                 wstring word = words[i].substr(0,idx);
-                if(word[0] == L'[')
-                {
+                if(word[0] == L'[') {
                     word = word.substr(1);
                 }
 

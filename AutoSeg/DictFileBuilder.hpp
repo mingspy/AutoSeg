@@ -41,16 +41,14 @@ public:
         UTF8FileReader reader(inputpath);
         wstring * line;
         line = reader.getLine();
-        if(line == NULL)
-        {
+        if(line == NULL) {
             cerr<<"empty file."<<endl;
             return false;
         }
 
         wstring natureHead = L"@WordPOS\t";
         wstring::size_type natureindex = line->find(natureHead);
-        if(natureindex == wstring::npos)
-        {
+        if(natureindex == wstring::npos) {
             cerr<<"can't find the natures, maybe not a dictionary words file."<<endl;
             wcerr<<L"the line is:"<<line<<endl;
             wcerr<<L"the natureHead is:"<<natureHead<<endl;
@@ -61,8 +59,7 @@ public:
         vector<wstring> vec;
         split(natures,L",",vec);
         Dictionary dict;
-        for(int i = 0; i < vec.size(); i++)
-        {
+        for(int i = 0; i < vec.size(); i++) {
             dict.addNature(vec[i]);
         }
 
@@ -71,46 +68,38 @@ public:
         wchar_t freqSeperator = L':';
         int word_count = 0;
         // 处理词信息
-        while((line = reader.getLine()) != NULL)
-        {
+        while((line = reader.getLine()) != NULL) {
             wstring::size_type wordIndex = line->find_first_of(wordSeperator);
             wstring word;
-            SparseInstance * info = NULL;
-            if(wordIndex == wstring::npos)
-            {
+            WordNature * info = NULL;
+            if(wordIndex == wstring::npos) {
                 word = *line;
-            }
-            else
-            {
+            } else {
                 word = line->substr(0, wordIndex);
                 wstring infostr = line->substr(wordIndex + 1);
-                if(!infostr.empty())
-                {
-                    info = new SparseInstance();
+                if(!infostr.empty()) {
+                    info = new WordNature();
                     vector<wstring> infos;
                     split(infostr, natureSeperator, infos);
-                    for(int i = 0; i < infos.size(); i++)
-                    {
+                    for(int i = 0; i < infos.size(); i++) {
                         wstring::size_type freqIndex = infos[i].find_first_of(freqSeperator);
                         wstring nature = infos[i].substr(0,freqIndex);
                         wstring freq = infos[i].substr(freqIndex + 1);
-                        double d_freq = wcstod(freq.c_str(), NULL);
+                        int d_freq = wcstol(freq.c_str(), NULL, 10);
                         int index = dict.getNatureIndex(nature);
-                        if(index == -1)
-                        {
+                        if(index == -1) {
                             wcerr<<L"The nature not exist in nature list of the file header:"
                                  <<nature<<" line:"<<*line<<endl;
                             exit(-1);
                         }
-                        info->setValue(index, d_freq);
+                        info->setAttrValue(index, d_freq);
                     }
                 }
             }
 
             dict.addWordInfo(word, info);
 
-            if(++word_count%100 == 0)
-            {
+            if(++word_count%100 == 0) {
                 cout<<"\radded words -> "<<word_count;
             }
         }
@@ -132,16 +121,14 @@ public:
         UTF8FileReader reader(inputpath);
         wstring * line;
         line = reader.getLine();
-        if(line == NULL)
-        {
+        if(line == NULL) {
             cerr<<"empty file."<<endl;
             return false;
         }
 
         wstring natureHead = L"@WordPOS\t";
         wstring::size_type natureindex = line->find(natureHead);
-        if(natureindex == wstring::npos)
-        {
+        if(natureindex == wstring::npos) {
             cerr<<"can't find the natures, maybe not a dictionary words file."<<endl;
             return false;
         }
@@ -150,8 +137,7 @@ public:
         vector<wstring> vec;
         split(natures,L",",vec);
         Dictionary dict;
-        for(int i = 0; i < vec.size(); i++)
-        {
+        for(int i = 0; i < vec.size(); i++) {
             dict.addNature(vec[i]);
         }
 
@@ -160,38 +146,31 @@ public:
         wchar_t freqSeperator = L':';
         int word_count = 0;
         // 处理词信息
-        while((line = reader.getLine()) != NULL)
-        {
+        while((line = reader.getLine()) != NULL) {
             wstring::size_type wordIndex = line->find_first_of(wordSeperator);
             wstring word;
-            SparseInstance * info = NULL;
-            if(wordIndex == wstring::npos)
-            {
+            WordNature * info = NULL;
+            if(wordIndex == wstring::npos) {
                 word = (*line);
-            }
-            else
-            {
+            } else {
                 word = line->substr(0, wordIndex);
                 wstring infostr = line->substr(wordIndex + 1);
-                if(!infostr.empty())
-                {
-                    info = new SparseInstance();
+                if(!infostr.empty()) {
+                    info = new WordNature();
                     vector<wstring> infos;
                     split(infostr, natureSeperator, infos);
-                    for(int i = 0; i < infos.size(); i++)
-                    {
+                    for(int i = 0; i < infos.size(); i++) {
                         wstring::size_type freqIndex = infos[i].find_first_of(freqSeperator);
                         wstring nature = infos[i].substr(0,freqIndex);
                         wstring freq = infos[i].substr(freqIndex + 1);
-                        double d_freq = wcstod(freq.c_str(), NULL);
+                        int d_freq = wcstol(freq.c_str(), NULL,10);
                         int index = dict.getNatureIndex(nature);
-                        if(index == -1)
-                        {
+                        if(index == -1) {
                             wcerr<<L"The nature not exist in nature list of the file header:"
                                  <<nature<<" line:"<<*line<<endl;
                             exit(-1);
                         }
-                        info->setValue(index, d_freq);
+                        info->setAttrValue(index, d_freq);
                     }
                 }
             }
@@ -199,8 +178,7 @@ public:
             reverse(word.begin(), word.end());
             dict.addWordInfo(word, info);
 
-            if(++word_count%100 == 0)
-            {
+            if(++word_count%100 == 0) {
                 cout<<"\radded words -> "<<word_count;
             }
         }

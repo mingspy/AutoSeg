@@ -82,22 +82,17 @@ typedef void *(*ReadTailDataFromFile)(FILE * file, MemoryPool<> * pmem);
 
 void WriteTrieStrToFile(FILE * file, const void * str)
 {
-    if(str != NULL)
-    {
+    if(str != NULL) {
         wstring wstr = (wchar_t *)str;
         int len = wstr.length() + 1;
         assert(len < 0xffff);
-        if(!file_write_int16(file, len))
-        {
+        if(!file_write_int16(file, len)) {
             assert(false);
         }
-        if(fwrite(str, sizeof(wchar_t), len, file) != len)
-        {
+        if(fwrite(str, sizeof(wchar_t), len, file) != len) {
             assert(false);
         }
-    }
-    else
-    {
+    } else {
         assert(false);
     }
 }
@@ -105,26 +100,20 @@ void WriteTrieStrToFile(FILE * file, const void * str)
 void * ReadTrieStrFromFile(FILE * file, MemoryPool<> * pmem)
 {
     unsigned short len;
-    if(!file_read_int16(file, (short *)&len))
-    {
+    if(!file_read_int16(file, (short *)&len)) {
         assert(false);
         return NULL;
     }
     wchar_t * str = NULL;
-    if(pmem)
-    {
+    if(pmem) {
         str = (wchar_t *)pmem->allocAligned(len * sizeof(wchar_t));
-    }
-    else
-    {
+    } else {
         str = new wchar_t[len];
     }
 
-    if(fread(str, sizeof(wchar_t), len, file) != len)
-    {
+    if(fread(str, sizeof(wchar_t), len, file) != len) {
         assert(false);
-        if(!pmem)
-        {
+        if(!pmem) {
             delete [] str;
         }
         return NULL;

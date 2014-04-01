@@ -34,8 +34,7 @@ file_read_int32 (FILE *file, int *o_val)
 {
     unsigned char   buff[4];
 
-    if (fread (buff, 4, 1, file) == 1)
-    {
+    if (fread (buff, 4, 1, file) == 1) {
         *o_val = (buff[0] << 24) | (buff[1] << 16) |  (buff[2] << 8) | buff[3];
         return true;
     }
@@ -73,8 +72,7 @@ file_read_int16 (FILE *file, short *o_val)
 {
     unsigned char   buff[2];
 
-    if (fread (buff, 2, 1, file) == 1)
-    {
+    if (fread (buff, 2, 1, file) == 1) {
         *o_val = (buff[0] << 8) | buff[1];
         return true;
     }
@@ -124,19 +122,15 @@ public:
     wstring * getLine()
     {
         string line;
-        do
-        {
-            if(getline(inf,line))
-            {
+        do {
+            if(getline(inf,line)) {
                 line = trim(line);
-                if(!line.empty())
-                {
+                if(!line.empty()) {
                     lastLine = Utf8ToUnicode(line);
                     return &lastLine;
                 }
             }
-        }
-        while(!inf.eof());
+        } while(!inf.eof());
 
         return NULL;
     }
@@ -144,8 +138,7 @@ public:
     static size_t size(const string& filename)
     {
         ifstream file (filename.c_str(),   ios::in|ios::binary|ios::ate);
-        if(!file.good())
-        {
+        if(!file.good()) {
             return 0;
         }
 

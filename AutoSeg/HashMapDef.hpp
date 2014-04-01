@@ -29,16 +29,14 @@ using namespace std;
 
 namespace __gnu_cxx
 {
-template<> struct hash<string>
-{
+template<> struct hash<string> {
     size_t operator()(const string& s) const
     {
         return __stl_hash_string(s.c_str());
     }
 };
 
-template<> struct hash<wstring>
-{
+template<> struct hash<wstring> {
     size_t operator()(const wstring& s) const
     {
         string str = ws2s(s);

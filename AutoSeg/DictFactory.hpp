@@ -46,8 +46,7 @@ public:
 
     static const Dictionary & CoreDict()
     {
-        if(!_coreDict)
-        {
+        if(!_coreDict) {
             initialize("../data/");
         }
         return *_coreDict;
@@ -55,8 +54,7 @@ public:
 
     static const Dictionary & InverseCoreDict()
     {
-        if(!_inverseCoreDict)
-        {
+        if(!_inverseCoreDict) {
             initialize("../data/");
         }
         return *_inverseCoreDict;
@@ -65,15 +63,12 @@ public:
     static void clean()
     {
         ResGuard::Lock lock(_resGard);
-        if(_loaded)
-        {
-            if(_coreDict)
-            {
+        if(_loaded) {
+            if(_coreDict) {
                 delete _coreDict;
                 _coreDict = NULL;
             }
-            if(_inverseCoreDict)
-            {
+            if(_inverseCoreDict) {
                 delete _inverseCoreDict;
                 _inverseCoreDict = NULL;
             }

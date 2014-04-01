@@ -148,16 +148,14 @@ namespace internal
 // Struct that contains lookup tables for the parser
 // It must be a template to allow correct linking (because it has static data members, which are defined in a header file).
 template <int Dummy>
-struct lookup_tables
-{
+struct lookup_tables {
     static const unsigned char lookup_whitespace[ 256 ];       // Whitespace table
     static const unsigned char lookup_upcase[ 256 ];           // To uppercase conversion table for ASCII characters
 };
 
 // Detect whitespace character
 template <class Ch>
-struct whitespace_pred
-{
+struct whitespace_pred {
     static unsigned char test( Ch ch )
     {
         return internal::lookup_tables<0>::lookup_whitespace[ static_cast<unsigned char>( ch ) ];
@@ -180,8 +178,7 @@ namespace internal
 {
 
 template <int Dummy>
-const unsigned char lookup_tables<Dummy>::lookup_whitespace[ 256 ] =
-{
+const unsigned char lookup_tables<Dummy>::lookup_whitespace[ 256 ] = {
     // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
     0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0,            // 0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,            // 1
@@ -204,8 +201,7 @@ const unsigned char lookup_tables<Dummy>::lookup_whitespace[ 256 ] =
 
 // Upper case conversion
 template <int Dummy>
-const unsigned char lookup_tables<Dummy>::lookup_upcase[ 256 ] =
-{
+const unsigned char lookup_tables<Dummy>::lookup_upcase[ 256 ] = {
     // 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  A   B   C   D   E   F
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,             // 0
     16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,             // 1
@@ -322,8 +318,7 @@ public:
         char * result = align( m_ptr );
 
         // If not enough memory left in current pool, allocate a new pool
-        if ( result + size > m_end )
-        {
+        if ( result + size > m_end ) {
             // Calculate required pool size (may be bigger than CLAS_DYNAMIC_POOL_SIZE)
             std::size_t pool_size = m_dynamicSize;
             if ( pool_size < size )
@@ -356,8 +351,7 @@ public:
     // Any nodes or strings allocated from the pool will no longer be valid.
     void clear()
     {
-        while ( m_begin != m_static_memory )
-        {
+        while ( m_begin != m_static_memory ) {
             char * previous_begin = reinterpret_cast<header *>( align( m_begin ) ) ->previous_begin;
             if ( m_free_func )
                 m_free_func( m_begin );
@@ -391,8 +385,7 @@ public:
 
 private:
 
-    struct header
-    {
+    struct header {
         char *previous_begin;
     };
 
@@ -407,13 +400,10 @@ private:
     {
         // Allocate
         void * memory;
-        if ( m_alloc_func )    // Allocate memory using either user-specified allocation function or global operator new[]
-        {
+        if ( m_alloc_func ) {  // Allocate memory using either user-specified allocation function or global operator new[]
             memory = m_alloc_func( size );
             assert( memory ); // Allocator is not allowed to return 0, on failure it must either throw, stop the program or use longjmp
-        }
-        else
-        {
+        } else {
             memory = new char[ size ];
 #ifdef CLAS_NO_EXCEPTIONS
 

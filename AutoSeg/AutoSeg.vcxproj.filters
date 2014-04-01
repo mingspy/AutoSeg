@@ -96,6 +96,9 @@
     <ClInclude Include="Dictionary.hpp">
       <Filter>头文件\Dicts</Filter>
     </ClInclude>
+    <ClInclude Include="NShortPath.hpp">
+      <Filter>头文件\Seg</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">

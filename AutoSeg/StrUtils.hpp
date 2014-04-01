@@ -37,18 +37,15 @@ void split(const string& src, const string& separator, vector<string>& result)
     string substring;
     string::size_type start = 0, index;
 
-    do
-    {
+    do {
         index = str.find_first_of(separator,start);
-        if (index != string::npos)
-        {
+        if (index != string::npos) {
             substring = str.substr(start,index-start);
             result.push_back(substring);
             start = str.find_first_not_of(separator,index);
             if (start == string::npos) return;
         }
-    }
-    while(index != string::npos);
+    } while(index != string::npos);
 
     //the last token
     substring = str.substr(start);
@@ -69,18 +66,15 @@ void split(const wstring& src, const wstring& separator, vector<wstring>& result
     wstring substring;
     wstring::size_type start = 0, index;
 
-    do
-    {
+    do {
         index = str.find_first_of(separator,start);
-        if (index != wstring::npos)
-        {
+        if (index != wstring::npos) {
             substring = str.substr(start,index-start);
             result.push_back(substring);
             start = str.find_first_not_of(separator,index);
             if (start == wstring::npos) return;
         }
-    }
-    while(index != wstring::npos);
+    } while(index != wstring::npos);
 
     //the last token
     substring = str.substr(start);
@@ -97,12 +91,9 @@ void split(const wstring& src, const wstring& separator, vector<wstring>& result
 const string trim(const string& str)
 {
     std::string::size_type first = str.find_first_not_of(" \n\t\r\0xb");
-    if (first == std::string::npos)
-    {
+    if (first == std::string::npos) {
         return std::string();
-    }
-    else
-    {
+    } else {
         std::string::size_type last = str.find_last_not_of(" \n\t\r\0xb");
         return str.substr( first, last - first + 1);
     }
@@ -118,12 +109,9 @@ const string trim(const string& str)
 const wstring trim(const wstring& str)
 {
     std::wstring::size_type first = str.find_first_not_of(L" \n\t\r\0xb");
-    if (first == std::wstring::npos)
-    {
+    if (first == std::wstring::npos) {
         return std::wstring();
-    }
-    else
-    {
+    } else {
         std::wstring::size_type last = str.find_last_not_of(L" \n\t\r\0xb");
         return str.substr( first, last - first + 1);
     }

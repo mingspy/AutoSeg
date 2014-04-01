@@ -44,21 +44,20 @@ private:
 public:
     Dictionary()
     {
-        datrie.setDataFreer(InstanceFreer);
-        datrie.setDataReader(ReadInstanceDataFromFile);
-        datrie.setDataWriter(WriteInstanceDataToFile);
+        datrie.setDataFreer(WordNatureFreer);
+        datrie.setDataReader(ReadWordNatureFromFile);
+        datrie.setDataWriter(WriteWordNatureToFile);
     }
 
     // read binary data from a file.
     Dictionary(const string & file)
     {
         datrie.setMemPool(&mem_pool);
-        datrie.setDataReader(ReadInstanceDataFromFile);
-        datrie.setDataWriter(WriteInstanceDataToFile);
+        datrie.setDataReader(ReadWordNatureFromFile);
+        datrie.setDataWriter(WriteWordNatureToFile);
         FILE * pfile = fopen(file.c_str(),"rb");
         //assert(pfile != NULL);
-        if(!pfile)
-        {
+        if(!pfile) {
             cerr<<"File not exist:"<<file.c_str()<<endl;
             return;
         }
@@ -69,8 +68,7 @@ public:
 
     bool addNature(const wstring& nature)
     {
-        if(nature_index.find(nature) != nature_index.end())
-        {
+        if(nature_index.find(nature) != nature_index.end()) {
             return false;
         }
         natures.push_back(nature);
@@ -80,8 +78,7 @@ public:
 
     int getNatureIndex(const wstring &nature)
     {
-        if(nature_index.find(nature) != nature_index.end())
-        {
+        if(nature_index.find(nature) != nature_index.end()) {
             return nature_index[nature];
         }
         return -1;
@@ -89,8 +86,7 @@ public:
 
     const wstring & getNature(int index)
     {
-        if(index < natures.size())
-        {
+        if(index < natures.size()) {
             return natures[index];
         }
         //return NATURE_UNDEF;
@@ -98,14 +94,14 @@ public:
         return UNDEF;
     }
 
-    bool addWordInfo(const wstring & word, SparseInstance * info)
+    bool addWordInfo(const wstring & word, WordNature * info)
     {
         return datrie.add(word, info);
     }
 
-    const SparseInstance * getWordInfo(const wstring & word) const
+    const WordNature * getWordInfo(const wstring & word) const
     {
-        return (const SparseInstance *)datrie.retrieve(word.c_str());
+        return (const WordNature *)datrie.retrieve(word.c_str());
     }
 
     bool existPrefix(const wstring & prefix) const
@@ -120,18 +116,15 @@ public:
         bool result = false;
         int nature_size = natures.size();
         if(!file_write_int32(pfile, DICT_SIGNATURE)
-                || !file_write_int32(pfile, nature_size))
-        {
+                || !file_write_int32(pfile, nature_size)) {
             goto end_write;
         }
 
-        for(int i = 0; i < nature_size; i++)
-        {
+        for(int i = 0; i < nature_size; i++) {
             WriteTrieStrToFile(pfile, natures[i].c_str());
         }
 
-        if(!datrie.writeToFile(pfile))
-        {
+        if(!datrie.writeToFile(pfile)) {
             goto end_write;
         }
 
@@ -147,8 +140,7 @@ private:
     {
         // read header
         int signature;
-        if(!file_read_int32(pfile, &signature) || signature != DICT_SIGNATURE)
-        {
+        if(!file_read_int32(pfile, &signature) || signature != DICT_SIGNATURE) {
             assert(false);
             return;
         }
@@ -157,14 +149,12 @@ private:
         int nature_size;
         if(!file_read_int32(pfile, &nature_size)
                 || nature_size > 0x0fffffff
-                || nature_size < 0)
-        {
+                || nature_size < 0) {
             assert(false);
             return;
         }
 
-        for(int i = 0; i < nature_size; i++)
-        {
+        for(int i = 0; i < nature_size; i++) {
             wstring nature = (wchar_t *)ReadTrieStrFromFile(pfile, &mem_pool);
             addNature(nature);
         }

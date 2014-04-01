@@ -19,8 +19,7 @@
 
 namespace mingspy
 {
-enum wtype
-{
+enum wtype {
     OTHER = 0,  //
     EOS,        // [0]
     ALPHA,      // single:[41,5a] [61,7a], wide:[ff21,ff3a] [ff41,ff5a]
@@ -38,38 +37,23 @@ inline wtype getWcharType(wchar_t ch)
 {
     if((ch >= 0x4e00 && ch <= 0x9fba)
             || (ch >= 0xe815 && ch <= 0xe864)
-            || (ch >= 0xf920 && ch <= 0xfa20))
-    {
+            || (ch >= 0xf920 && ch <= 0xfa20)) {
         return CHINESE;
-    }
-    else if(ch < 0x80)
-    {
-        if((ch>=0x41 && ch <= 0x5a)||(ch>=0x61 && ch <= 0x7a))
-        {
+    } else if(ch < 0x80) {
+        if((ch>=0x41 && ch <= 0x5a)||(ch>=0x61 && ch <= 0x7a)) {
             return ALPHA;
-        }
-        else if(ch >= 0x30 && ch <= 0x39)
-        {
+        } else if(ch >= 0x30 && ch <= 0x39) {
             return DIGIT;
-        }
-        else if(ch == 0x09 || ch == 0x20)
-        {
+        } else if(ch == 0x09 || ch == 0x20) {
             return WHITESPACE;
-        }
-        else if(ch == 0)
-        {
+        } else if(ch == 0) {
             return EOS;
         }
         return DELIMITER;
-    }
-    else if(ch > 0xff00)
-    {
-        if((ch>=0xff21 && ch <= 0xff3a)||(ch>=0xff41 && ch <= 0xff5a))
-        {
+    } else if(ch > 0xff00) {
+        if((ch>=0xff21 && ch <= 0xff3a)||(ch>=0xff41 && ch <= 0xff5a)) {
             return ALPHA;
-        }
-        else if(ch >= 0xff10 && ch <= 0xff19)
-        {
+        } else if(ch >= 0xff10 && ch <= 0xff19) {
             return DIGIT;
         }
         return DELIMITER;

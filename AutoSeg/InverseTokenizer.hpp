@@ -54,8 +54,7 @@ protected:
         int i = 0;
         int j = result.size() - 1;
         int t = 0;
-        while(i < j)
-        {
+        while(i < j) {
             // swap index
             t = strlen - result[i]._off - result[i]._len;
             result[i]._off = strlen - result[j]._off - result[j]._len;

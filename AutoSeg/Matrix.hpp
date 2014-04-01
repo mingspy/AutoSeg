@@ -32,38 +32,20 @@ namespace mingspy
 
 /*
 */
+template<typename T>
 class Matrix
 {
 protected:
     //vector<Attribute> _attributes;
-    hash_map<int, SparseInstance> _rows;
+    hash_map<int, SparseInstance<T>> _rows;
 public:
     Matrix() {}
-    ~Matrix() {}
-    /*
-    void addAtrribute(const Attribute & attr)
-    {
-        _attributes.push_back(attr);
+    ~Matrix() {  
     }
-    const Attribute & getAttribute(int index) const
-    {
-        assert(index < _attributes.size());
-        return _attributes[index];
-    }
-
-    int getAttributeSize() const
-    {
-        return _attributes.size();
-    }
-
-    */
-
-    /*
-    * add the row at the given index;
-    */
-    void addRow(int row, const SparseInstance & instance)
+    int addRow(int row, const SparseInstance<T> & instance)
     {
         _rows[row] = instance;
+        return row;
     }
 
     /*
@@ -71,59 +53,51 @@ public:
     * will increment automatically.
     * This is used for add a sequence number of rows.
     */
-    int addRow(const SparseInstance & instance)
+    int addRow(const SparseInstance<T> & instance)
     {
-        int row = _rows.size();
-        _rows[row] = instance;
-        return row;
+        return addRow(_rows.size(), instance);
     }
 
-    SparseInstance & getRow(int index)
+    SparseInstance<T> & getRow(int row)
     {
-        assert(index < _rows.size());
-        return _rows[index];
+         return _rows[row];
     }
 
     void removeRow(int index)
     {
-        if(_rows.find(index) != _rows.end())
-        {
-            _rows.erase(index);
-        }
+        _rows.erase(index);
     }
 
-    int getRowSize()
+    int RowSize()
     {
         return _rows.size();
     }
 
-    SparseInstance & operator[](int index)
-    {
-        return _rows[index];
+
+    SparseInstance<T> & operator[](int row){
+        return _rows[row];
     }
 
-    double val(int row, int col)
+    T & val(int row, int col)
     {
-        if(_rows.find(row) != _rows.end())
-        {
-            return _rows[row].getValue(col);
-        }
-        return 0;
+        return _rows[row].getAttrValue(col);
     }
 
-    void setVal(int row, int col, double val)
+    void setVal(int row, int col, const T& val)
     {
-        _rows[row].setValue(col, val);
+        _rows[row].setAttrValue(col, val);
     }
 
-    friend ostream & operator<< (ostream & out, const Matrix & matrix) {
-        out<<"{matrix rows:"<<matrix._rows.size()<<endl;
-        for(hash_map<int, SparseInstance>::const_iterator it = matrix._rows.begin(); 
-            it != matrix._rows.end(); it++){
-            out<<"\t["<<it->first<<"]:"<<it->second<<endl;
+    friend ostream & operator<< (ostream & out, const Matrix & matrix)
+    {
+        out<<"{matrix rows:"<<_rows.size()<<endl;
+        for(int i = 0; i < _rows.size(); i++) {
+            out<<_rows[i]<<endl;
         }
         out<<"}";
         return out;
     }
 };
+
+typedef Matrix<double> Graph;
 }
