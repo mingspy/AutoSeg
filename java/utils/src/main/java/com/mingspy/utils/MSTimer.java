@@ -8,10 +8,10 @@ package com.mingspy.utils;
 public class MSTimer {
 	private long start_time = System.currentTimeMillis();
 	private long end_time = 0;
-	public void start(){
+	public void restart(){
 		start_time = System.currentTimeMillis();
 	}
-	
+
 	public long elapsed(){
 		end_time = System.currentTimeMillis();
 		return end_time - start_time;
@@ -19,7 +19,7 @@ public class MSTimer {
 
 	@Override
 	public String toString() {
-		return "elapsed:"+elapsed()+" ms.";
+		return elapsed()+" ms ";
 	}
 	
 	
