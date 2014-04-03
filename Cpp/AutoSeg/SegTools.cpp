@@ -334,15 +334,16 @@ int main(int argc, char ** argv)
    
     //CheckMemLeaks();
     {
+        cout<<"sizeof(int):"<<sizeof(int)<<endl;
         estimateSegmetors();
         if(argc < 2){
             printHelp(argv[0]);
             return -1;
         }
-        
-        if(argv[1] == "-t"){
+        string arg1 = argv[1];
+        if(arg1 == "-t"){
             estimateSegmetors();
-        }else if(argv[1] == "-b"){
+        }else if(arg1 == "-b"){
             buildCoreDict(argc, argv);
         }
 

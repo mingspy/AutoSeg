@@ -105,9 +105,12 @@
     <ClInclude Include="AutoTokenizer.hpp">
       <Filter>头文件\Seg</Filter>
     </ClInclude>
+    <ClInclude Include="JSegJNI.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SegTools.cpp">
+    <ClCompile Include="JSegJNI.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

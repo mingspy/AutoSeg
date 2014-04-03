@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include "StrUtils.hpp"
 #include "CodeUtils.hpp"
