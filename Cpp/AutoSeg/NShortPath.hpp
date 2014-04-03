@@ -4,6 +4,7 @@
 #include "Matrix.hpp"
 #include "SparseInstance.hpp"
 #include <math.h>
+#include "MinHeap.hpp"
 using namespace std;
 
 
@@ -31,6 +32,14 @@ struct RoadSign {
         return _weight != i;
     }
 
+    bool operator < (const RoadSign & r) const{
+        return _weight < r._weight;
+    }
+
+    bool operator > (const RoadSign & r) const{
+        return _weight > r._weight;
+    }
+
     friend ostream & operator<< (ostream & out, const RoadSign & node)
     {
         out<<"("<<node._from<<","<<node._index<<","<<node._weight<<")";
@@ -47,6 +56,16 @@ int compare(const void *a, const void *b)
 }
 
 typedef SparseInstance<int> Path;
+typedef MinHeap<RoadSign> Signs;
+
+class Paths{
+public:   
+    Signs& operator[](int idx){
+        return _paths[idx];
+    }
+private:
+    hash_map<int,Signs> _paths;
+};
 
 class NShortPath
 {
@@ -54,7 +73,7 @@ private:
     Graph & m_graphRef;
     int   m_maxPaths;
     int m_lastIndex;
-    typedef Matrix<RoadSign> Paths;
+    //typedef Matrix<RoadSign> Paths;
 
     Paths m_paths;
     bool m_isCalced;
@@ -66,22 +85,21 @@ public:
 
     void calcPaths()
     {
-        m_paths[0].setAttrValue(0,RoadSign(-1,0, 1.0));
+        m_paths[0].ConditionAdd(RoadSign(-1,0, 1.0));
         for(int i = 0; i < m_lastIndex; i++) {
             // 节点能到达的路径，更新路径值
             SparseInstance<double> &ins = m_graphRef[i];
             for(int j = ins.numValues() - 1; j >= 0; j--) {
                 int to = ins.indexAt(j);
                 double weight = -log(ins.valueAt(j));
-                SparseInstance<RoadSign> & prevPaths = m_paths.getRow(i);
-                for( int k = 0; k < prevPaths.numValues(); k++) {
-                    RoadSign & node = prevPaths.valueAt(k);
-                    setPath(i, to, k, weight + node._weight);
+                Signs & prevPaths = m_paths[i];
+                for( int k = 0; k < prevPaths.size(); k++) {
+                    RoadSign & node = prevPaths.Get(k);
+                    m_paths[to].ConditionAdd(RoadSign(i,k, weight + node._weight));
                 }
             }
         }
-
-        qsort(m_paths[m_lastIndex].getAttrValues(),m_paths[m_lastIndex].numValues(), sizeof(RoadSign), compare);
+        m_paths[m_lastIndex].Sort();
         m_isCalced = true;
 
     }
@@ -91,7 +109,7 @@ public:
         if(m_isCalced && ith < m_maxPaths) {
             int to = m_lastIndex;
             while(true) {
-                RoadSign node = m_paths[to].valueAt(ith);
+                RoadSign &node = m_paths[to].Get(ith);
                 path.setAttrValue(node._from,to);
                 to = node._from;
                 ith = node._index;
@@ -104,13 +122,6 @@ public:
 
 private:
     NShortPath(const NShortPath &);
-    void setPath(int from, int to, int index, int weight)
-    {
-        if(m_paths[to].numValues() < m_maxPaths) {
-            m_paths[to].setAttrValue(m_paths[to].numValues(), RoadSign(from,index, weight));
-        }
-    }
-
 };
 }
 

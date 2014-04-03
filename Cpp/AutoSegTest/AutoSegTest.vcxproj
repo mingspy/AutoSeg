@@ -18,55 +18,21 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Attribute.hpp" />
-    <ClInclude Include="AutoTokenizer.hpp" />
-    <ClInclude Include="CodeUtils.hpp" />
-    <ClInclude Include="DATrie.hpp" />
-    <ClInclude Include="DictFactory.hpp" />
-    <ClInclude Include="DictFileBuilder.hpp" />
-    <ClInclude Include="DoubleArray.hpp" />
-    <ClInclude Include="FileUtils.hpp" />
-    <ClInclude Include="HashMapDef.hpp" />
-    <ClInclude Include="InverseTokenizer.hpp" />
-    <ClInclude Include="JSegJNI.h" />
-    <ClInclude Include="Matrix.hpp" />
-    <ClInclude Include="MemLeaksCheck.h" />
-    <ClInclude Include="MemoryPool.hpp" />
-    <ClInclude Include="MinHeap.hpp" />
-    <ClInclude Include="MSTimer.hpp" />
-    <ClInclude Include="NShortPath.hpp" />
-    <ClInclude Include="PunctionDictionary.hpp" />
-    <ClInclude Include="ResGuard.hpp" />
-    <ClInclude Include="SparseInstance.hpp" />
-    <ClInclude Include="SqureMatrix.hpp" />
-    <ClInclude Include="StrUtils.hpp" />
-    <ClInclude Include="Tail.hpp" />
-    <ClInclude Include="Tokenizer.hpp" />
-    <ClInclude Include="TrieDef.hpp" />
-    <ClInclude Include="wcharHelper.hpp" />
-    <ClInclude Include="Dictionary.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="JSegJNI.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{217D0FD0-7D1B-44DA-AF8D-205540C6B813}</ProjectGuid>
+    <ProjectGuid>{0DC438EB-C03E-4824-8979-A9CCB369F108}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>AutoSeg</RootNamespace>
+    <RootNamespace>AutoSegTest</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -75,7 +41,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
@@ -108,7 +74,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -117,12 +83,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Java_Include)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>$(OutDir)JSegJNI$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -132,12 +96,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Java_Include)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>$(OutDir)JSegJNI$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -166,16 +128,22 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Java_Include)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)JSegJNI$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AutoSeg\AutoSeg.vcxproj">
+      <Project>{217d0fd0-7d1b-44da-af8d-205540c6b813}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\AutoSeg\SegTools.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

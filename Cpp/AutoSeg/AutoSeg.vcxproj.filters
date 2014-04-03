@@ -108,6 +108,9 @@
     <ClInclude Include="JSegJNI.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MinHeap.hpp">
+      <Filter>头文件\Seg</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JSegJNI.cpp">

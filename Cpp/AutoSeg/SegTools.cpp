@@ -335,7 +335,11 @@ int main(int argc, char ** argv)
     //CheckMemLeaks();
     {
         cout<<"sizeof(int):"<<sizeof(int)<<endl;
-        estimateSegmetors();
+        //estimateSegmetors();
+        AutoTokenizer tokenizer;
+        vector<Token> res;
+        tokenizer.oneGramSplit(L"他说的确实在理", res);
+        tokenizer.printTokens(res);
         if(argc < 2){
             printHelp(argv[0]);
             return -1;

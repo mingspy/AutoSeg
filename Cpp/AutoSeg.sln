@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoSeg", "AutoSeg\AutoSeg.vcxproj", "{217D0FD0-7D1B-44DA-AF8D-205540C6B813}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoSegTest", "AutoSegTest\AutoSegTest.vcxproj", "{0DC438EB-C03E-4824-8979-A9CCB369F108}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,13 @@ Global
 		{217D0FD0-7D1B-44DA-AF8D-205540C6B813}.Release|Win32.Build.0 = Release|Win32
 		{217D0FD0-7D1B-44DA-AF8D-205540C6B813}.Release|x64.ActiveCfg = Release|x64
 		{217D0FD0-7D1B-44DA-AF8D-205540C6B813}.Release|x64.Build.0 = Release|x64
+		{0DC438EB-C03E-4824-8979-A9CCB369F108}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0DC438EB-C03E-4824-8979-A9CCB369F108}.Debug|Win32.Build.0 = Debug|Win32
+		{0DC438EB-C03E-4824-8979-A9CCB369F108}.Debug|x64.ActiveCfg = Debug|x64
+		{0DC438EB-C03E-4824-8979-A9CCB369F108}.Debug|x64.Build.0 = Debug|x64
+		{0DC438EB-C03E-4824-8979-A9CCB369F108}.Release|Win32.ActiveCfg = Release|Win32
+		{0DC438EB-C03E-4824-8979-A9CCB369F108}.Release|Win32.Build.0 = Release|Win32
+		{0DC438EB-C03E-4824-8979-A9CCB369F108}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

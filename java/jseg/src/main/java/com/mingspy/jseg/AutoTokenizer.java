@@ -47,7 +47,6 @@ public class AutoTokenizer implements ITokenizer {
 	public static void main(String[] args) {
 		AutoTokenizer tokenizer = new AutoTokenizer();
 		System.out.println(tokenizer.maxSplit("他说的确实在理"));
-		System.out.println(tokenizer.maxSplit("他说的确实在理"));
 		System.out.println(tokenizer.fullSplit("他说的确实在理"));
 		System.out.println(tokenizer.oneGramSplit("他说的确实在理"));
 	}
