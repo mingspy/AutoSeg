@@ -18,10 +18,13 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\AutoSeg\SegTools.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0DC438EB-C03E-4824-8979-A9CCB369F108}</ProjectGuid>
+    <ProjectGuid>{DEB2657D-DECE-41FC-B669-7DC0BE3B0E71}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>AutoSegTest</RootNamespace>
+    <RootNamespace>SegTools</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -136,14 +139,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AutoSeg\AutoSeg.vcxproj">
-      <Project>{217d0fd0-7d1b-44da-af8d-205540c6b813}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\AutoSeg\SegTools.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

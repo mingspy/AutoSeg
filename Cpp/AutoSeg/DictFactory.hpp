@@ -20,8 +20,13 @@
 #include <iostream>
 #include "Dictionary.hpp"
 #include "ResGuard.hpp"
-#include "PunctionDictionary.hpp"
+#include "Configuration.hpp"
 
+#if _MSC_VER > 1000
+#include "PunctionDictionary.hpp"
+#else
+#include "PunctionDictionaryu.hpp"
+#endif
 
 using namespace std;
 namespace mingspy
@@ -40,8 +45,11 @@ public:
     {
         ResGuard::Lock lock(_resGard);
         if(_loaded) return;
-        _coreDict = new Dictionary(dir+"core.dic");
-        _inverseCoreDict = new Dictionary(dir+"inverseCore.dic");
+        Configuration &conf = Configuration::instance();
+        _coreDict = new Dictionary(conf.getString(KEY_CORE_PATH));
+        if(conf.getBool(KEY_ISLOAD_INVS)){
+            _inverseCoreDict = new Dictionary(conf.getString(KEY_INVS_PATH));
+        }
 
         _loaded = true;
         atexit(clean);

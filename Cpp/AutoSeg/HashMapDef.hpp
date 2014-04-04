@@ -21,6 +21,7 @@
 #if _MSC_VER > 1000
 #include <hash_map>
 #include <hash_set>
+
 #else
 #include "CodeUtils.hpp"
 // in linux..
@@ -43,6 +44,13 @@ template<> struct hash<wstring> {
     {
         string str = ws2s(s);
         return __stl_hash_string(str.c_str());
+    }
+};
+
+template<> struct hash<wchar_t> {
+    size_t operator()(const wchar_t wc) const
+    {
+        return (size_t)wc;
     }
 };
 }

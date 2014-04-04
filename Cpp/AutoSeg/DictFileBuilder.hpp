@@ -41,6 +41,10 @@ public:
         MSTimer timer;
         vector<string> files;
         getFiles(inputpath, files);
+        // input is a file.
+        if(files.size() == 0){
+            files.push_back(inputpath);
+        }
         Dictionary dict;
         int word_count = 0;
 

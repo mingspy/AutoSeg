@@ -102,3 +102,4 @@ JNIEXPORT void JNICALL Java_com_mingspy_jseg_JSegJNI_Test
         cout<<"("<<result[i]._off<<","<<result[i]._len<<")";
     }
 }
+

@@ -28,6 +28,9 @@
     <Filter Include="头文件\memory">
       <UniqueIdentifier>{a5378a54-3f28-401b-912a-f035b1ed8b2f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\utils">
+      <UniqueIdentifier>{305e7974-d9b3-475b-ad87-ae04c4ddc159}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DATrie.hpp">
@@ -54,14 +57,8 @@
     <ClInclude Include="SqureMatrix.hpp">
       <Filter>头文件\matrix</Filter>
     </ClInclude>
-    <ClInclude Include="FileUtils.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="DictFileBuilder.hpp">
       <Filter>头文件\Dicts</Filter>
-    </ClInclude>
-    <ClInclude Include="StrUtils.hpp">
-      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MemLeaksCheck.h">
       <Filter>头文件\memory</Filter>
@@ -75,23 +72,11 @@
     <ClInclude Include="DictFactory.hpp">
       <Filter>头文件\Dicts</Filter>
     </ClInclude>
-    <ClInclude Include="ResGuard.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="wcharHelper.hpp">
       <Filter>头文件\Seg</Filter>
     </ClInclude>
-    <ClInclude Include="MSTimer.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="InverseTokenizer.hpp">
       <Filter>头文件\Seg</Filter>
-    </ClInclude>
-    <ClInclude Include="HashMapDef.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeUtils.hpp">
-      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Dictionary.hpp">
       <Filter>头文件\Dicts</Filter>
@@ -105,15 +90,33 @@
     <ClInclude Include="AutoTokenizer.hpp">
       <Filter>头文件\Seg</Filter>
     </ClInclude>
-    <ClInclude Include="JSegJNI.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MinHeap.hpp">
       <Filter>头文件\Seg</Filter>
     </ClInclude>
+    <ClInclude Include="CodeUtils.hpp">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="StrUtils.hpp">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="FileUtils.hpp">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="HashMapDef.hpp">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MSTimer.hpp">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ResGuard.hpp">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Configuration.hpp">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="JSegJNI.cpp">
+    <ClCompile Include="Test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -24,8 +24,7 @@
 #include <vector>
 #include "HashMapDef.hpp"
 
-using namespace std;
-using namespace stdext;
+
 
 namespace mingspy
 {
@@ -37,7 +36,7 @@ class Matrix
 {
 protected:
     //vector<Attribute> _attributes;
-    hash_map<int, SparseInstance<T>> _rows;
+    hash_map<int, SparseInstance<T> > _rows;
 public:
     Matrix() {}
     ~Matrix()
@@ -96,11 +95,11 @@ public:
         _rows[row].setAttrValue(col, val);
     }
 
-    friend ostream & operator<< (ostream & out, const Matrix & matrix)
+    friend ostream & operator<< (ostream & out, const Matrix<T> & matrix)
     {
-        out<<"{matrix rows:"<<_rows.size()<<endl;
-        for(int i = 0; i < _rows.size(); i++) {
-            out<<_rows[i]<<endl;
+        out<<"{matrix rows:"<<matrix._rows.size()<<endl;
+        for(int i = 0; i < matrix._rows.size(); i++) {
+            out<<matrix._rows[i]<<endl;
         }
         out<<"}";
         return out;

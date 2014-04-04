@@ -20,7 +20,7 @@
 #include <iostream>
 #include <string>
 #include "Tokenizer.hpp"
-#include "PunctionDictionary.hpp"
+
 #include "DictFactory.hpp"
 using namespace std;
 namespace mingspy

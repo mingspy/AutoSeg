@@ -26,8 +26,14 @@
 #include <string>
 #include "StrUtils.hpp"
 #include "CodeUtils.hpp"
-#include <io.h>
 #include <algorithm>
+
+#if _MSC_VER > 1000
+#include <io.h>
+#else
+#include<sys/types.h>
+#include <dirent.h>
+#endif
 
 
 using namespace std;
@@ -112,10 +118,11 @@ string changeToInnerPath(const string & path)
     replace(p.begin(),p.end(), '\\', '/');
     return p;
 }
+
 string ensureDir(const string & path)
 {
     string p = changeToInnerPath(path);
-    if(p.find_last_of('/') == p.npos || p.find_last_of('/') != p.length() - 1) {
+    if(p.find_last_of('/') != p.length() - 1) {
         p.append("/");
     }
     return p;
@@ -135,9 +142,13 @@ string combinPath(const string & path, const string & path2)
 
 void getFiles( const string & path, vector<string>& files )
 {
+     string pathInner = changeToInnerPath(path);
+     if(pathInner.at(pathInner.length() - 1) == '/'){
+         pathInner.erase(pathInner.length() - 1);
+     }
+#if _MSC_VER > 1000
     long   hFile   =   0;
     struct _finddata_t fileinfo;
-    string pathInner = changeToInnerPath(path);
     string p;
     if((hFile = _findfirst(p.assign(pathInner).append("/*").c_str(),&fileinfo)) !=  -1) {
         do {
@@ -149,9 +160,38 @@ void getFiles( const string & path, vector<string>& files )
             }
         } while(_findnext(hFile, &fileinfo)  == 0);
         _findclose(hFile);
-    } else if((hFile = _findfirst(p.assign(pathInner).c_str(),&fileinfo)) !=  -1) {
-        files.push_back(pathInner);
+    } 
+#else
+    DIR * pDir = opendir(path.c_str());
+    if(pDir == NULL) {
+        return;
     }
+
+    dirent * ent = NULL;
+    while((ent = readdir(pDir)) != NULL){
+        if(ent->d_type & DT_DIR){
+            if(strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0) 
+                continue;
+            getFiles(pathInner+"/"+ent->d_name, files);
+        }else{
+            files.push_back(pathInner+"/"+ent->d_name);
+        }
+    }
+
+#endif
+}
+
+size_t fileSize(const string& filename)
+{
+    ifstream file (filename.c_str(),   ios::in|ios::binary|ios::ate);
+    if(!file.good()) {
+        return 0;
+    }
+
+    file.seekg(0, ios::end);
+    long length = file.tellg();
+    file.close();
+    return length;
 }
 
 class UTF8FileReader
@@ -171,31 +211,24 @@ public:
 
     wstring * getLine()
     {
-        string line;
-        do {
-            if(getline(inf,line)) {
-                line = trim(line);
-                if(!line.empty()) {
-                    lastLine = Utf8ToUnicode(line);
-                    return &lastLine;
+        if(inf.good()){
+            string line;
+            do {
+                if(getline(inf,line)) {
+                    line = trim(line);
+                    if(!line.empty()) {
+                        lastLine = Utf8ToUnicode(line);
+                        return &lastLine;
+                    }
                 }
-            }
-        } while(!inf.eof());
-
+            } while(!inf.eof());
+        }
         return NULL;
     }
 
     static size_t size(const string& filename)
     {
-        ifstream file (filename.c_str(),   ios::in|ios::binary|ios::ate);
-        if(!file.good()) {
-            return 0;
-        }
-
-        file.seekg(0, ios::end);
-        long length = file.tellg();
-        file.close();
-        return length;
+        return fileSize(filename);
     }
 
 private:
@@ -204,3 +237,45 @@ private:
     UTF8FileReader & operator = (const UTF8FileReader &);
 };
 
+class LineFileReader
+{
+private:
+    ifstream inf;
+    string lastLine;
+public:
+    LineFileReader(const string & file)
+    {
+        inf.open(file.c_str());
+    }
+    ~LineFileReader()
+    {
+        inf.close();
+    }
+
+    string * getLine()
+    {
+        if(inf.good()){
+            string line;
+            do {
+                if(getline(inf,line)) {
+                    line = trim(line);
+                    if(!line.empty()) {
+                        lastLine = line;
+                        return &lastLine;
+                    }
+                }
+            } while(!inf.eof());
+        }
+        
+        return NULL;
+    }
+
+    size_t size(const string& filename){
+        return fileSize(filename);
+    }
+
+private:
+    LineFileReader();
+    LineFileReader(const UTF8FileReader &);
+    LineFileReader & operator = (const UTF8FileReader &);
+};
