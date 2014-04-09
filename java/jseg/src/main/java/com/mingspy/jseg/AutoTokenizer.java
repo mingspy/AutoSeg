@@ -27,12 +27,12 @@ public class AutoTokenizer implements ITokenizer {
 	}
 
 	@Override
-	public List<String> oneGramSplit(String str) {
+	public List<String> uniGramSplit(String str) {
 		if(str == null || str.isEmpty()){
 			return null;
 		}
 		
-		List<Token> res = JSegJNI.OneGramSplit(str);
+		List<Token> res = JSegJNI.UniGramSplit(str);
 		return genWords(str, res);
 	}
 	
@@ -44,10 +44,37 @@ public class AutoTokenizer implements ITokenizer {
 		return words;
 	}
 	
+
+	@Override
+	public List<String> biGramSplit(String str) {
+		if(str == null || str.isEmpty()){
+			return null;
+		}
+		
+		List<Token> res = JSegJNI.BiGramSplit(str);
+		return genWords(str, res);
+	}
+
+
+	@Override
+	public List<String> mixSplit(String str) {
+		if(str == null || str.isEmpty()){
+			return null;
+		}
+		
+		List<Token> res = JSegJNI.MixSplit(str);
+		return genWords(str, res);
+	}
+	
 	public static void main(String[] args) {
 		AutoTokenizer tokenizer = new AutoTokenizer();
+		
 		System.out.println(tokenizer.maxSplit("他说的确实在理"));
 		System.out.println(tokenizer.fullSplit("他说的确实在理"));
-		System.out.println(tokenizer.oneGramSplit("他说的确实在理"));
+		System.out.println(tokenizer.uniGramSplit("他说的确实在理"));
+		System.out.println(tokenizer.biGramSplit("他说的确实在理"));
+		System.out.println(tokenizer.mixSplit("他说的确实在理"));
 	}
+
+
 }

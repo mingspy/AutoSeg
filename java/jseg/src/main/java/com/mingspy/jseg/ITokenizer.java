@@ -5,5 +5,7 @@ import java.util.List;
 public interface ITokenizer {
 	List<String> maxSplit(String str);
 	List<String> fullSplit(String str);
-	List<String> oneGramSplit(String str);
+	List<String> uniGramSplit(String str);
+	List<String> biGramSplit(String str);
+	List<String> mixSplit(String str);
 }

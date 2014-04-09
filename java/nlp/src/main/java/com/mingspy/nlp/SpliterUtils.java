@@ -11,6 +11,6 @@ public class SpliterUtils {
 		_tokenizer = tokenizer;
 	}
 	public static List<String> split(String str){
-		return _tokenizer.oneGramSplit(str);
+		return _tokenizer.uniGramSplit(str);
 	}
 }

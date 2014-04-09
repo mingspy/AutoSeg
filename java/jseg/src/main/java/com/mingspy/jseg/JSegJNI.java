@@ -8,14 +8,7 @@ public abstract class JSegJNI {
 		ResourceBundle bundle = ResourceBundle.getBundle("jseg");
 		System.out.println(System.getProperty("java.library.path"));
 		System.loadLibrary("JSegJNI");
-		SetDictFolder(bundle.getString("DICT_FOLDER"));
 	}
-	/**
-	 * Set the dictionary folder
-	 * @param path the folder's path.
-	 * @return 
-	 */
-	public static native boolean SetDictFolder(String path);
 	
 	/**
 	 * Forward max match split.
@@ -36,7 +29,11 @@ public abstract class JSegJNI {
 	 * @param str
 	 * @return
 	 */
-	public static native List<Token> OneGramSplit(String str);
+	public static native List<Token> UniGramSplit(String str);
+	
+	public static native List<Token> BiGramSplit(String str);
+	
+	public static native List<Token> MixSplit(String str);
 	
 	public static native void Test(String str);
 
