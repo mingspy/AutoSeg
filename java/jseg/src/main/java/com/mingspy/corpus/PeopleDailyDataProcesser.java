@@ -53,13 +53,9 @@ public class PeopleDailyDataProcesser {
 		}
 		
 		
-		natures.add(WordInfo.FIELD_TOTAL);
-		
-		prune(coreWords,1);
 		writeWordInfo(coreWords, output+"/core/coreWord.txt");
 		prune(bigramWords,1);
 		writeWordInfo(bigramWords, output+"/core/bigramWords.txt");
-		
 		
 		prune(lexicalInfo,1);
 		writeWordInfo(lexicalInfo, output+"lexicalInfo.txt");
@@ -153,9 +149,18 @@ public class PeopleDailyDataProcesser {
 	 * @return
 	 */
 	private List<SplitWord> changeToSplitedWord(String line) {
-		String[] marked_words = line.split("  ");
+		String[] marked_words = null;
+		int start_idx = 0;
+		if(line.contains("19980")){
+			marked_words = line.split("  ");
+			start_idx = 1;
+		}else{ // 2014年的
+			marked_words = line.split(" ");
+			start_idx = 0;
+		}
+		
 		List<SplitWord> splited_words = new LinkedList<SplitWord>();
-		for (int i = 1; i < marked_words.length; i++) {
+		for (int i = start_idx; i < marked_words.length; i++) {
 			if (marked_words[i].isEmpty()) {
 				continue;
 			}
@@ -350,10 +355,17 @@ public class PeopleDailyDataProcesser {
 			String line = null;
 			while ((line = reader.nextLine()) != null) {
 				if (r.nextInt() % 10 == 1) {
+					String [] tokens = null;
+					if(line.contains("19980")){
+						line = line.substring(line.indexOf("  ") + 2);
+						tokens = line.split("  ");
+					}else{ // 2014年的
+						tokens = line.split(" ");
+					}
 					line = line.substring(line.indexOf("  ") + 2);
+					tokens = line.split("  ");
+					
 					testRefer.writeLine(line);
-
-					String[] tokens = line.split("  ");
 					StringBuilder strBuilder = new StringBuilder();
 					for (String token : tokens) {
 						String[] parts = token.split("/");
@@ -363,9 +375,7 @@ public class PeopleDailyDataProcesser {
 						strBuilder.append(parts[0]);
 					}
 					testData.writeLine(strBuilder.toString());
-				} else {
-					trainData.writeLine(line);
-				}
+				} 
 			}
 
 			reader.close();
@@ -407,8 +417,8 @@ public class PeopleDailyDataProcesser {
 		//peopleDaily.prepairTrainTestData("E:/tmp/alphabet/corpus_data",
 		//		"E:/tmp/alphabet/estimate");
 		
-		peopleDaily.processFiles("D:/GitHub/AutoSeg/Cpp/data/estimate/train_data.txt",
-				 "D:/GitHub/AutoSeg/Cpp/data/words/");
+		peopleDaily.processFiles("D:/GitHub/AutoSeg/Cpp/win/data/estimate/train_data.txt",
+				 "D:/GitHub/AutoSeg/Cpp/win/data/words/");
 		
 		System.out.println("done!!");
 

@@ -25,7 +25,7 @@ using namespace mingspy;
 #endif
 
 
-void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
+void estimateTokenizer(const vector<wstring>& test_datas, int testSize,
                        const vector<vector<wstring> >& refer_datas,
                        ITokenizer & tokenizer, int choice)
 {
@@ -57,25 +57,23 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
     }
 
     double elapsed = timer.elapsed();
-    cout<<"segment "<<test_size<<" bytes data used "<<elapsed<<"s, speed "
-        <<(test_size/1024.0/1024.0/elapsed)<<"m/s"
-        <<endl;
+    double speed = testSize/1024.0/1024.0/elapsed;
     // estimates
     wstring punctuations = L"£ª£¬¡££¿£¨£©¡±¡°£«£«£«£­£­£­£­£®£¥¡¢£¯£½£¾¡À£¥¡Á¡Á¡Á¡ª¡ª¡ª¡ª¡ª¡ª¡ª£­¡®¡¯¡­¡­¡ë¡ù¡ú¡Î¡Ã¡Ù¢Ù¢Ú¢Û¢Ü¢Ý¢Þ¢ß¢à¢Æ¢Ç©¤¡õ¡ø¡÷¡ð¡ñ¡ï¡¢¡£¡±¡´¡µ¡¶¡·¡º¡»¡²¡³";
-    int refer_words = 0;
-    int total_correct = 0;
-    int total_segmented = 0;
+    int totalWords = 0;
+    int segCorrects = 0;
+    int totalSegs = 0;
     for(int i = 0; i < seg_results.size(); i++) {
-        refer_words += refer_datas[i].size();
-        total_segmented += seg_results[i].size();
+        totalWords += refer_datas[i].size();
+        totalSegs += seg_results[i].size();
         for(int j = 0; j < refer_datas[i].size(); j++) {
             if(punctuations.find(refer_datas[i][j]) != wstring::npos) {
-                refer_words --;
+                totalWords --;
             }
         }
         for(int j = 0; j < seg_results[i].size(); j++) {
             if(punctuations.find(seg_results[i][j]) != wstring::npos) {
-                total_segmented --;
+                totalSegs --;
                 continue;
             }
 
@@ -83,30 +81,28 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
             int n = min(j+4, refer_datas[i].size());
             for(int k = m; k < n; k++) {
                 if(seg_results[i][j] == refer_datas[i][k]) {
-                    total_correct ++;
+                    segCorrects ++;
                     break;
                 }
             }
         }
     }
 
-    cout<<"refer words:"<< refer_words<<" segmented :"<<total_segmented
-        <<" corrected:"<<total_correct<<endl;
-    double precision = (total_correct + 0.01)/(total_segmented + 0.01);
-    double recall = (total_correct + 0.01)/(refer_words + 0.01);
+    
+    double precision = (segCorrects + 0.01)/(totalSegs + 0.01);
+    double recall = (segCorrects + 0.01)/(totalWords + 0.01);
     double f2 = precision * recall * 2 / (precision + recall);
-    cout<<"\tprecision = "<<precision<<endl;
-    cout<<"\trecall = "<<recall<<endl;
-    cout<<"\tf2 = "<<f2<<endl;
+    cout<<"TestSize(byte)   elapsed(s)  speed(m/s)  TotalWords  SegWords  correctWords  precision  recall        F2"<<endl
+        <<"    "<<testSize<<"      "<<elapsed<<"       "<<speed<<"       "<<totalWords<<"       "
+        <<totalSegs<<"    "<<segCorrects<<"    "<<precision
+        <<"    "<<recall<<"    "<<f2<<endl;
 }
 
 void estimateSegmetors()
 {
-    MSTimer timer;
-    
-    //DictFileBuilder::buildInverseDict("../data/estimate/coreWordInfo.txt","../data/estimate/inverseCore.dic");
+    MSTimer timer;   
     DictFactory::initialize();
-    cout<<"load dict "<<timer<<endl;
+    cout<<"load dictionary used:"<<timer<<endl;
     timer.restart();
     // load test data.
     vector<wstring> test_datas;
@@ -150,12 +146,12 @@ void estimateSegmetors()
     string input;
     while(true){
         cout<<"Input the number ahead to run test:"<<endl
-            <<"1. maxSplit"<<endl
-            <<"2. fullSplit"<<endl
-            <<"3. oneGramSplit"<<endl
-            <<"4. biGramSplit"<<endl
-            <<"5. mixSplit"<<endl
-            <<"0. quit."<<endl
+            <<"1. maxSplit\t"
+            <<"2. fullSplit\t"
+            <<"3. oneGramSplit\t"
+            <<"4. biGramSplit\t"
+            <<"5. mixSplit\t"
+            <<endl<<"0. quit."<<endl
             <<">";
         
         cin>>input;

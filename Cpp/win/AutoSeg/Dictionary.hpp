@@ -26,6 +26,7 @@
 #include "MemLeaksCheck.h"
 
 #include "HashMapDef.hpp"
+#include <string>
 
 namespace mingspy
 {
@@ -34,11 +35,6 @@ namespace mingspy
 const wstring const NATURE_FREQTOTAL=L"FREQTOL";
 class Dictionary
 {
-private:
-    DATrie datrie;
-    vector<wstring> natures;
-    hash_map<wstring, int> nature_index;
-    MemoryPool<> mem_pool;
 private:
     static const int DICT_SIGNATURE = 0x112fd0ac;
 public:
@@ -84,7 +80,7 @@ public:
         return -1;
     }
 
-    wstring getNature(int index)
+    wstring getNature(int index) const
     {
         if(index < natures.size()) {
             return natures[index];
@@ -119,12 +115,7 @@ public:
     {
         const WordNature * pnatures = getWordInfo(word);
         if(pnatures != NULL){
-            int idx = getNatureIndex(NATURE_FREQTOTAL);
-            if(idx >= 0){
-                return pnatures->getAttrValue(idx);
-            }else{
-                return pnatures->sumOfValues();
-            }
+            return pnatures->sumOfValues();
         }
 
         return 0;
@@ -188,7 +179,65 @@ private:
         datrie.readFromFile(pfile);
     }
 
+    protected:
+        DATrie datrie;
+        vector<wstring> natures;
+        hash_map<wstring, int> nature_index;
+        MemoryPool<> mem_pool;
+
 };
 
+class ShiftContext:public Dictionary{
+public:
+    ShiftContext():Dictionary(){
+        genUnknownNauture();
+    }
+
+    ShiftContext(const string & file):Dictionary(file){
+        genUnknownNauture();
+    }
+
+    ~ShiftContext(){
+        if(_unknownNature){
+            delete _unknownNature;
+        }
+    }
+
+    int getNatureTotal(int natureIndex) const
+    {
+        if(natureIndex < natures.size()){
+            getTotalFreq(natures[natureIndex]);
+        }
+        return 0;
+    }
+
+    double getCoProb(int from, int to) const {
+        if(from < natures.size() || to < natures.size()){
+            const WordNature * fromInfo = getWordInfo(natures[from]);
+            double toFreq = fromInfo->getAttrValue(to) + 1.0;
+            double FromTotal = fromInfo->sumOfValues() + 44.0;
+            return toFreq / FromTotal;
+        }
+
+        return 0.000001;
+    }
+
+    const WordNature * getUnknownNature() const{
+        return _unknownNature;
+    }
+
+private:
+    void genUnknownNauture(){
+        _unknownNature = new WordNature();
+        for(int i = 0; i < natures.size(); i++ ){
+            if(natures[i] != NATURE_FREQTOTAL){
+                _unknownNature->setAttrValue(i, 1);
+            }
+        }
+    }
+
+private:
+    WordNature * _unknownNature;
+};
 
 }

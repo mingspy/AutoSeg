@@ -107,7 +107,7 @@ public:
             // 节点能到达的路径，更新路径值
             SparseInstance<double> &ins = m_graphRef[i];
             for(int j = ins.numValues() - 1; j >= 0; j--) {
-                int to = ins.indexAt(j);
+                int to = ins.attrAt(j);
                 double weight = -log(ins.valueAt(j));
                 Signs & prevPaths = m_paths[i];
                 for( int k = 0; k < prevPaths.size(); k++) {

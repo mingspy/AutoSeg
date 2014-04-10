@@ -50,6 +50,7 @@ class SparseInstance
 public:
     static T ZERO;
 private:
+    mutable T _sumVs;
     int * m_Indices;
     T * m_AttValues;
     int m_NumValues; // the actual attributes this instance holds.
@@ -61,6 +62,7 @@ public:
         m_NumValues = 0;
         m_Indices = NULL;
         m_AttValues = NULL;
+        _sumVs = ZERO;
     }
 
     ~SparseInstance()
@@ -90,7 +92,7 @@ public:
     * @param position the position
     * @return the index of the attribute stored at the given position
     */
-    inline int indexAt(int position) const
+    inline int attrAt(int position) const
     {
         assert(position < m_NumValues);
         return m_Indices[position];
@@ -163,12 +165,15 @@ public:
 
     T  sumOfValues() const
     {
-        T sum = 0;
-        for(int i = 0; i < m_NumValues; i++) {
-            sum += m_AttValues[i];
+        if(_sumVs == ZERO){
+            for(int i = 0; i < m_NumValues; i++) {
+                _sumVs += m_AttValues[i];
+            }
         }
-        return sum;
+        
+        return _sumVs;
     }
+
     /**
     * Sets a specific value in the instance to the given value (internal
     * floating-point format). Performs a deep copy of the vector of attribute
@@ -188,7 +193,6 @@ public:
         } else {
             // need insert a new value after index.
             index ++; // now insert at index.
-            if(value != 0) {
                 T * tempValues = new T[m_NumValues + 1];
                 int * tempIndices = new int[m_NumValues + 1];
                 if(m_NumValues > 0) {
@@ -211,7 +215,6 @@ public:
                 m_AttValues = tempValues;
                 m_Indices = tempIndices;
                 m_NumValues ++;
-            }
         }
     }
 
@@ -319,6 +322,7 @@ exit_write:
         } else {
             inst = new SparseInstance<T>();
         }
+        inst->_sumVs = ZERO;
         inst->m_NumValues = num;
         if(num > 0) {
             if(pmem != NULL) {
@@ -355,6 +359,7 @@ exit_read:
 private:
     void copyOf(const SparseInstance & refer)
     {
+        _sumVs = refer._sumVs;
         int attribute_num = 0;
         for(int i = 0; i < refer.m_NumValues; i++) {
             if(refer.m_AttValues[i] != 0) {
@@ -405,8 +410,6 @@ void WriteWordNatureToFile(FILE * file, const void * data)
 {
     WordNature::DoWriteSIToFile(file, static_cast<WordNature *>(const_cast<void *>(data)));
 }
-
-
 
 }
 

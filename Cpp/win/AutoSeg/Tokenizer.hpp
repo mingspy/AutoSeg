@@ -23,6 +23,7 @@
 #include "wcharHelper.hpp"
 #include "Matrix.hpp"
 #include "NShortPath.hpp"
+#include "Viterbi.hpp"
 using namespace std;
 
 namespace mingspy
@@ -83,10 +84,21 @@ public:
     */
     virtual void mixSplit(const wstring & str, vector<Token> & result) = 0;
 
+    virtual void posTagging(const wstring & str, vector<Token> & result) = 0;
+
     static void printTokens(const vector<Token> & result)
     {
         for(int i = 0; i< result.size(); i++) {
             wcout<<"("<<result[i]._off<<","<<result[i]._len<<")";
+        }
+        wcout<<endl;
+    }
+
+    static void printTokenWithTag(const vector<Token> & result)
+    {
+        const ShiftContext & context = DictFactory::LexicalDict();
+        for(int i = 0; i< result.size(); i++) {
+            wcout<<"("<<result[i]._off<<","<<result[i]._len<<","<<context.getNature(result[i]._attr)<<")";
         }
         wcout<<endl;
     }
@@ -154,8 +166,6 @@ public:
         doNShotPath(wordGraph, str, result);
     }
 
- 
-
     void biGramSplit(const wstring & str, vector<Token> & result)
     {
         Graph wordGraph;
@@ -174,6 +184,27 @@ public:
         genBigramWordGraph(DictFactory::CoreDict(), DictFactory::BigramDict(), str, wordGraph, true);
         // n-short path
         doNShotPath(wordGraph, str, result);
+    }
+
+    void posTagging(const wstring & str, vector<Token> & result){
+        uniGramSplit(str, result);
+        vector<const WordNature *> observs;
+        WordNature * tmp = NULL;
+        const Dictionary & coreDict = DictFactory::CoreDict(); 
+        const ShiftContext & shiftContext = DictFactory::LexicalDict();
+        for(int i = 0; i < result.size(); i++){
+            const WordNature * info = coreDict.getWordInfo(str.substr(result[i]._off, result[i]._len));
+            if(info == NULL){
+                info = shiftContext.getUnknownNature();
+            }
+            observs.push_back(info);
+        }
+
+        SparseInstance<int> bestPos;
+        Viterbi::viterbi(observs, shiftContext, bestPos);
+        for(int i = 0; i < result.size(); i++){
+            result[i]._attr = bestPos.valueAt(i);
+        }
     }
 
     void setMaxPaths(int maxs)
@@ -335,14 +366,14 @@ protected:
             // 节点能到达的路径，更新路径值
             SparseInstance<double> &ins = graph[i];
             for(int j = ins.numValues() - 1; j >= 0; j--) {
-                int to = ins.indexAt(j);
+                int to = ins.attrAt(j);
                 wstring word1 = str.substr(i, to - i);
                 double wordFreq = 5;
                 wordFreq += coredict.getTotalFreq(word1);
 
                 SparseInstance<double> &insTo = graph[to];
                 for( int k = insTo.numValues() - 1; k >=0 ; k--) {
-                    int toEnd = insTo.indexAt(k);
+                    int toEnd = insTo.attrAt(k);
                     wstring w = word1 + L"@" + str.substr(to, toEnd - to);
                     double twoFreq = 1.0;
                     twoFreq += bigramdict.getTotalFreq(w);
@@ -371,7 +402,7 @@ protected:
         Path p;
         if(!shortPath.getBestPath(0, p)) return;
         for(int i = 0; i < p.numValues(); i ++) {
-            int start = p.indexAt(i);
+            int start = p.attrAt(i);
             int len = p.valueAt(i) - start;
             result.push_back(Token(start, len));
         }

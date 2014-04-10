@@ -108,8 +108,8 @@ public:
                     dict.addWordInfo(word, info);
                 } else {
                     for(int i = 0; i< info->numValues(); i++) {
-                        int freq = info->valueAt(i) + natures->getAttrValue(info->indexAt(i));
-                        natures->setAttrValue(info->indexAt(i), freq);
+                        int freq = info->valueAt(i) + natures->getAttrValue(info->attrAt(i));
+                        natures->setAttrValue(info->attrAt(i), freq);
                     }
                     delete info;
                 }

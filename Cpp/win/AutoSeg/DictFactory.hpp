@@ -36,7 +36,7 @@ class DictFactory
 private:
     static Dictionary * _coreDict;
     static Dictionary * _inverseCoreDict;
-    static Dictionary * _lexicalDict;
+    static ShiftContext * _lexicalDict;
     static bool _loaded;
     static ResGuard _resGard;
     static PunctionDictionary _puncDict;
@@ -50,7 +50,7 @@ public:
         if(conf.getBool(KEY_ISLOAD_INVS)){
             _inverseCoreDict = new Dictionary(conf.getString(KEY_INVS_PATH));
         }
-        _lexicalDict = new Dictionary(conf.getString(KEY_LEXICAL_PATH));
+        _lexicalDict = new ShiftContext(conf.getString(KEY_LEXICAL_PATH));
         _loaded = true;
         atexit(clean);
     }
@@ -79,7 +79,7 @@ public:
         return *_inverseCoreDict;
     }
 
-    static const Dictionary & LexicalDict()
+    static const ShiftContext & LexicalDict()
     {
         if(!_loaded) {
             initialize();
@@ -114,7 +114,7 @@ public:
 
 Dictionary * DictFactory::_coreDict = NULL;
 Dictionary * DictFactory::_inverseCoreDict = NULL;
-Dictionary * DictFactory::_lexicalDict = NULL;
+ShiftContext * DictFactory::_lexicalDict = NULL;
 bool DictFactory::_loaded = false;
 ResGuard DictFactory::_resGard;
 PunctionDictionary DictFactory::_puncDict;

@@ -202,6 +202,10 @@ int main(int argc, char ** argv)
     //CheckMemLeaks();
     {
         cout<<"sizeof(wchar_t):"<<sizeof(wchar_t)<<endl;
+        Tokenizer t;
+        vector<Token> rs;
+        t.posTagging(L"他说的确实在理", rs);
+        Tokenizer::printTokenWithTag(rs);
     }
     wcout<<L"Press enter to return."<<endl;
     getchar();

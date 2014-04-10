@@ -44,6 +44,7 @@
     <ClInclude Include="Tail.hpp" />
     <ClInclude Include="Tokenizer.hpp" />
     <ClInclude Include="TrieDef.hpp" />
+    <ClInclude Include="Viterbi.hpp" />
     <ClInclude Include="wcharHelper.hpp" />
     <ClInclude Include="Dictionary.hpp" />
   </ItemGroup>

@@ -73,6 +73,28 @@ public:
         DoSplit(str, result, 3);
     }
 
+    void posTagging(const wstring & str, vector<Token> & result){
+        int delimiter_index = DictFactory::LexicalDict().getNatureIndex(L"w");
+        vector<Token>  sentances;
+        sentanceSplit(str, sentances);
+        int prevTokes = 0;
+        int off = 0;
+        for(int i = 0; i < sentances.size(); i++) {
+            if(sentances[i]._attr >= 0) {
+                _worker.posTagging(str.substr(sentances[i]._off, sentances[i]._len), result);
+
+                for(int k = prevTokes; k < result.size(); k++) {
+                    result[k]._off += off;
+                }
+            } else {
+                sentances[i]._attr = delimiter_index;
+                result.push_back(sentances[i]);
+            }
+            off+= sentances[i]._len;
+            prevTokes = result.size();
+        }
+    }
+
     static void sentanceSplit(const wstring & str, vector<Token> & result)
     {
         const PunctionDictionary & puncs = DictFactory::Puntions();

@@ -31,7 +31,7 @@ public class WordInfo {
 		for(Entry<String,Integer> en : natures.entrySet()){
 			str +=en.getKey()+":"+en.getValue()+",";
 		}
-		str +=FIELD_TOTAL+":"+sumFreq()+",";
+		//str +=FIELD_TOTAL+":"+sumFreq()+",";
 		return str;
 	}
 	

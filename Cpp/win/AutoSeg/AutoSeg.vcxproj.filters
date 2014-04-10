@@ -114,6 +114,9 @@
     <ClInclude Include="Configuration.hpp">
       <Filter>头文件\utils</Filter>
     </ClInclude>
+    <ClInclude Include="Viterbi.hpp">
+      <Filter>头文件\Seg</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Test.cpp">
