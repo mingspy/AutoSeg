@@ -32,7 +32,7 @@ namespace mingspy
 {
 
 //const wstring const NATURE_UNDEF = L"UNDEF";
-const wstring const NATURE_FREQTOTAL=L"FREQTOL";
+const wstring NATURE_FREQTOTAL=L"FREQTOL";
 class Dictionary
 {
 private:
@@ -75,7 +75,7 @@ public:
     int getNatureIndex(const wstring &nature) const
     {
         if(nature_index.find(nature) != nature_index.end()) {
-            return nature_index.at(nature);
+            return nature_index.find(nature)->second;
         }
         return -1;
     }
@@ -101,9 +101,9 @@ public:
     int getNatureFreq(const wstring & word, const wstring & nature) const
     {
         const WordNature * pnatures = getWordInfo(word);
-        if(pnatures != NULL){
+        if(pnatures != NULL) {
             int idx = getNatureIndex(nature);
-            if(idx >= 0){
+            if(idx >= 0) {
                 return pnatures->getAttrValue(idx);
             }
         }
@@ -114,7 +114,7 @@ public:
     int getTotalFreq(const wstring & word) const
     {
         const WordNature * pnatures = getWordInfo(word);
-        if(pnatures != NULL){
+        if(pnatures != NULL) {
             return pnatures->sumOfValues();
         }
 
@@ -179,40 +179,45 @@ private:
         datrie.readFromFile(pfile);
     }
 
-    protected:
-        DATrie datrie;
-        vector<wstring> natures;
-        hash_map<wstring, int> nature_index;
-        MemoryPool<> mem_pool;
+protected:
+    DATrie datrie;
+    vector<wstring> natures;
+    hash_map<wstring, int> nature_index;
+    MemoryPool<> mem_pool;
 
 };
 
-class ShiftContext:public Dictionary{
+class ShiftContext:public Dictionary
+{
 public:
-    ShiftContext():Dictionary(){
+    ShiftContext():Dictionary()
+    {
         genUnknownNauture();
     }
 
-    ShiftContext(const string & file):Dictionary(file){
+    ShiftContext(const string & file):Dictionary(file)
+    {
         genUnknownNauture();
     }
 
-    ~ShiftContext(){
-        if(_unknownNature){
+    ~ShiftContext()
+    {
+        if(_unknownNature) {
             delete _unknownNature;
         }
     }
 
     int getNatureTotal(int natureIndex) const
     {
-        if(natureIndex < natures.size()){
+        if(natureIndex < natures.size()) {
             getTotalFreq(natures[natureIndex]);
         }
         return 0;
     }
 
-    double getCoProb(int from, int to) const {
-        if(from < natures.size() || to < natures.size()){
+    double getCoProb(int from, int to) const
+    {
+        if(from < natures.size() || to < natures.size()) {
             const WordNature * fromInfo = getWordInfo(natures[from]);
             double toFreq = fromInfo->getAttrValue(to) + 1.0;
             double FromTotal = fromInfo->sumOfValues() + 44.0;
@@ -222,17 +227,17 @@ public:
         return 0.000001;
     }
 
-    const WordNature * getUnknownNature() const{
+    const WordNature * getUnknownNature() const
+    {
         return _unknownNature;
     }
 
 private:
-    void genUnknownNauture(){
+    void genUnknownNauture()
+    {
         _unknownNature = new WordNature();
-        for(int i = 0; i < natures.size(); i++ ){
-            if(natures[i] != NATURE_FREQTOTAL){
-                _unknownNature->setAttrValue(i, 1);
-            }
+        for(int i = 0; i < natures.size(); i++ ) {
+            _unknownNature->setAttrValue(i, 1);
         }
     }
 

@@ -36,12 +36,12 @@ class DictFactory
 private:
     static Dictionary * _coreDict;
     static Dictionary * _inverseCoreDict;
+    static ShiftContext * _lexicalDict;
     static bool _loaded;
     static ResGuard _resGard;
-    static string _dicpath;
     static PunctionDictionary _puncDict;
 public:
-    static void initialize(const string & dir)
+    static void initialize()
     {
         ResGuard::Lock lock(_resGard);
         if(_loaded) return;
@@ -50,7 +50,7 @@ public:
         if(conf.getBool(KEY_ISLOAD_INVS)){
             _inverseCoreDict = new Dictionary(conf.getString(KEY_INVS_PATH));
         }
-
+        _lexicalDict = new ShiftContext(conf.getString(KEY_LEXICAL_PATH));
         _loaded = true;
         atexit(clean);
     }
@@ -58,7 +58,15 @@ public:
     static const Dictionary & CoreDict()
     {
         if(!_loaded) {
-            initialize(_dicpath);
+            initialize();
+        }
+        return *_coreDict;
+    }
+
+    static const Dictionary & BigramDict()
+    {
+        if(!_loaded) {
+            initialize();
         }
         return *_coreDict;
     }
@@ -66,22 +74,25 @@ public:
     static const Dictionary & InverseCoreDict()
     {
         if(!_loaded) {
-            initialize(_dicpath);
+            initialize();
         }
         return *_inverseCoreDict;
+    }
+
+    static const ShiftContext & LexicalDict()
+    {
+        if(!_loaded) {
+            initialize();
+        }
+        return *_lexicalDict;
     }
 
     static const PunctionDictionary & Puntions()
     {
         if(!_loaded) {
-            initialize(_dicpath);
+            initialize();
         }
         return _puncDict;
-    }
-
-    static void setDictDir(const string & path)
-    {
-        _dicpath = ensureDir(path);
     }
 
     static void clean()
@@ -103,8 +114,8 @@ public:
 
 Dictionary * DictFactory::_coreDict = NULL;
 Dictionary * DictFactory::_inverseCoreDict = NULL;
+ShiftContext * DictFactory::_lexicalDict = NULL;
 bool DictFactory::_loaded = false;
 ResGuard DictFactory::_resGard;
-string DictFactory::_dicpath = "../data/";
 PunctionDictionary DictFactory::_puncDict;
 }

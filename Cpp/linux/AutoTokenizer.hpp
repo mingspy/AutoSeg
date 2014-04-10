@@ -20,6 +20,7 @@
 #include <iostream>
 #include <string>
 #include "Tokenizer.hpp"
+
 #include "DictFactory.hpp"
 using namespace std;
 namespace mingspy
@@ -27,6 +28,7 @@ namespace mingspy
 class AutoTokenizer: public ITokenizer
 {
 public:
+    typedef void (splitFn)(const wstring &str, vector<Token> & result);
     /*
     * according dictionary, forward split the str. From the head char
     * of input, this method will lookup the dictionary, then take the
@@ -57,23 +59,40 @@ public:
     * @param str : the input str to split.
     * @param result : result words.
     */
-    void oneGramSplit(const wstring & str, vector<Token> & result)
+    void uniGramSplit(const wstring & str, vector<Token> & result)
     {
+        DoSplit(str, result, 1);        
+    }
+
+    void biGramSplit(const wstring & str, vector<Token> & result)
+    {
+        DoSplit(str, result, 2);        
+    }
+
+    void mixSplit(const wstring & str, vector<Token> & result){
+        DoSplit(str, result, 3);
+    }
+
+    void posTagging(const wstring & str, vector<Token> & result){
+        int delimiter_index = DictFactory::LexicalDict().getNatureIndex(L"w");
         vector<Token>  sentances;
+        vector<Token>  tmp;
         sentanceSplit(str, sentances);
-        int prevTokes = 0;
         int off = 0;
         for(int i = 0; i < sentances.size(); i++) {
             if(sentances[i]._attr >= 0) {
-                _worker.oneGramSplit(str.substr(sentances[i]._off, sentances[i]._len), result);
-                for(int k = prevTokes; k < result.size(); k++) {
-                    result[k]._off += off;
+                tmp.clear();
+                _worker.posTagging(str.substr(sentances[i]._off, sentances[i]._len), tmp);
+
+                for(int k = 0; k < tmp.size(); k++) {
+                    tmp[k]._off += off;
+                    result.push_back(tmp[k]);
                 }
             } else {
+                sentances[i]._attr = delimiter_index;
                 result.push_back(sentances[i]);
             }
             off+= sentances[i]._len;
-            prevTokes = result.size();
         }
     }
 
@@ -102,6 +121,37 @@ public:
     void setMaxPaths(int maxs)
     {
         _worker.setMaxPaths(maxs);
+    }
+
+private:
+    void DoSplit(const wstring & str, vector<Token> & result, int fn){
+        vector<Token>  sentances;
+        sentanceSplit(str, sentances);
+        int prevTokes = 0;
+        int off = 0;
+        for(int i = 0; i < sentances.size(); i++) {
+            if(sentances[i]._attr >= 0) {
+                switch(fn){
+                case 1:
+                    _worker.uniGramSplit(str.substr(sentances[i]._off, sentances[i]._len), result);
+                    break;
+                case 2:
+                    _worker.biGramSplit(str.substr(sentances[i]._off, sentances[i]._len), result);
+                    break;
+                case 3:
+                    _worker.mixSplit(str.substr(sentances[i]._off, sentances[i]._len), result);
+                    break;
+                }
+                
+                for(int k = prevTokes; k < result.size(); k++) {
+                    result[k]._off += off;
+                }
+            } else {
+                result.push_back(sentances[i]);
+            }
+            off+= sentances[i]._len;
+            prevTokes = result.size();
+        }
     }
 
 private:

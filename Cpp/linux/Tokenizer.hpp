@@ -23,6 +23,7 @@
 #include "wcharHelper.hpp"
 #include "Matrix.hpp"
 #include "NShortPath.hpp"
+#include "Viterbi.hpp"
 using namespace std;
 
 namespace mingspy
@@ -39,8 +40,6 @@ struct Token {
     }
 };
 
-static const double TOTAL_FREQ = 2700000;
-static const double SMOTH_PROB = 1.0/TOTAL_FREQ;
 
 class ITokenizer
 {
@@ -65,16 +64,41 @@ public:
     virtual void fullSplit(const wstring &str, vector<Token> & result) = 0;
 
     /*
-    * Split the word, and try to resolve ambiguities by one gram.
+    * Split the word, and try to resolve ambiguities by unitary gram.
     * @param str : the input str to split.
     * @param result : result words.
     */
-    virtual void oneGramSplit(const wstring & str, vector<Token> & result) = 0;
+    virtual void uniGramSplit(const wstring & str, vector<Token> & result) = 0;
+
+    /*
+    * Split the word, and try to resolve ambiguities by binary gram.
+    * @param str : the input str to split.
+    * @param result : result words. 
+    */
+    virtual void biGramSplit(const wstring & str, vector<Token> & result) = 0;
+
+    /*
+    * Split the word, and try to resolve ambiguities by mix unitary and binary gram.
+    * @param str : the input str to split.
+    * @param result : result words. 
+    */
+    virtual void mixSplit(const wstring & str, vector<Token> & result) = 0;
+
+    virtual void posTagging(const wstring & str, vector<Token> & result) = 0;
 
     static void printTokens(const vector<Token> & result)
     {
         for(int i = 0; i< result.size(); i++) {
             wcout<<"("<<result[i]._off<<","<<result[i]._len<<")";
+        }
+        wcout<<endl;
+    }
+
+    static void printTokenWithTag(const vector<Token> & result)
+    {
+        const ShiftContext & context = DictFactory::LexicalDict();
+        for(int i = 0; i< result.size(); i++) {
+            wcout<<"("<<result[i]._off<<","<<result[i]._len<<","<<context.getNature(result[i]._attr)<<")";
         }
         wcout<<endl;
     }
@@ -92,7 +116,11 @@ class Tokenizer: public ITokenizer
 public:
     Tokenizer()
     {
-        m_maxPaths = 8;
+        MAX_NPATH = Configuration::instance().getInt("MAX_NPATH", 8);
+        TOTAL_FREQ = Configuration::instance().getInt("TOTAL_FREQ", 9000000);
+        UNIGRAM_SMOTH_PROB = Configuration::instance().getDouble("UNIGRAM_SMOTH_PROB", 1.0/TOTAL_FREQ);
+        BIGRAM_SMOTH_FACTOR = Configuration::instance().getDouble("BIGRAM_SMOTH_FACTOR", 0.2);
+        cout<<"BIGRAM_SMOTH_FACTOR = "<<BIGRAM_SMOTH_FACTOR<<endl;
     }
 
     /*
@@ -129,29 +157,60 @@ public:
     * @param str : the input str to split.
     * @param result : result words.
     */
-    void oneGramSplit(const wstring & str, vector<Token> & result)
+    void uniGramSplit(const wstring & str, vector<Token> & result)
     {
         Graph wordGraph;
         // get all words
         genWordGraph(DictFactory::CoreDict(), str, wordGraph);
 
-        // n-short path
-        NShortPath shortPath(wordGraph, m_maxPaths, str.length());
-        shortPath.calcPaths();
+        doNShotPath(wordGraph, str, result);
+    }
 
-        Path p;
-        if(!shortPath.getBestPath(0, p)) return;
-        for(int i = 0; i < p.numValues(); i ++) {
-            int start = p.indexAt(i);
-            int len = p.valueAt(i) - start;
-            result.push_back(Token(start, len));
+    void biGramSplit(const wstring & str, vector<Token> & result)
+    {
+        Graph wordGraph;
+        // get all words
+        genWordGraph(DictFactory::CoreDict(), str, wordGraph, false);
+        genBigramWordGraph(DictFactory::CoreDict(), DictFactory::BigramDict(), str, wordGraph, false);
+        // n-short path
+        doNShotPath(wordGraph, str, result);
+    }
+
+    void mixSplit(const wstring & str, vector<Token> & result)
+    {
+        Graph wordGraph;
+        // get all words
+        genWordGraph(DictFactory::CoreDict(), str, wordGraph, true);
+        genBigramWordGraph(DictFactory::CoreDict(), DictFactory::BigramDict(), str, wordGraph, true);
+        // n-short path
+        doNShotPath(wordGraph, str, result);
+    }
+
+    void posTagging(const wstring & str, vector<Token> & result){
+        uniGramSplit(str, result);
+        vector<const WordNature *> observs;
+        WordNature * tmp = NULL;
+        const Dictionary & coreDict = DictFactory::CoreDict(); 
+        const ShiftContext & shiftContext = DictFactory::LexicalDict();
+        for(int i = 0; i < result.size(); i++){
+            const WordNature * info = coreDict.getWordInfo(str.substr(result[i]._off, result[i]._len));
+            if(info == NULL){
+                info = shiftContext.getUnknownNature();
+            }
+            observs.push_back(info);
+        }
+
+        SparseInstance<int> bestPos;
+        Viterbi::viterbi(observs, shiftContext, bestPos);
+        for(int i = 0; i < result.size(); i++){
+            result[i]._attr = bestPos.valueAt(i);
         }
     }
 
     void setMaxPaths(int maxs)
     {
         if(maxs >= 1 && maxs < 1000) {
-            m_maxPaths = maxs;
+            MAX_NPATH = maxs;
         }
     }
 protected:
@@ -268,7 +327,8 @@ protected:
     * 5|                           E
     * In the WordGraph, row is the word's start index, column is the end index.
     */
-    void genWordGraph(const Dictionary & dict,const wstring &str, Graph & graph)
+    void genWordGraph(const Dictionary & dict,const wstring &str, 
+        Graph & graph, bool queryFreqTotal = true)
     {
         vector<Token> atoms;
         atomSplit(str, atoms);
@@ -279,8 +339,11 @@ protected:
             for(int j = i; j < atome_size; j++) {
                 wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
                 if((info = dict.getWordInfo(word))) {
-                    double totalfrequnce = info->getSumValue() + 1.0;
-                    graph.setVal(atoms[i]._off, atoms[j]._off + atoms[j]._len, totalfrequnce/TOTAL_FREQ);
+                    double totalfrequnce = UNIGRAM_SMOTH_PROB;
+                    if(queryFreqTotal){
+                        totalfrequnce = (dict.getTotalFreq(word) + 1.0) / TOTAL_FREQ;
+                    }
+                    graph.setVal(atoms[i]._off, atoms[j]._off + atoms[j]._len, totalfrequnce);
                     lastj = j;
                 } else if(!dict.existPrefix(word)) {
                     break;
@@ -289,13 +352,65 @@ protected:
 
             // add word that not exist in dictionary.
             if(i > lastj) {
-                graph.setVal(atoms[i]._off, atoms[i]._off + atoms[i]._len, SMOTH_PROB);
+                graph.setVal(atoms[i]._off, atoms[i]._off + atoms[i]._len, UNIGRAM_SMOTH_PROB);
             }
 
         }
     }
 
+    void genBigramWordGraph(const Dictionary & coredict,const Dictionary & bigramdict,
+        const wstring &str, Graph & graph, bool addWordFrq = false)
+    {
+        const WordNature * info = NULL;
+        for(int i = 0; i < str.size(); i++) {
+            // 节点能到达的路径，更新路径值
+            SparseInstance<double> &ins = graph[i];
+            for(int j = ins.numValues() - 1; j >= 0; j--) {
+                int to = ins.attrAt(j);
+                wstring word1 = str.substr(i, to - i);
+                double wordFreq = 5;
+                wordFreq += coredict.getTotalFreq(word1);
+
+                SparseInstance<double> &insTo = graph[to];
+                for( int k = insTo.numValues() - 1; k >=0 ; k--) {
+                    int toEnd = insTo.attrAt(k);
+                    wstring w = word1 + L"@" + str.substr(to, toEnd - to);
+                    double twoFreq = 1.0;
+                    twoFreq += bigramdict.getTotalFreq(w);
+                    double probTwo = twoFreq / wordFreq;
+                    if(addWordFrq){
+                        probTwo = BIGRAM_SMOTH_FACTOR * probTwo + (1 - BIGRAM_SMOTH_FACTOR) * insTo.valueAt(k);
+                    }
+
+                    insTo.setValue(k, probTwo);
+                }
+            }
+        }
+
+        SparseInstance<double> &ins = graph[0];
+        for(int j = ins.numValues() - 1; j >= 0; j--) {
+            ins.setValue(j, 0.1);
+        }
+    }
+
+    void doNShotPath( Graph & wordGraph, const wstring &str, vector<Token> &result ) 
+    {
+        // n-short path
+        NShortPath shortPath(wordGraph, MAX_NPATH, str.length());
+        shortPath.calcPaths();
+
+        Path p;
+        if(!shortPath.getBestPath(0, p)) return;
+        for(int i = 0; i < p.numValues(); i ++) {
+            int start = p.attrAt(i);
+            int len = p.valueAt(i) - start;
+            result.push_back(Token(start, len));
+        }
+    }
 private:
-    int m_maxPaths;
+    int MAX_NPATH;
+    double TOTAL_FREQ;
+    double UNIGRAM_SMOTH_PROB;
+    double BIGRAM_SMOTH_FACTOR;
 };
 }

@@ -66,6 +66,20 @@ public class AutoTokenizer implements ITokenizer {
 		return genWords(str, res);
 	}
 	
+	@Override
+	public List<Token> POSTagging(String str) {
+		if(str == null || str.isEmpty()){
+			return null;
+		}
+		
+		List<Token> res = JSegJNI.POSTagging(str);
+		for(Token t:res){
+			t.word = str.substring(t.off, t.off + t.len);
+		}
+		
+		return res;
+	}
+	
 	public static void main(String[] args) {
 		AutoTokenizer tokenizer = new AutoTokenizer();
 		
@@ -74,7 +88,14 @@ public class AutoTokenizer implements ITokenizer {
 		System.out.println(tokenizer.uniGramSplit("他说的确实在理"));
 		System.out.println(tokenizer.biGramSplit("他说的确实在理"));
 		System.out.println(tokenizer.mixSplit("他说的确实在理"));
+		System.out.println(tokenizer.POSTagging("李岚清将在年会期间出席中国"
+		+"经济专题讨论会和世界经济论坛关于中国经济问题的全会，并在全会上发表演讲。他还将在"
+		+"这里会见世界经济论坛主席施瓦布和出席本次年会的联合国秘书长安南、瑞士联邦主席兼外长"
+		+"科蒂、一些其他国家的国家元首和政府首脑以及国际组织的领导人，并同他们就中国和世界经济发展问题交换看法。"));
 	}
+
+
+	
 
 
 }

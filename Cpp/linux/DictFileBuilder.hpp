@@ -35,23 +35,18 @@ namespace mingspy
 class DictFileBuilder
 {
 public:
-    static bool buildDict(const string & inputpath, const string & output)
+    static bool buildDict(const vector<string> &files, const string & output)
     {
 
         MSTimer timer;
-        vector<string> files;
-        getFiles(inputpath, files);
-        // input is a file.
-        if(files.size() == 0){
-            files.push_back(inputpath);
-        }
+
         Dictionary dict;
         int word_count = 0;
 
         for(int i = 0; i< files.size(); i++) {
-            if(files[i].rfind(".txt") == files[i].npos) {
-                continue;
-            }
+            //if(files[i].rfind(".txt") == files[i].npos) {
+            //    continue;
+            //}
             UTF8FileReader reader(files[i]);
             wstring * line;
             line = reader.getLine();
@@ -113,8 +108,8 @@ public:
                     dict.addWordInfo(word, info);
                 } else {
                     for(int i = 0; i< info->numValues(); i++) {
-                        int freq = info->valueAt(i) + natures->getAttrValue(info->indexAt(i));
-                        natures->setAttrValue(info->indexAt(i), freq);
+                        int freq = info->valueAt(i) + natures->getAttrValue(info->attrAt(i));
+                        natures->setAttrValue(info->attrAt(i), freq);
                     }
                     delete info;
                 }
@@ -131,8 +126,8 @@ public:
         bool result = dict.writeToFile(output);
         double end_time = timer.elapsed();
         cout<<"build finished! total used:"<<(end_time)
-            <<"ms\n   load words:"<<word_count<<" used:"<<(load_word_end_time)
-            <<"ms\n   serialize used:"<<(end_time - load_word_end_time)<<endl;
+            <<"s\n   load words:"<<word_count<<" used:"<<(load_word_end_time)
+            <<"s\n   serialize used:"<<(end_time - load_word_end_time)<<endl;
 
         return result;
     }

@@ -49,7 +49,20 @@ std::wstring s2ws(const std::string& s)
     return result;
 }
 
-string wc2c(wchar_t t){
+std::string ws2s(const std::wstring& ws)
+{
+    const wchar_t* _Source = ws.c_str();
+    size_t _Dsize = wcstombs(0,_Source,0) + 1;
+    char *_Dest = new char[_Dsize];
+    memset(_Dest, 0, _Dsize);
+    wcstombs(_Dest,_Source,_Dsize);
+    std::string result = _Dest;
+    delete []_Dest;
+    return result;
+}
+
+string wc2c(wchar_t t)
+{
     char ch[20];
     wctomb(ch, t);
     return string(ch);

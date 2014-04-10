@@ -9,19 +9,11 @@ extern "C" {
 #endif
 /*
  * Class:     com_mingspy_jseg_JSegJNI
- * Method:    SetDictFolder
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_mingspy_jseg_JSegJNI_SetDictFolder
-  (JNIEnv *, jobject, jstring);
-
-/*
- * Class:     com_mingspy_jseg_JSegJNI
  * Method:    MaxSplit
  * Signature: (Ljava/lang/String;)Ljava/util/List;
  */
 JNIEXPORT jobject JNICALL Java_com_mingspy_jseg_JSegJNI_MaxSplit
-  (JNIEnv *, jobject, jstring);
+  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     com_mingspy_jseg_JSegJNI
@@ -29,15 +21,31 @@ JNIEXPORT jobject JNICALL Java_com_mingspy_jseg_JSegJNI_MaxSplit
  * Signature: (Ljava/lang/String;)Ljava/util/List;
  */
 JNIEXPORT jobject JNICALL Java_com_mingspy_jseg_JSegJNI_FullSplit
-  (JNIEnv *, jobject, jstring);
+  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     com_mingspy_jseg_JSegJNI
- * Method:    OneGramSplit
+ * Method:    UniGramSplit
  * Signature: (Ljava/lang/String;)Ljava/util/List;
  */
-JNIEXPORT jobject JNICALL Java_com_mingspy_jseg_JSegJNI_OneGramSplit
-  (JNIEnv *, jobject, jstring);
+JNIEXPORT jobject JNICALL Java_com_mingspy_jseg_JSegJNI_UniGramSplit
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_mingspy_jseg_JSegJNI
+ * Method:    BiGramSplit
+ * Signature: (Ljava/lang/String;)Ljava/util/List;
+ */
+JNIEXPORT jobject JNICALL Java_com_mingspy_jseg_JSegJNI_BiGramSplit
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_mingspy_jseg_JSegJNI
+ * Method:    MixSplit
+ * Signature: (Ljava/lang/String;)Ljava/util/List;
+ */
+JNIEXPORT jobject JNICALL Java_com_mingspy_jseg_JSegJNI_MixSplit
+  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     com_mingspy_jseg_JSegJNI
@@ -45,7 +53,7 @@ JNIEXPORT jobject JNICALL Java_com_mingspy_jseg_JSegJNI_OneGramSplit
  * Signature: (Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_mingspy_jseg_JSegJNI_Test
-  (JNIEnv *, jobject, jstring);
+  (JNIEnv *, jclass, jstring);
 
 #ifdef __cplusplus
 }

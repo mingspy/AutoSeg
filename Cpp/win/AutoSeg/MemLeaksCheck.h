@@ -42,7 +42,8 @@ inline void Exit()
     assert( i == 0);
 }
 
-inline void CheckMemLeaks(){
+inline void CheckMemLeaks()
+{
     atexit(Exit);
     _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 }
@@ -51,7 +52,8 @@ inline void Exit()
 {
 }
 
-inline void CheckMemLeaks(){
+inline void CheckMemLeaks()
+{
 }
 #endif
 

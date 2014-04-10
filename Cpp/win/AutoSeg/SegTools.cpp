@@ -29,13 +29,13 @@ void estimateTokenizer(const vector<wstring>& test_datas, int testSize,
                        const vector<vector<wstring> >& refer_datas,
                        ITokenizer & tokenizer, int choice)
 {
-  
+
     MSTimer timer;
     vector<vector<wstring> > seg_results;
     for(int i = 0; i < test_datas.size(); i++) {
         vector<Token> tokens;
         vector<wstring> words;
-        switch(choice){
+        switch(choice) {
         case 1:
             tokenizer.maxSplit(test_datas[i], tokens);
             break;
@@ -88,7 +88,7 @@ void estimateTokenizer(const vector<wstring>& test_datas, int testSize,
         }
     }
 
-    
+
     double precision = (segCorrects + 0.01)/(totalSegs + 0.01);
     double recall = (segCorrects + 0.01)/(totalWords + 0.01);
     double f2 = precision * recall * 2 / (precision + recall);
@@ -100,7 +100,7 @@ void estimateTokenizer(const vector<wstring>& test_datas, int testSize,
 
 void estimateSegmetors()
 {
-    MSTimer timer;   
+    MSTimer timer;
     DictFactory::initialize();
     cout<<"load dictionary used:"<<timer<<endl;
     timer.restart();
@@ -144,7 +144,7 @@ void estimateSegmetors()
     AutoTokenizer autoSeg;
     int choice = 0;
     string input;
-    while(true){
+    while(true) {
         cout<<"Input the number ahead to run test:"<<endl
             <<"1. maxSplit\t"
             <<"2. fullSplit\t"
@@ -153,15 +153,15 @@ void estimateSegmetors()
             <<"5. mixSplit\t"
             <<endl<<"0. quit."<<endl
             <<">";
-        
+
         cin>>input;
         choice = atoi(input.c_str());
         cin.clear();
-        if(choice <= 0 || choice > 5){
+        if(choice <= 0 || choice > 5) {
             cout<<"quit.";
             break;
         }
-        
+
         cout<<endl
             <<"estimate forward tokenizer."<<endl;
         estimateTokenizer(test_datas,test_size,refer_datas, tokenizer,choice);
@@ -170,11 +170,12 @@ void estimateSegmetors()
             <<"estimate AutoSegmentor."<<endl;
         estimateTokenizer(test_datas,test_size,refer_datas, autoSeg,choice);
     }
-    
+
 
 }
 
-void printHelp(const char * name){
+void printHelp(const char * name)
+{
     cout<<"Welcome use"<<name<<endl
         <<"to build core.dict using:"<<endl
         <<"\t -b input output "<<endl
@@ -183,17 +184,18 @@ void printHelp(const char * name){
         <<"\t -t   :default core.dic should place in ../data/"<<endl;
 }
 
-void buildCoreDict(int argc, char ** argv){
+void buildCoreDict(int argc, char ** argv)
+{
     string input = "../data/words/core/";
     string output = "../data/core.dic";
-    if(argc == 4){
+    if(argc == 4) {
         input = argv[2];
         output = argv[3];
     }
     vector<string> files;
     getFiles(input, files);
     // input is a file.
-    if(files.size() == 0){
+    if(files.size() == 0) {
         files.push_back(input);
     }
     DictFileBuilder::buildDict(files, output);
@@ -205,17 +207,17 @@ int main(int argc, char ** argv)
 #else
     cout<<"not runing on windows!"<<endl;
 #endif
-   
+
     //CheckMemLeaks();
     {
-        if(argc < 2){
+        if(argc < 2) {
             printHelp(argv[0]);
             return -1;
         }
         string arg1 = argv[1];
-        if(arg1 == "-t"){
+        if(arg1 == "-t") {
             estimateSegmetors();
-        }else if(arg1 == "-b"){
+        } else if(arg1 == "-b") {
             buildCoreDict(argc, argv);
         }
 

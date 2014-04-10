@@ -35,6 +35,7 @@ public abstract class JSegJNI {
 	
 	public static native List<Token> MixSplit(String str);
 	
-	public static native void Test(String str);
+	public static native List<Token> POSTagging(String str);
+	
 
 }

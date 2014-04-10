@@ -8,4 +8,5 @@ public interface ITokenizer {
 	List<String> uniGramSplit(String str);
 	List<String> biGramSplit(String str);
 	List<String> mixSplit(String str);
+	List<Token> POSTagging(String str);
 }

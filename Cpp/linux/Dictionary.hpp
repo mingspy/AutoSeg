@@ -26,19 +26,15 @@
 #include "MemLeaksCheck.h"
 
 #include "HashMapDef.hpp"
+#include <string>
 
 namespace mingspy
 {
 
 //const wstring const NATURE_UNDEF = L"UNDEF";
-
+const wstring NATURE_FREQTOTAL=L"FREQTOL";
 class Dictionary
 {
-private:
-    DATrie datrie;
-    vector<wstring> natures;
-    hash_map<wstring, int> nature_index;
-    MemoryPool<> mem_pool;
 private:
     static const int DICT_SIGNATURE = 0x112fd0ac;
 public:
@@ -76,22 +72,20 @@ public:
         return true;
     }
 
-    int getNatureIndex(const wstring &nature)
+    int getNatureIndex(const wstring &nature) const
     {
         if(nature_index.find(nature) != nature_index.end()) {
-            return nature_index[nature];
+            return nature_index.find(nature)->second;
         }
         return -1;
     }
 
-    const wstring & getNature(int index)
+    wstring getNature(int index) const
     {
         if(index < natures.size()) {
             return natures[index];
         }
-        //return NATURE_UNDEF;
-        static wstring UNDEF = L"UNDEF";
-        return UNDEF;
+        return L"UNDEF";
     }
 
     bool addWordInfo(const wstring & word, WordNature * info)
@@ -102,6 +96,29 @@ public:
     const WordNature * getWordInfo(const wstring & word) const
     {
         return (const WordNature *)datrie.retrieve(word.c_str());
+    }
+
+    int getNatureFreq(const wstring & word, const wstring & nature) const
+    {
+        const WordNature * pnatures = getWordInfo(word);
+        if(pnatures != NULL){
+            int idx = getNatureIndex(nature);
+            if(idx >= 0){
+                return pnatures->getAttrValue(idx);
+            }
+        }
+
+        return 0;
+    }
+
+    int getTotalFreq(const wstring & word) const
+    {
+        const WordNature * pnatures = getWordInfo(word);
+        if(pnatures != NULL){
+            return pnatures->sumOfValues();
+        }
+
+        return 0;
     }
 
     bool existPrefix(const wstring & prefix) const
@@ -162,7 +179,63 @@ private:
         datrie.readFromFile(pfile);
     }
 
+    protected:
+        DATrie datrie;
+        vector<wstring> natures;
+        hash_map<wstring, int> nature_index;
+        MemoryPool<> mem_pool;
+
 };
 
+class ShiftContext:public Dictionary{
+public:
+    ShiftContext():Dictionary(){
+        genUnknownNauture();
+    }
+
+    ShiftContext(const string & file):Dictionary(file){
+        genUnknownNauture();
+    }
+
+    ~ShiftContext(){
+        if(_unknownNature){
+            delete _unknownNature;
+        }
+    }
+
+    int getNatureTotal(int natureIndex) const
+    {
+        if(natureIndex < natures.size()){
+            getTotalFreq(natures[natureIndex]);
+        }
+        return 0;
+    }
+
+    double getCoProb(int from, int to) const {
+        if(from < natures.size() || to < natures.size()){
+            const WordNature * fromInfo = getWordInfo(natures[from]);
+            double toFreq = fromInfo->getAttrValue(to) + 1.0;
+            double FromTotal = fromInfo->sumOfValues() + 44.0;
+            return toFreq / FromTotal;
+        }
+
+        return 0.000001;
+    }
+
+    const WordNature * getUnknownNature() const{
+        return _unknownNature;
+    }
+
+private:
+    void genUnknownNauture(){
+        _unknownNature = new WordNature();
+        for(int i = 0; i < natures.size(); i++ ){
+             _unknownNature->setAttrValue(i, 1);
+        }
+    }
+
+private:
+    WordNature * _unknownNature;
+};
 
 }

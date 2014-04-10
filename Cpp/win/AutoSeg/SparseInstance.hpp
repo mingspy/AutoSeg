@@ -107,7 +107,8 @@ public:
         return m_AttValues[position];
     }
 
-    inline void setValue(int position, const T & val) {
+    inline void setValue(int position, const T & val)
+    {
         assert(position < m_NumValues);
         m_AttValues[position] = val;
     }
@@ -165,12 +166,12 @@ public:
 
     T  sumOfValues() const
     {
-        if(_sumVs == ZERO){
+        if(_sumVs == ZERO) {
             for(int i = 0; i < m_NumValues; i++) {
                 _sumVs += m_AttValues[i];
             }
         }
-        
+
         return _sumVs;
     }
 
@@ -193,28 +194,28 @@ public:
         } else {
             // need insert a new value after index.
             index ++; // now insert at index.
-                T * tempValues = new T[m_NumValues + 1];
-                int * tempIndices = new int[m_NumValues + 1];
-                if(m_NumValues > 0) {
-                    // move old data before(include) index.
-                    memcpy(tempIndices, m_Indices, index * sizeof(int));
-                    memcpy(tempValues, m_AttValues, index * sizeof(T));
-                    if(index  < m_NumValues ) {
-                        memcpy(tempIndices + index + 1, m_Indices + index,
-                               (m_NumValues - index) * sizeof(int));
-                        memcpy(tempValues + index + 1, m_AttValues + index ,
-                               (m_NumValues - index) * sizeof(T));
-                    }
+            T * tempValues = new T[m_NumValues + 1];
+            int * tempIndices = new int[m_NumValues + 1];
+            if(m_NumValues > 0) {
+                // move old data before(include) index.
+                memcpy(tempIndices, m_Indices, index * sizeof(int));
+                memcpy(tempValues, m_AttValues, index * sizeof(T));
+                if(index  < m_NumValues ) {
+                    memcpy(tempIndices + index + 1, m_Indices + index,
+                           (m_NumValues - index) * sizeof(int));
+                    memcpy(tempValues + index + 1, m_AttValues + index ,
+                           (m_NumValues - index) * sizeof(T));
                 }
+            }
 
-                tempIndices[index] = attIndex;
-                tempValues[index] = value;
-                delete [] m_AttValues;
-                delete [] m_Indices;
+            tempIndices[index] = attIndex;
+            tempValues[index] = value;
+            delete [] m_AttValues;
+            delete [] m_Indices;
 
-                m_AttValues = tempValues;
-                m_Indices = tempIndices;
-                m_NumValues ++;
+            m_AttValues = tempValues;
+            m_Indices = tempIndices;
+            m_NumValues ++;
         }
     }
 

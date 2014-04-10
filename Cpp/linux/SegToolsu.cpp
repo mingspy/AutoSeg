@@ -24,144 +24,8 @@ using namespace mingspy;
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
 
-void testDAT()
-{
-    DATrie trie(NULL);
-    ifstream inf;
-    inf.open("../words.txt"); //reading utf-8 file.
-    string line;
-    vector<wstring> words;
-    int i = 0;
-    while(getline(inf, line)) {
-        wstring word = Utf8ToUnicode(line);
-        //wcout<<word<<endl;
-        words.push_back(word);
-        if(++i == 100) break;
-    }
-    inf.close();
 
-    // test add
-    MSTimer timer;
-    i = 0;
-    for(vector<wstring>::iterator it = words.begin(); it != words.end(); it ++) {
-        i++;
-        trie.add(it->c_str(),(void *)it->c_str());
-        if(i % 1000 == 0) {
-            cout<<"\radded "<< i;
-        }
-    }
-    cout<<"\nadd words "<<words.size()<< timer<<endl;
-
-    timer.restart();
-    // testing write to file.
-    trie.setDataWriter(WriteTrieStrToFile);
-    trie.writeToFile("e:/tmp/trie.dat");
-    cout<<"write datrie (words:"<<words.size()<< ") "<<timer<<" ms"<<endl;
-
-    // testing read from file.
-    timer.restart();
-    DATrie trie2;
-    trie2.setDataReader(ReadTrieStrFromFile);
-    trie2.readFromFile("e:/tmp/trie.dat");
-    cout<<"read datrie (words:"<<words.size()<< ") "<<timer<<endl;
-
-    // test retrieve...
-    int notfound = 0;
-    wchar_t * p = NULL;
-    timer.restart();
-    for(int j = 0; j < words.size(); j++) {
-        void * result = trie2.retrieve(words[j].c_str());
-        if( result == NULL) {
-            notfound ++;
-        } else {
-            p = static_cast<wchar_t *>(result);
-            if(p == NULL || words[j] != p) {
-                notfound ++;
-            } else {
-                if(j % 10000 == 0) {
-                    wcout << *p <<endl;
-                }
-            }
-        }
-
-    }
-
-    cout<<"notfound = "<<notfound<<timer<<endl;
-    assert(notfound == 0);
-}
-
-void testSparseInstance()
-{
-    SparseInstance<double> instance;
-    instance.setAttrValue(20, 20.01);
-    instance.setAttrValue(10,10.33);
-    instance.setAttrValue(30,30);
-    instance.setAttrValue(60,60);
-    instance.setAttrValue(60,600);
-    instance.setAttrValue(50,50);
-    instance.setAttrValue(1,1);
-    cout<<"get(20)="<<instance.getAttrValue(20)<<endl;
-    cout<<"get(0)="<<instance.getAttrValue(0)<<endl;
-    cout<<"get(200)="<<instance.getAttrValue(200)<<endl;
-    instance.removeAttr(5);
-    instance.removeAttr(30);
-    cout<<instance<<endl;
-    FILE * file = fopen("e:/tmp/instance.data","wb+");
-    SparseInstance<double>::DoWriteSIToFile(file, &instance);
-    fseek(file, 0, SEEK_SET);
-    SparseInstance<double> *i = SparseInstance<double>::DoReadSIFromFile(file, NULL);
-    cout<<*i<<endl;
-    assert(instance.getAttrValue(20) == i->getAttrValue(20));
-    assert(instance.getAttrValue(200) == i->getAttrValue(200));
-    assert(instance.getAttrValue(0) == i->getAttrValue(0));
-
-    delete i;
-}
-
-void testMatrix()
-{
-    Matrix<int> matrix;
-    cout<<matrix.val(0,0)<<endl;
-    assert(matrix.val(3,3) == 0);
-}
-
-void testWordDictionary()
-{
-    DictFileBuilder::buildDict("..\\data\\coreWordInfo.txt","..\\data\\core.dic");
-
-    MSTimer timer;
-    Dictionary * dict = new Dictionary("..\\data\\core.dic");
-    cout<<"load dictionary"<<timer<<endl;
-    cout<<*dict->getWordInfo(L"咨询")<<endl;
-
-    timer.restart();
-    delete dict;
-    cout<<"unload dictionary"<<timer<<endl;
-}
-
-void testSegment()
-{
-    vector<Token> atoms;
-    wstring str = L"in 1998年，something important happened,中华人民共和国正式﹌成立了";
-    Tokenizer tokenizer;
-    tokenizer.maxSplit(str, atoms);
-    Tokenizer::printTokens(atoms);
-    atoms.clear();
-    tokenizer.fullSplit(str, atoms);
-    Tokenizer::printTokens(atoms);
-    vector<Token> result;
-
-    tokenizer.oneGramSplit(L"他说的确实在理", result);
-    Tokenizer::printTokens(result);
-    result.clear();
-    tokenizer.maxSplit(L"他说的确实在理", result);
-    Tokenizer::printTokens(result);
-    result.clear();
-    tokenizer.fullSplit(L"他说的确实在理", result);
-    Tokenizer::printTokens(result);
-}
-
-void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
+void estimateTokenizer(const vector<wstring>& test_datas, int testSize,
                        const vector<vector<wstring> >& refer_datas,
                        ITokenizer & tokenizer, int choice)
 {
@@ -179,7 +43,13 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
             tokenizer.fullSplit(test_datas[i], tokens);
             break;
         case 3:
-            tokenizer.oneGramSplit(test_datas[i], tokens);
+            tokenizer.uniGramSplit(test_datas[i], tokens);
+            break;
+        case 4:
+            tokenizer.biGramSplit(test_datas[i], tokens);
+            break;
+        case 5:
+            tokenizer.mixSplit(test_datas[i], tokens);
             break;
         }
         Tokenizer::output(test_datas[i], tokens, words);
@@ -187,25 +57,23 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
     }
 
     double elapsed = timer.elapsed();
-    cout<<"segment "<<test_size<<" bytes data used "<<elapsed<<"ms, speed "
-        <<(test_size/1024.0/1024.0/elapsed)<<"m/s"
-        <<endl;
+    double speed = testSize/1024.0/1024.0/elapsed;
     // estimates
     wstring punctuations = L"＊，。？（）”“＋＋＋－－－－．％、／＝＞±％×××———————－‘’……‰※→∥∶≠①②③④⑤⑥⑦⑧⑵⑶─□▲△○●★、。”〈〉《》『』〔〕";
-    int refer_words = 0;
-    int total_correct = 0;
-    int total_segmented = 0;
+    int totalWords = 0;
+    int segCorrects = 0;
+    int totalSegs = 0;
     for(int i = 0; i < seg_results.size(); i++) {
-        refer_words += refer_datas[i].size();
-        total_segmented += seg_results[i].size();
+        totalWords += refer_datas[i].size();
+        totalSegs += seg_results[i].size();
         for(int j = 0; j < refer_datas[i].size(); j++) {
             if(punctuations.find(refer_datas[i][j]) != wstring::npos) {
-                refer_words --;
+                totalWords --;
             }
         }
         for(int j = 0; j < seg_results[i].size(); j++) {
             if(punctuations.find(seg_results[i][j]) != wstring::npos) {
-                total_segmented --;
+                totalSegs --;
                 continue;
             }
 
@@ -213,30 +81,28 @@ void estimateTokenizer(const vector<wstring>& test_datas, int test_size,
             int n = min(j+4, refer_datas[i].size());
             for(int k = m; k < n; k++) {
                 if(seg_results[i][j] == refer_datas[i][k]) {
-                    total_correct ++;
+                    segCorrects ++;
                     break;
                 }
             }
         }
     }
 
-    cout<<"refer words:"<< refer_words<<" segmented :"<<total_segmented
-        <<" corrected:"<<total_correct<<endl;
-    double precision = (total_correct + 0.01)/(total_segmented + 0.01);
-    double recall = (total_correct + 0.01)/(refer_words + 0.01);
+    
+    double precision = (segCorrects + 0.01)/(totalSegs + 0.01);
+    double recall = (segCorrects + 0.01)/(totalWords + 0.01);
     double f2 = precision * recall * 2 / (precision + recall);
-    cout<<"\tprecision = "<<precision<<endl;
-    cout<<"\trecall = "<<recall<<endl;
-    cout<<"\tf2 = "<<f2<<endl;
+    cout<<"TestSize(byte)   elapsed(s)  speed(m/s)  TotalWords  SegWords  correctWords  precision  recall        F2"<<endl
+        <<"    "<<testSize<<"      "<<elapsed<<"       "<<speed<<"       "<<totalWords<<"       "
+        <<totalSegs<<"    "<<segCorrects<<"    "<<precision
+        <<"    "<<recall<<"    "<<f2<<endl;
 }
 
 void estimateSegmetors()
 {
-    MSTimer timer;
-    
-    //DictFileBuilder::buildInverseDict("../data/estimate/coreWordInfo.txt","../data/estimate/inverseCore.dic");
-    DictFactory::initialize("../data/");
-    cout<<"load dict "<<timer<<endl;
+    MSTimer timer;   
+    DictFactory::initialize();
+    cout<<"load dictionary used:"<<timer<<endl;
     timer.restart();
     // load test data.
     vector<wstring> test_datas;
@@ -280,16 +146,18 @@ void estimateSegmetors()
     string input;
     while(true){
         cout<<"Input the number ahead to run test:"<<endl
-            <<"1. maxSplit"<<endl
-            <<"2. fullSplit"<<endl
-            <<"3. oneGramSplit"<<endl
-            <<"0. quit."<<endl
+            <<"1. maxSplit\t"
+            <<"2. fullSplit\t"
+            <<"3. oneGramSplit\t"
+            <<"4. biGramSplit\t"
+            <<"5. mixSplit\t"
+            <<endl<<"0. quit."<<endl
             <<">";
         
         cin>>input;
         choice = atoi(input.c_str());
         cin.clear();
-        if(choice <= 0 || choice > 3){
+        if(choice <= 0 || choice > 5){
             cout<<"quit.";
             break;
         }
@@ -316,13 +184,19 @@ void printHelp(const char * name){
 }
 
 void buildCoreDict(int argc, char ** argv){
-    string input = "../data/words/";
+    string input = "../data/words/core/";
     string output = "../data/core.dic";
     if(argc == 4){
         input = argv[2];
         output = argv[3];
     }
-    DictFileBuilder::buildDict(input, output);
+    vector<string> files;
+    getFiles(input, files);
+    // input is a file.
+    if(files.size() == 0){
+        files.push_back(input);
+    }
+    DictFileBuilder::buildDict(files, output);
 }
 int main(int argc, char ** argv)
 {
@@ -334,12 +208,6 @@ int main(int argc, char ** argv)
    
     //CheckMemLeaks();
     {
-        cout<<"sizeof(int):"<<sizeof(int)<<endl;
-        //estimateSegmetors();
-        //AutoTokenizer tokenizer;
-        //vector<Token> res;
-        //tokenizer.oneGramSplit(L"他说的确实在理", res);
-        //tokenizer.printTokens(res);
         if(argc < 2){
             printHelp(argv[0]);
             return -1;

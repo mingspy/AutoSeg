@@ -181,7 +181,8 @@ void testSegment()
 }
 
 
-void printHelp(const char * name){
+void printHelp(const char * name)
+{
     cout<<"Welcome use"<<name<<endl
         <<"to build core.dict using:"<<endl
         <<"\t -b input output "<<endl
@@ -198,13 +199,13 @@ int main(int argc, char ** argv)
 #else
     cout<<"not runing on windows!"<<endl;
 #endif
-   
+
     //CheckMemLeaks();
     {
         cout<<"sizeof(wchar_t):"<<sizeof(wchar_t)<<endl;
-        Tokenizer t;
+        AutoTokenizer t;
         vector<Token> rs;
-        t.posTagging(L"他说的确实在理", rs);
+        t.posTagging(L"李岚清将在年会期间出席中国经济专题讨论会和世界经济论坛关于中国经济问题的全会，并在全会上发表演讲。他还将在这里会见世界经济论坛主席施瓦布和出席本次年会的联合国秘书长安南、瑞士联邦主席兼外长科蒂、一些其他国家的国家元首和政府首脑以及国际组织的领导人，并同他们就中国和世界经济发展问题交换看法。", rs);
         Tokenizer::printTokenWithTag(rs);
     }
     wcout<<L"Press enter to return."<<endl;

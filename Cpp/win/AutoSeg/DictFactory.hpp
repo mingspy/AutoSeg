@@ -47,7 +47,7 @@ public:
         if(_loaded) return;
         Configuration &conf = Configuration::instance();
         _coreDict = new Dictionary(conf.getString(KEY_CORE_PATH));
-        if(conf.getBool(KEY_ISLOAD_INVS)){
+        if(conf.getBool(KEY_ISLOAD_INVS)) {
             _inverseCoreDict = new Dictionary(conf.getString(KEY_INVS_PATH));
         }
         _lexicalDict = new ShiftContext(conf.getString(KEY_LEXICAL_PATH));

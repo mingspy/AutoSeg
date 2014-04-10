@@ -32,11 +32,14 @@ namespace mingspy{
     static const string DEFAULT_CONF_PATH = "D:/autoseg/data/autoseg.conf";
     static const string DEFAULT_CORE_DICT_PATH = "D:/autoseg/data/core.dic";
     static const string DEFAULT_INVS_DICT_PATH = "D:/autoseg/data/invs.dic";
+    static const string DEFAULT_LEXICAL_DICT_PATH = "D:/autoseg/data/lexical.dic";
     
 #else
     static const string DEFAULT_CONF_PATH = "/opt/apps/autoseg/data/autoseg.conf";
     static const string DEFAULT_CORE_DICT_PATH = "/opt/apps/autoseg/data/core.dic";
     static const string DEFAULT_INVS_DICT_PATH = "/opt/apps/autoseg/data/invs.dic";
+    static const string DEFAULT_LEXICAL_DICT_PATH = "/opt/apps/autoseg/data/lexical.dic";
+
 #endif
     static const string DEFAULT_ISLOAD_INVS = "false";
 
@@ -44,6 +47,7 @@ namespace mingspy{
     const string KEY_CONF_PATH = "CONF_PATH";
     const string KEY_CORE_PATH = "CORE_DICT_PATH";
     const string KEY_INVS_PATH = "INVS_DICT_PATH";
+    const string KEY_LEXICAL_PATH = "LEXICAL_DICT_PATH";
     const string KEY_ISLOAD_INVS = "ISLOAD_INVS";
 
     static ResGuard _confGuard;
@@ -125,6 +129,7 @@ namespace mingspy{
             _confs[KEY_CONF_PATH] = DEFAULT_CONF_PATH;
             _confs[KEY_CORE_PATH] = DEFAULT_CORE_DICT_PATH;
             _confs[KEY_INVS_PATH] = DEFAULT_INVS_DICT_PATH;
+            _confs[KEY_LEXICAL_PATH] = DEFAULT_LEXICAL_DICT_PATH;
             _confs[KEY_ISLOAD_INVS] = DEFAULT_ISLOAD_INVS;
         }
     private:
