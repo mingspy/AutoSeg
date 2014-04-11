@@ -31,7 +31,7 @@
 namespace mingspy
 {
 
-//const wstring const NATURE_UNDEF = L"UNDEF";
+const wstring  NATURE_UNDEF = L"UNDEF";
 const wstring NATURE_FREQTOTAL=L"FREQTOL";
 class Dictionary
 {
@@ -85,7 +85,7 @@ public:
         if(index < natures.size()) {
             return natures[index];
         }
-        return L"UNDEF";
+        return NATURE_UNDEF;
     }
 
     bool addWordInfo(const wstring & word, WordNature * info)

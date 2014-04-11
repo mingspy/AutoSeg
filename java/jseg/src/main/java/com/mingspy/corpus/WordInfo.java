@@ -5,8 +5,8 @@ import java.util.Map.Entry;
 
 
 public class WordInfo {
-	public static final String FIELD_TOTAL="FREQTOL";
-	public static final String FIELD_TWOFREQ="FREQTWO";
+	public static final String FIELD_TOTAL="FTL";
+	public static final String FIELD_TWOFREQ="FBI";
 	private String word;
 	private Map<String, Integer> natures = new HashMap<String,Integer>();
 	
@@ -15,11 +15,15 @@ public class WordInfo {
 	}
 	
 	public void addNature(String nature){
+		addNature(nature, 1);
+	}
+	
+	public void addNature(String nature, int freq){
 		Integer times = natures.get(nature);
 		if(times == null){
-			times = new Integer(1);
+			times = new Integer(freq);
 		}else{
-			times ++;
+			times += freq;
 		}
 		
 		natures.put(nature, times);

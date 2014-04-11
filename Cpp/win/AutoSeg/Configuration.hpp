@@ -48,6 +48,7 @@ const string ENV_AUTOSEG_CONF_PATH = "AUTOSEG_CONF_PATH";
 const string KEY_CONF_PATH = "CONF_PATH";
 const string KEY_CORE_PATH = "CORE_DICT_PATH";
 const string KEY_INVS_PATH = "INVS_DICT_PATH";
+const string KEY_UDF_DICT_PATH = "UDF_DICT_PATH";
 const string KEY_LEXICAL_PATH = "LEXICAL_DICT_PATH";
 const string KEY_ISLOAD_INVS = "ISLOAD_INVS";
 
@@ -126,6 +127,9 @@ private:
         LineFileReader reader(path);
         string * line = NULL;
         while((line = reader.getLine()) != NULL) {
+            if(line->at(0) == '#'){
+                continue;
+            }
             int idx = line->find_first_of('=');
             if(idx != line->npos) {
                 string key = trim(line->substr(0, idx));

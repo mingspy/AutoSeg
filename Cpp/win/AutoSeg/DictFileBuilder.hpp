@@ -70,7 +70,7 @@ public:
             for(int i = 0; i < vec.size(); i++) {
                 dict.addNature(vec[i]);
             }
-
+            dict.addNature(NATURE_UNDEF);
             wchar_t wordSeperator = L'\t';
             wstring natureSeperator = L",";
             wchar_t freqSeperator = L':';
@@ -81,6 +81,8 @@ public:
                 WordNature * info = new WordNature();
                 if(wordIndex == wstring::npos) {
                     word = *line;
+                    int index = dict.getNatureIndex(NATURE_UNDEF);
+                    info->setAttrValue(index, 1);
                 } else {
                     word = line->substr(0, wordIndex);
                     wstring infostr = line->substr(wordIndex + 1);
