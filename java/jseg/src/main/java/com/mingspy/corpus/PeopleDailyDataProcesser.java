@@ -510,8 +510,6 @@ public class PeopleDailyDataProcesser {
 			return;
 		}
 
-		LineFileWriter trainData = new LineFileWriter(out_dir
-				+ "train_data.txt");
 		LineFileWriter testData = new LineFileWriter(out_dir + "test_data.txt");
 		LineFileWriter testRefer = new LineFileWriter(out_dir
 				+ "test_refer.txt");
@@ -530,8 +528,6 @@ public class PeopleDailyDataProcesser {
 					} else { // 2014年的
 						tokens = line.split(" ");
 					}
-					line = line.substring(line.indexOf("  ") + 2);
-					tokens = line.split("  ");
 
 					testRefer.writeLine(line);
 					StringBuilder strBuilder = new StringBuilder();
@@ -549,7 +545,6 @@ public class PeopleDailyDataProcesser {
 			reader.close();
 		}
 
-		trainData.close();
 		testData.close();
 		testRefer.close();
 
@@ -631,14 +626,14 @@ public class PeopleDailyDataProcesser {
 		MSTimer timer = new MSTimer();
 		PeopleDailyDataProcesser peopleDaily = new PeopleDailyDataProcesser();
 
-		// peopleDaily.prepairTrainTestData("D:/autoseg/data/corpus",
-		// "D:/autoseg/data/estimate/");
+		 peopleDaily.prepairTrainTestData("D:/autoseg/data/corpus/trian",
+		 "D:/autoseg/data/estimate/");
 
 		// peopleDaily.preHandleCorpus("D:/autoseg/data/corpus/orign",
 		// "D:/autoseg/data/corpus/trian");
 
-		peopleDaily.trianCorpusData("D:/autoseg/data/corpus/trian",
-				"D:/autoseg/data/words/");
+		//peopleDaily.trianCorpusData("D:/autoseg/data/corpus/trian",
+		//		"D:/autoseg/data/words/");
 
 		System.out.println("done!!used : " + timer);
 
