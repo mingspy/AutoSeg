@@ -29,13 +29,13 @@ using namespace std;
 
 namespace mingspy
 {
-#if _MSC_VER > 1000
-static const string DEFAULT_CONF_PATH = "D:/autoseg/data/autoseg.conf";
-static const string DEFAULT_CORE_DICT_PATH = "D:/autoseg/data/core.dic";
-static const string DEFAULT_INVS_DICT_PATH = "D:/autoseg/data/invs.dic";
-static const string DEFAULT_LEXICAL_DICT_PATH = "D:/autoseg/data/lexical.dic";
+#if _MSC_VER > 1000  // windows
+static const string DEFAULT_CONF_PATH = "D:/autoseg/data/autoseg.conf"; // default config path
+static const string DEFAULT_CORE_DICT_PATH = "D:/autoseg/data/core.dic"; // default core dictionary path
+static const string DEFAULT_INVS_DICT_PATH = "D:/autoseg/data/invs.dic"; // default inverse dictionary path
+static const string DEFAULT_LEXICAL_DICT_PATH = "D:/autoseg/data/lexical.dic"; // default lexical dictionary path
 
-#else
+#else  // linux
 static const string DEFAULT_CONF_PATH = "/opt/apps/autoseg/data/autoseg.conf";
 static const string DEFAULT_CORE_DICT_PATH = "/opt/apps/autoseg/data/core.dic";
 static const string DEFAULT_INVS_DICT_PATH = "/opt/apps/autoseg/data/invs.dic";
@@ -44,8 +44,9 @@ static const string DEFAULT_LEXICAL_DICT_PATH = "/opt/apps/autoseg/data/lexical.
 #endif
 static const string DEFAULT_ISLOAD_INVS = "false";
 
-const string ENV_AUTOSEG_CONF_PATH = "AUTOSEG_CONF_PATH";
-const string KEY_CONF_PATH = "CONF_PATH";
+const string ENV_AUTOSEG_CONF_PATH = "AUTOSEG_CONF_PATH"; // seg config key in environment
+// keys in config file :
+const string KEY_CONF_PATH = "CONF_PATH";  
 const string KEY_CORE_PATH = "CORE_DICT_PATH";
 const string KEY_INVS_PATH = "INVS_DICT_PATH";
 const string KEY_UDF_DICT_PATH = "UDF_DICT_PATH";
