@@ -1,9 +1,13 @@
 package com.mingspy.nlp.spam;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.util.Random;
 
 import com.mingspy.utils.MSTimer;
 import com.mingspy.utils.io.LineFileReader;
+import com.mingspy.utils.io.LineFileWriter;
 
 public class SpamFilterEstimator {
 	
@@ -85,8 +89,28 @@ public class SpamFilterEstimator {
 		}
 	}
 
+	public static void prepairTestDoc(String inpath, String outpath, boolean isSpam) throws UnsupportedEncodingException, FileNotFoundException{
+		LineFileReader reader = new LineFileReader(inpath);
+		LineFileWriter writer = new LineFileWriter(outpath);
+		String line = null;
+		Random r = new Random();
+		String header = null;
+		if(isSpam){
+			header = "@class:spam";
+		}else{
+			header = "@class:health";
+		}
+		while((line = reader.nextLine()) != null){
+			if(r.nextInt() % 10 == 1){
+				writer.writeLine(header);
+				writer.writeLine(line);
+			}
+		}
+	}
 	public static void main(String[] args) throws Exception {
-		new SpamFilterEstimator().estimate(new PGSpamFilter(), "e:/tmp/spam/estimate/");
-		new SpamFilterEstimator().estimate(new NBSpamFilter(), "e:/tmp/spam/estimate/");
+		prepairTestDoc("e:/tmp/spam/saa/spam_questions.txt","e:/tmp/spam/saa/estimate/estimate_spam.txt", true);
+		prepairTestDoc("e:/tmp/spam/saa/health_questions.txt","e:/tmp/spam/saa/estimate/estimate_health.txt", false);
+		new SpamFilterEstimator().estimate(new PGSpamFilter(), "e:/tmp/spam/saa/estimate/");
+		new SpamFilterEstimator().estimate(new NBSpamFilter(), "e:/tmp/spam/saa/estimate/");
 	}
 }

@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.mingspy.nlp.SpliterUtils;
+import com.mingspy.nlp.StopWords;
+
 
 /**
  * Paul Graham bayes spam filter<br>
@@ -36,7 +38,7 @@ public class PGSpamFilter implements ISpamFilter{
 	 */
 	public double filter(String doc) {
 		
-		List<String> tokens = SpliterUtils.split(doc);
+		List<String> tokens = SpliterUtils.split(SpliterUtils.stem(doc));
 		if (tokens == null) {
 			return 0;
 		}
@@ -61,12 +63,11 @@ public class PGSpamFilter implements ISpamFilter{
 
 	private List<Double> getMaxSpamWords(List<String> tokens) {
 
-		String stopDelimiters = "~!@#$%^&*()_+=-[]{}|:;\\\"\',.<>/?，。、‘’：；【】·\t 的地得吗";
 		Map<String, Double> probMap = new HashMap<String, Double>();
 		for (String token : tokens) {
 			// remove delimiters.
-			if(!stopDelimiters.contains(token))
-			probMap.put(token, SpamProbTable.getPGProb(token));
+			if(!StopWords.contains(token))
+				probMap.put(token, SpamProbTable.getPGProb(token));
 		}
 
 		if(probMap.size() == 0){
@@ -80,15 +81,10 @@ public class PGSpamFilter implements ISpamFilter{
 
 		});
 
-		// for debug
-		//System.out.println("\n------------------");
 		List<Double> result = new ArrayList<Double>(_maxSpamWords);
 		for (int i = 0; i < _maxSpamWords && i < sortedList.size(); i++) {
 			result.add(sortedList.get(i).getValue());
-			// for debug
-			//System.out.print(sortedList.get(i)+" ");
 		}
-		//System.out.println();
 		
 		return result;
 	}
@@ -98,12 +94,6 @@ public class PGSpamFilter implements ISpamFilter{
 		return prob > SPAM_PROB_THRESHOLD;
 	}
 	
-	public static void main(String[] args) {
-		PGSpamFilter spam = new PGSpamFilter();
-		System.out.println(spam.filter("张华平写"));
-		System.out.println(spam.filter("张华平写中文分词"));
-		System.out.println(spam.filter("中文分词"));
-	}
 
 	@Override
 	public String getFilterName() {
@@ -113,5 +103,15 @@ public class PGSpamFilter implements ISpamFilter{
 	@Override
 	public double getSpamThreshold() {
 		return SPAM_PROB_THRESHOLD;
+	}
+	
+	public static void main(String[] args) {
+		PGSpamFilter spam = new PGSpamFilter();
+		System.out.println("昆明哪里找富婆包养男人=>"+spam.isSpam("昆明哪里找富婆包养男人"));
+		System.out.println("太原哪里找富婆包养=>"+spam.isSpam("太原哪里找富婆包养"));
+		System.out.println("新型裸聊网站惊动公安部 裸聊小姐三班倒=>"+spam.isSpam("新型裸聊网站惊动公安部 裸聊小姐三班倒"));
+		System.out.println("视频斗地主裸聊房间QQ是多少=>"+spam.isSpam("视频斗地主裸聊房间QQ是多少")+ " "+spam.filter("视频斗地主裸聊房间QQ是多少"));
+		System.out.println("上海劳务费发票QQ加1846355680=>"+spam.isSpam("上海劳务费发票QQ加1846355680")+" "+spam.filter("上海劳务费发票QQ加1846355680"));
+		System.out.println("麻醉枪哪里买=>"+spam.isSpam("麻醉枪哪里买")+" "+spam.filter("麻醉枪哪里买"));
 	}
 }

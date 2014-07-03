@@ -36,6 +36,7 @@ class DictFactory
 private:
     static Dictionary * _coreDict;
     static Dictionary * _inverseCoreDict;
+    static Dictionary * _biDict;
     static ShiftContext * _lexicalDict;
     static bool _loaded;
     static ResGuard _resGard;
@@ -46,11 +47,27 @@ public:
         ResGuard::Lock lock(_resGard);
         if(_loaded) return;
         Configuration &conf = Configuration::instance();
-        _coreDict = new Dictionary(conf.getString(KEY_CORE_PATH));
-        if(conf.getBool(KEY_ISLOAD_INVS)){
+        string userDictPath = conf.getString(KEY_UDF_DICT_PATH);
+        vector<string> files;
+        getFiles(userDictPath, files);
+        if(files.size() == 0){
+            _coreDict = new Dictionary(conf.getString(KEY_CORE_PATH));
+
+        }else{
+            UserDict * dict = new UserDict(conf.getString(KEY_CORE_PATH));
+            dict->loadUserDict(files);
+            _coreDict = dict;
+        }
+
+        if(conf.getBool(KEY_ISLOAD_INVS)) {
             _inverseCoreDict = new Dictionary(conf.getString(KEY_INVS_PATH));
         }
+
         _lexicalDict = new ShiftContext(conf.getString(KEY_LEXICAL_PATH));
+        if(!conf.getString(KEY_BIGRAM_PATH).empty()){
+            _biDict = new Dictionary(conf.getString(KEY_BIGRAM_PATH));
+        }
+        
         _loaded = true;
         atexit(clean);
     }
@@ -68,6 +85,10 @@ public:
         if(!_loaded) {
             initialize();
         }
+        if(_biDict){
+            return *_biDict;
+        }
+
         return *_coreDict;
     }
 
@@ -107,12 +128,22 @@ public:
                 delete _inverseCoreDict;
                 _inverseCoreDict = NULL;
             }
+            if(_biDict){
+                delete _biDict;
+                _biDict = NULL;
+            }
+            if(_lexicalDict){
+                delete _lexicalDict;
+                _lexicalDict = NULL;
+            }
             _loaded = false;
         }
     }
+   
 };
 
 Dictionary * DictFactory::_coreDict = NULL;
+Dictionary * DictFactory::_biDict = NULL;
 Dictionary * DictFactory::_inverseCoreDict = NULL;
 ShiftContext * DictFactory::_lexicalDict = NULL;
 bool DictFactory::_loaded = false;

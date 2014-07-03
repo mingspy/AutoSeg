@@ -10,8 +10,8 @@ public class RangeKeeper {
 	}
 	
 	public void add(Range range){
-		int start = range.getMin();
-		int end = range.getMax();
+		int start = range.getStart();
+		int end = range.getEnd();
 		int i = 0;
 		int first = -1;
 		int last = -1;
@@ -20,8 +20,8 @@ public class RangeKeeper {
 		// .....^
 		// .....|
 		// ...start
-		for(;i < ranges.size()&&(r = ranges.get(i)).getMin() <= start; i++){
-			if(r.getMax() >= start){
+		for(;i < ranges.size()&&(r = ranges.get(i)).getStart() <= start; i++){
+			if(r.getEnd() >= start){
 				first = i;
 				break;
 			}
@@ -30,8 +30,8 @@ public class RangeKeeper {
 		
 		if(first == -1 && i < ranges.size()){
 			r = ranges.get(i);
-			if(r.getMin() <= end){
-				r.setMin(start);
+			if(r.getStart() <= end){
+				r.setStart(start);
 				first = i;
 			}
 		}
@@ -39,13 +39,13 @@ public class RangeKeeper {
 		// 存在与[start,end]交错的区间，那么尝试合并这些区间
 		if(first >= 0){			
 			// 找到结束位置
-			for(;i < ranges.size()&& (r = ranges.get(i)).getMin() <= end;){
-				if(r.getMax() >= end){
+			for(;i < ranges.size()&& (r = ranges.get(i)).getStart() <= end;){
+				if(r.getEnd() >= end){
 					last = i;
 					break;
 				}else{
 					if(i != first){
-						ranges.get(first).setMax(r.getMax());
+						ranges.get(first).setEnd(r.getEnd());
 						ranges.remove(i);
 						continue;
 					}
@@ -57,24 +57,24 @@ public class RangeKeeper {
 		
 		if(first != -1 && last != -1){
 			if(first != last){
-				ranges.get(first).setMax(ranges.get(last).getMax());
+				ranges.get(first).setEnd(ranges.get(last).getEnd());
 				ranges.remove(last);
 			}
 		}
 		else if(first == -1 && last == -1){
 			ranges.add(i,range);
 		}else if(first != -1){
-			ranges.get(first).setMax(end);
+			ranges.get(first).setEnd(end);
 		}	
 	}
 	
 	public void remove(Range range){
-		int start = range.getMin();
-		int end = range.getMax();
+		int start = range.getStart();
+		int end = range.getEnd();
 		int first = -1;
 		int i = 0;
 		Range r = null;
-		for(;i < ranges.size()&& ranges.get(i).getMax() <= start; i++){	
+		for(;i < ranges.size()&& ranges.get(i).getEnd() <= start; i++){	
 		}
 		
 		if(i < ranges.size()){
@@ -83,18 +83,18 @@ public class RangeKeeper {
 		}
 		
 		// 删掉位于[start,end]内部的节点
-		for(;i < ranges.size()&& ranges.get(i).getMax() <= end;){
+		for(;i < ranges.size()&& ranges.get(i).getEnd() <= end;){
 			ranges.remove(i);
 		}
 		
 		// 最后一个特殊处理
 		if(i < ranges.size()){
 			r = ranges.get(i);
-			if(r.getMin() <= end){
-				if(r.getMax() == end + 1){
+			if(r.getStart() <= end){
+				if(r.getEnd() == end + 1){
 					ranges.remove(i);
 				}else{
-					r.setMin(end + 1);
+					r.setStart(end + 1);
 				}
 			}
 		}
@@ -102,20 +102,20 @@ public class RangeKeeper {
 		// 对第一个特殊处理
 		if(first >= 0){
 			r = ranges.get(first);
-			int rs = r.getMin();
-			int re = r.getMax();
+			int rs = r.getStart();
+			int re = r.getEnd();
 			if(rs >= start){
 				if(re <= end){
 					ranges.remove(first);
 				}else if(rs <= end){
-					if(r.getMax() == end + 1){
+					if(r.getEnd() == end + 1){
 						ranges.remove(i);
 					}else{
-						r.setMin(end + 1);
+						r.setStart(end + 1);
 					}
 				}
 			}else{
-				r.setMax(start - 1);
+				r.setEnd(start - 1);
 				if(end < re){
 					Range nr = new Range(end + 1, re);
 					ranges.add(first+1, nr);
@@ -134,14 +134,18 @@ public class RangeKeeper {
 		return ranges;
 	}
 	
+	public int size(){
+		return ranges.size();
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("range:");
 		for(Range r:ranges){
 			sb.append(" (");
-			sb.append(r.getMin());
+			sb.append(r.getStart());
 			sb.append(",");
-			sb.append(r.getMax());
+			sb.append(r.getEnd());
 			sb.append(")");
 		}
 		return sb.toString();

@@ -34,12 +34,14 @@ static const string DEFAULT_CONF_PATH = "D:/autoseg/data/autoseg.conf"; // defau
 static const string DEFAULT_CORE_DICT_PATH = "D:/autoseg/data/core.dic"; // default core dictionary path
 static const string DEFAULT_INVS_DICT_PATH = "D:/autoseg/data/invs.dic"; // default inverse dictionary path
 static const string DEFAULT_LEXICAL_DICT_PATH = "D:/autoseg/data/lexical.dic"; // default lexical dictionary path
+static const string DEFAULT_UDF_DICT_PATH = "D:/autoseg/data/userDicts/";
 
 #else  // linux
 static const string DEFAULT_CONF_PATH = "/opt/apps/autoseg/data/autoseg.conf";
 static const string DEFAULT_CORE_DICT_PATH = "/opt/apps/autoseg/data/core.dic";
 static const string DEFAULT_INVS_DICT_PATH = "/opt/apps/autoseg/data/invs.dic";
 static const string DEFAULT_LEXICAL_DICT_PATH = "/opt/apps/autoseg/data/lexical.dic";
+static const string DEFAULT_UDF_DICT_PATH = "/opt/apps/autoseg/data/userDicts/";
 
 #endif
 static const string DEFAULT_ISLOAD_INVS = "false";
@@ -48,6 +50,7 @@ const string ENV_AUTOSEG_CONF_PATH = "AUTOSEG_CONF_PATH"; // seg config key in e
 // keys in config file :
 const string KEY_CONF_PATH = "CONF_PATH";  
 const string KEY_CORE_PATH = "CORE_DICT_PATH";
+const string KEY_BIGRAM_PATH = "BIGRAM_DICT_PATH";
 const string KEY_INVS_PATH = "INVS_DICT_PATH";
 const string KEY_UDF_DICT_PATH = "UDF_DICT_PATH";
 const string KEY_LEXICAL_PATH = "LEXICAL_DICT_PATH";
@@ -147,6 +150,7 @@ private:
         _confs[KEY_INVS_PATH] = DEFAULT_INVS_DICT_PATH;
         _confs[KEY_LEXICAL_PATH] = DEFAULT_LEXICAL_DICT_PATH;
         _confs[KEY_ISLOAD_INVS] = DEFAULT_ISLOAD_INVS;
+        _confs[KEY_UDF_DICT_PATH] = DEFAULT_UDF_DICT_PATH;
     }
 private:
     hash_map<string, string> _confs;

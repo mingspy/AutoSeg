@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mingspy.nlp.SpliterUtils;
+import com.mingspy.nlp.StopWords;
 
 public class NBSpamFilter implements ISpamFilter{
 
@@ -32,7 +33,7 @@ public class NBSpamFilter implements ISpamFilter{
 	 */
 	public double filter(String doc) {
 		
-		List<String> tokens = SpliterUtils.split(doc);
+		List<String> tokens = SpliterUtils.split(SpliterUtils.stem(doc));
 		if (tokens == null) {
 			return 0;
 		}
@@ -62,10 +63,10 @@ public class NBSpamFilter implements ISpamFilter{
 	 */
 	private List<String> filterStopWords(List<String> tokens) {
 		// 去除标点符号和常见词
-		String stopDelimiters = "~!@#$%^&*()_+=-[]{}|:;\\\"\',.<>/?，。、‘’：；【】·\t 的地得吗";
+		
 		List<String> features = new ArrayList<String>();
 		for(String token : tokens){
-			if(!stopDelimiters.contains(token)){
+			if(!StopWords.contains(token)){
 				features.add(token);
 			}
 		}

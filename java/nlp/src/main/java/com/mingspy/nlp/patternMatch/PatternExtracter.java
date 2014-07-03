@@ -77,7 +77,7 @@ public class PatternExtracter {
 	private static List<String> splitTokens(String str, RangeKeeper keeper) {
 		List<String> tokens = new ArrayList<String>();
 		for (Range r : keeper.getRanges()) {
-			tokens.add(str.substring(r.getMin(), r.getMax() + 1));
+			tokens.add(str.substring(r.getStart(), r.getEnd() + 1));
 		}
 		return tokens;
 	}
@@ -105,9 +105,9 @@ public class PatternExtracter {
 			}
 			
 			if (last != null) {
-				if(r.getMin() < last.getMax()){
+				if(r.getStart() < last.getEnd()){
 					return null;
-				}else if (r.getMin() != last.getMax() + 1) {
+				}else if (r.getStart() != last.getEnd() + 1) {
 					sb.append(Pattern.SEPARATOR);
 					sb.append(Pattern.Item.STAR);
 					sb.append(Pattern.SEPARATOR);
@@ -176,10 +176,10 @@ public class PatternExtracter {
 			}
 			
 			if (last != null) {
-				if(current.getMin() < last.getMax()){
+				if(current.getStart() < last.getEnd()){
 					return null;
 				}else
-				if (current.getMin() != last.getMax() + 1) {
+				if (current.getStart() != last.getEnd() + 1) {
 					sb.append(Pattern.SEPARATOR);
 					sb.append(Pattern.Item.STAR);
 					sb.append(Pattern.SEPARATOR);

@@ -199,9 +199,13 @@ int main(int argc, char ** argv)
 #else
     cout<<"not runing on windows!"<<endl;
 #endif
-
+    AutoTokenizer tt;
+    vector<Token> vec;
+    tt.fullSplit(L"车不动的时候，会有气门声吗嗒嗒嗒的", vec);
+    //tt.uniGramSplit(L"他说的确实在理", vec);
+    Tokenizer::printTokens(vec);
     //CheckMemLeaks();
-    {
+    if(0){
         cout<<"sizeof(wchar_t):"<<sizeof(wchar_t)<<endl;
         AutoTokenizer t;
         vector<Token> rs;

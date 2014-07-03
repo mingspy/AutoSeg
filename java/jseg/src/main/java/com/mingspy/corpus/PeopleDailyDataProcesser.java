@@ -149,6 +149,7 @@ public class PeopleDailyDataProcesser {
 			return;
 		}
 
+		// prune(coreWords, 1);
 		writeWordInfo(coreWords, FolderUtils.combine(output, "/corewords.txt"));
 		prune(bigramWords, 1);
 		writeWordInfo(bigramWords, FolderUtils.combine(output, "/biwords.txt"));
@@ -217,7 +218,7 @@ public class PeopleDailyDataProcesser {
 				nt = null;
 				frq = null;
 			}
-			
+
 			infos = null;
 			word = null;
 		}
@@ -625,15 +626,14 @@ public class PeopleDailyDataProcesser {
 	public static void main(String[] args) throws Exception {
 		MSTimer timer = new MSTimer();
 		PeopleDailyDataProcesser peopleDaily = new PeopleDailyDataProcesser();
-
-		 peopleDaily.prepairTrainTestData("D:/autoseg/data/corpus/trian",
-		 "D:/autoseg/data/estimate/");
-
 		// peopleDaily.preHandleCorpus("D:/autoseg/data/corpus/orign",
 		// "D:/autoseg/data/corpus/trian");
 
-		//peopleDaily.trianCorpusData("D:/autoseg/data/corpus/trian",
-		//		"D:/autoseg/data/words/");
+		//peopleDaily.prepairTrainTestData("D:/autoseg/data/corpus/trian",
+		//		"D:/autoseg/data/estimate/");
+
+		 peopleDaily.trianCorpusData("D:/autoseg/data/corpus/trian",
+				 "D:/autoseg/data/words/98/");
 
 		System.out.println("done!!used : " + timer);
 

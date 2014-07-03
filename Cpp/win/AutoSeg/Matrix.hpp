@@ -95,11 +95,11 @@ public:
         _rows[row].setAttrValue(col, val);
     }
 
-    friend ostream & operator<< (ostream & out, const Matrix<T> & matrix)
+    friend ostream & operator<< (ostream & out,  Matrix<T> & matrix)
     {
         out<<"{matrix rows:"<<matrix._rows.size()<<endl;
         for(int i = 0; i < matrix._rows.size(); i++) {
-            out<<matrix._rows[i]<<endl;
+            out<<i<<"->"<<matrix._rows[i]<<endl;
         }
         out<<"}";
         return out;

@@ -13,6 +13,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import com.mingspy.nlp.SpliterUtils;
+import com.mingspy.nlp.StopWords;
 import com.mingspy.utils.io.LineFileReader;
 
 public class SpamProbTrainer {
@@ -32,44 +33,7 @@ public class SpamProbTrainer {
 	private Map<String, Double> spamprobMap = new HashMap<String, Double>();
 	private Map<String, Double> healthprobMap = new HashMap<String, Double>();
 
-	/**
-	 * 统计trec06c垃圾邮件集中的文本词频 TREC 2006 Spam Track Public Corpora
-	 * 
-	 * @see http://plg.uwaterloo.ca/cgi-bin/cgiwrap/gvcormac/foo06
-	 * @param trecFolder
-	 */
-	public void statisticTrecFiles(String trec06cFolder, String coding) {
-		// 加载文件列表。
-		Map<String, Boolean> spamIndex = new HashMap<String, Boolean>();
-		{
-			String indexPath = makepath(trec06cFolder, "full/index");
-			LineFileReader reader = new LineFileReader(indexPath);
-			String line = null;
-			while ((line = reader.nextLine()) != null) {
-				String[] pieces = line.split("../data/");
-				spamIndex.put(pieces[1].trim(), pieces[0].toLowerCase()
-						.startsWith("spam"));
-			}
-		}
 
-		// 统计词频
-		String dataFolder = makepath(trec06cFolder, "data");
-		File dataDir = new File(dataFolder);
-		File[] folders = dataDir.listFiles();
-		for (File folder : folders) {
-			System.out.println("handling folder:" + folder.getName());
-			File[] files = folder.listFiles();
-			for (File file : files) {
-				// System.out.println("\t statistic file:"+file.getName());
-				Boolean isbad = spamIndex.get(folder.getName() + "/"
-						+ file.getName());
-				if (isbad != null) {
-					statisticAFile(file, isbad, coding);
-				}
-			}
-		}
-		System.out.println("total bad word freq = " + badWordsTotal);
-	}
 
 	/**
 	 * (let ((g (* 2 (or (gethash word good) 0))) <br>
@@ -163,6 +127,10 @@ public class SpamProbTrainer {
 
 	private void addWordFreq(Map<String, Freq> map, String word, int freq,
 			boolean isBad) {
+		if(StopWords.contains(word)){
+			return;
+		}
+		
 		Freq wordfreq = map.get(word);
 		if (wordfreq == null) {
 			wordfreq = new Freq();
@@ -179,39 +147,46 @@ public class SpamProbTrainer {
 	}
 
 	/**
-	 * 统计一个普通文档
+	 * 统计一个普通文档,每一行一个文档
 	 * 
 	 * @param file
 	 * @param isbad
 	 * @param codding
 	 */
-	private void statisticAFile(File file, boolean isbad, String codding) {
+	public void statisticAFile(File file, boolean isbad, String codding) {
 		LineFileReader reader = new LineFileReader(file.getAbsolutePath(),
 				codding);
-		Set<String> docword = new HashSet<String>();
+		
+		int count = 0;
 		String line = null;
 		while ((line = reader.nextLine()) != null) {
-			line = line.replace(" ", "");
+			// line = line.replace(" ", "");
 			// System.out.println(line);
 			// 只统计包含中文的词。
-
+			line = SpliterUtils.stem(line);
+			//System.out.println("line"+count+"->"+line);
 			List<String> words = SpliterUtils.split(line);
+			if(words == null) continue;
+			Set<String> docword = new HashSet<String>();
 			for (String word : words) {
-				// System.out.println(word);
-				// System.out.println("->added");
+
 				addWordFreq(wordFreqMap, word, 1, isbad);
 				docword.add(word);
 			}
-		}
-
-		if (isbad) {
-			badDocTotal++;
-		} else {
-			goodDocTotal++;
-		}
-
-		for (String w : docword) {
-			addWordFreq(docFreqMap, w, 1, isbad);
+			
+			if(++count % 10000 == 0){
+				System.out.println("handled lines:"+count);
+			}
+			
+			if (isbad) {
+				badDocTotal++;
+			} else {
+				goodDocTotal++;
+			}
+			
+			for (String w : docword) {
+				addWordFreq(docFreqMap, w, 1, isbad);
+			}
 		}
 
 	}
@@ -235,7 +210,8 @@ public class SpamProbTrainer {
 				header = line;
 				continue;
 			}
-			line = line.replace(" ", "");
+			//line = line.replace(" ", "");
+
 			// System.out.println(line);
 			// 只统计包含中文的词。
 			builder.append(line);
@@ -244,10 +220,13 @@ public class SpamProbTrainer {
 		statisticDoc(header, builder);
 	}
 
+
+
 	private void statisticDoc(String header, StringBuilder builder) {
 		if (header == null || builder.length() == 0)
 			return;
-		List<String> words = SpliterUtils.split(builder.toString());
+		String line = SpliterUtils.stem(builder.toString());
+		List<String> words = SpliterUtils.split(line);
 		if (words != null) {
 			boolean isBad = header.contains("@class:spam");
 			if (isBad) {
@@ -277,18 +256,38 @@ public class SpamProbTrainer {
 	}
 
 	public static void main(String[] args) throws IOException {
+		/*String line = "<body>1234 www.baidu.com http://dd.org  mingpsy@163.com 大中国 </body>";		
+		line = SpliterUtils.stem(line);
+		System.out.println(line);
+		*/
+		
+
 		SpamProbTrainer trainer = new SpamProbTrainer();
 		ResourceBundle bundle = ResourceBundle.getBundle("spam");
-		String markedFolder = bundle.getString("SPAM_TRAIN_MARKED_FOLDER");
-		if (markedFolder != null) {
-			trainer.statisticMarkedFiles(markedFolder, "utf-8");
-		}
+//		String markedFolder = bundle.getString("SPAM_TRAIN_MARKED_FOLDER");
+//		if (markedFolder != null) {
+//			trainer.statisticMarkedFiles(markedFolder, "utf-8");
+//		}
+		
+		
+		System.out.println("stastic spam files");
+		trainer.statisticAFile(new File("E:/tmp/spam/saa/spam_questions.txt"), true, "utf-8");
+		
+		
+		System.out.println("stastic health files");
+		trainer.statisticAFile(new File("E:/tmp/spam/saa/health_questions.txt"), false, "utf-8");
+		
+		
 
+		
+		
 		// trainer.statisticTrecSpamWords(bundle.getString("SPAM_TRAIN_SPAM_FOLDER"),
 		// "gbk");
-
+		System.out.println("genPaulGrahamProb");
 		trainer.genPaulGrahamProb(bundle.getString("SPAM_PROB_TABLE_PATH"));
+		System.out.println("genBayesProb");
 		trainer.genBayesProb(bundle.getString("SPAM_NBPROB_TABLE_PATH"));
 		System.out.println("done!");
+
 	}
 }

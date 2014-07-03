@@ -1,32 +1,30 @@
 package com.mingspy.utils;
 
 public class Range {
-	public Range(int min, int max){
-		if(min > max){
+	public Range(int start, int end){
+		if(start > end){
 			throw new IllegalArgumentException("Range max < min");
 		}
-		this.min = min;
-		this.max = max;
+		this.start = start;
+		this.end = end;
 	}
-	private int min;
-	private int max;
-	public int getMin() {
-		return min;
+	private int start;
+	private int end;
+	public int getStart() {
+		return start;
 	}
-	public void setMin(int min) {
-		if(min > max){
-			throw new IllegalArgumentException("min to big");
-		}
-		this.min = min;
+	public void setStart(int start) {
+		this.start = start;
 	}
-	public int getMax() {
-		return max;
+	public int getEnd() {
+		return end;
 	}
-	public void setMax(int max) {
-		if(min > max){
-			throw new IllegalArgumentException("max to small");
-		}
-		this.max = max;
+	public void setEnd(int end) {
+		this.end = end;
+	}
+
+	public int length(){
+		return  end - start;
 	}
 	
 }

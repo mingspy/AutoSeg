@@ -28,10 +28,12 @@
 #include "HashMapDef.hpp"
 #include <string>
 
+using namespace std;
+
 namespace mingspy
 {
 
-const wstring  NATURE_UNDEF = L"UNDEF";
+const wstring  NATURE_UNDEF = L"UDF";
 const wstring NATURE_FREQTOTAL=L"FREQTOL";
 class Dictionary
 {
@@ -93,7 +95,7 @@ public:
         return datrie.add(word, info);
     }
 
-    const WordNature * getWordInfo(const wstring & word) const
+    virtual const WordNature * getWordInfo(const wstring & word) const
     {
         return (const WordNature *)datrie.retrieve(word.c_str());
     }
@@ -121,7 +123,7 @@ public:
         return 0;
     }
 
-    bool existPrefix(const wstring & prefix) const
+    virtual bool existPrefix(const wstring & prefix) const
     {
         return datrie.containsPrefix(prefix);
     }
@@ -152,7 +154,7 @@ end_write:
     }
 
 private:
-
+    Dictionary(const Dictionary &);
     void readFromFile(FILE * pfile)
     {
         // read header
@@ -233,6 +235,7 @@ public:
     }
 
 private:
+    ShiftContext(const ShiftContext &);
     void genUnknownNauture()
     {
         _unknownNature = new WordNature();
@@ -243,6 +246,67 @@ private:
 
 private:
     WordNature * _unknownNature;
+};
+
+class UserDict:public Dictionary{
+public:
+    UserDict(const string & file):Dictionary(file){
+        user_datrie.setDataFreer(WordNatureFreer);
+        user_datrie.setDataReader(ReadWordNatureFromFile);
+        user_datrie.setDataWriter(WriteWordNatureToFile);
+    }
+
+    virtual const WordNature * getWordInfo(const wstring & word) const
+    {
+        const WordNature * pinfo =  (const WordNature *)datrie.retrieve(word.c_str());
+        if(pinfo == NULL){
+            pinfo = (const WordNature *)user_datrie.retrieve(word.c_str());
+        }
+
+        return pinfo;
+    }
+
+    virtual bool existPrefix(const wstring & prefix) const
+    {
+        if(datrie.containsPrefix(prefix)){
+            return true;
+        }
+
+        return user_datrie.containsPrefix(prefix);
+    }
+
+    void loadUserDict(const vector<string> & files){
+        int udf_idx = getNatureIndex(NATURE_UNDEF);
+        if(udf_idx < 0){
+            addNature(NATURE_UNDEF);
+            udf_idx = getNatureIndex(NATURE_UNDEF);
+        }
+
+        int count = 0;
+        for(int i = 0; i < files.size(); i++){
+            
+            cout<<"\rloading user dictionary:"<<files[i].c_str();
+            UTF8FileReader reader(files[i]);
+            wstring * line;
+            while((line = reader.getLine())){
+                if(!getWordInfo(*line)){
+                    WordNature *nature = new WordNature();
+                    nature->setAttrValue(udf_idx, 1);
+                    user_datrie.add(*line, nature);
+                    count ++;
+                    if(count % 1000 == 0){
+                        cout<<"\r added -> "<<count;
+                    }
+                }
+            }
+           
+        }
+        cout<<endl;
+    } 
+private:
+    UserDict(const UserDict &);
+protected:
+    DATrie user_datrie;
 };
 
 }

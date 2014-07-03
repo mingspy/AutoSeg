@@ -41,8 +41,8 @@ public class LineFileReader {
 	private void addDefaultAnotation() {
 		annotations.add("#");
 		annotations.add("//");
-		annotations.add("/*");
-		annotations.add("*/");
+		//annotations.add("/*");
+		//annotations.add("*/");
 	}
 
 	/**
@@ -84,19 +84,19 @@ public class LineFileReader {
 					}
 
 					if(isblocking){
-						if(line.endsWith("*/")){
-							isblocking = false;
-						}
-						continue;
+						//if(line.endsWith("*/")){
+						//	isblocking = false;
+						//}
+						//continue;
 					}
 					
 					boolean isAnnotation = false;
 					for (String ch : annotations) {
 						if (line.startsWith(ch)) {
 							isAnnotation = true;
-							if(ch.equals("/*")){
-								isblocking = true;
-							}
+							//if(ch.equals("/*")){
+							//	isblocking = true;
+							//}
 							break;
 						}
 					}

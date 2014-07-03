@@ -77,8 +77,12 @@ void estimateTokenizer(const vector<wstring>& test_datas, int testSize,
                 continue;
             }
 
-            int m = max(0, j - 4);
-            int n = min(j+4, refer_datas[i].size());
+            int m = 0;//max(0, j - 4);
+            int n = refer_datas[i].size();//min(j+4, refer_datas[i].size());
+            if(choice >=3){
+                m = max(0, j - 4);
+                n = min(j+4, refer_datas[i].size());
+            }
             for(int k = m; k < n; k++) {
                 if(seg_results[i][j] == refer_datas[i][k]) {
                     segCorrects ++;
@@ -98,7 +102,7 @@ void estimateTokenizer(const vector<wstring>& test_datas, int testSize,
         <<"    "<<recall<<"    "<<f2<<endl;
 }
 
-void estimateSegmetors()
+void estimateSegmetors(const string & path)
 {
     MSTimer timer;
     DictFactory::initialize();
@@ -106,9 +110,9 @@ void estimateSegmetors()
     timer.restart();
     // load test data.
     vector<wstring> test_datas;
-    size_t test_size = UTF8FileReader::size("../data/estimate/test_data.txt");
+    size_t test_size = UTF8FileReader::size(combinPath(path, "test_data.txt"));
     {
-        UTF8FileReader testDataReader("../data/estimate/test_data.txt");
+        UTF8FileReader testDataReader(combinPath(path, "test_data.txt"));
         wstring * line;
         while((line = testDataReader.getLine()) != NULL) {
             test_datas.push_back(*line);
@@ -121,7 +125,7 @@ void estimateSegmetors()
     vector<vector<wstring> > refer_datas;
     {
         wstring * line;
-        UTF8FileReader referDataReader("../data/estimate/test_refer.txt");
+        UTF8FileReader referDataReader(combinPath(path, "test_refer.txt"));
         while((line = referDataReader.getLine()) != NULL) {
             vector<wstring> words;
             refer_datas.push_back(words);
@@ -208,6 +212,7 @@ int main(int argc, char ** argv)
     cout<<"not runing on windows!"<<endl;
 #endif
 
+   
     //CheckMemLeaks();
     {
         if(argc < 2) {
@@ -216,7 +221,11 @@ int main(int argc, char ** argv)
         }
         string arg1 = argv[1];
         if(arg1 == "-t") {
-            estimateSegmetors();
+            if(argc == 3){
+                estimateSegmetors(argv[2]);
+            }else{
+                estimateSegmetors("../data/estimate/");
+            }
         } else if(arg1 == "-b") {
             buildCoreDict(argc, argv);
         }

@@ -49,11 +49,13 @@ struct RoadSign {
         return _weight != i;
     }
 
-    bool operator < (const RoadSign & r) const{
+    bool operator < (const RoadSign & r) const
+    {
         return _weight < r._weight;
     }
 
-    bool operator > (const RoadSign & r) const{
+    bool operator > (const RoadSign & r) const
+    {
         return _weight > r._weight;
     }
 
@@ -75,9 +77,11 @@ int compare(const void *a, const void *b)
 typedef SparseInstance<int> Path;
 typedef MinHeap<RoadSign> Signs;
 
-class Paths{
-public:   
-    Signs& operator[](int idx){
+class Paths
+{
+public:
+    Signs& operator[](int idx)
+    {
         return _paths[idx];
     }
 private:
@@ -125,7 +129,7 @@ public:
     {
         if(m_isCalced && ith < m_maxPaths) {
             int to = m_lastIndex;
-            while(true) {
+            for(int i = 0; i <= m_lastIndex; i++) {
                 RoadSign &node = m_paths[to].Get(ith);
                 path.setAttrValue(node._from,to);
                 to = node._from;

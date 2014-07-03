@@ -1,11 +1,9 @@
 package com.mingspy.jseg;
 
 import java.util.List;
-import java.util.ResourceBundle;
 
 public abstract class JSegJNI {
 	static{
-		ResourceBundle bundle = ResourceBundle.getBundle("jseg");
 		System.out.println(System.getProperty("java.library.path"));
 		System.loadLibrary("JSegJNI");
 	}

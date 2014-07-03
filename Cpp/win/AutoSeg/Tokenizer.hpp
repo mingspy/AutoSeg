@@ -225,16 +225,20 @@ protected:
     void fullMatch(const Dictionary & dict,
                    const wstring &str, const vector<Token> & atoms, vector<Token> &result)
     {
+        const PunctionDictionary & puncs = DictFactory::Puntions();
         const int atome_size = atoms.size();
         int lastj = -1;
         for(int i = 0; i < atome_size; i++) {
-            for(int j = i + 1; j < atome_size; j++) {
-                wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
-                if(dict.getWordInfo(word)) {
-                    result.push_back(Token(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off));
-                    lastj = j;
-                } else if(!dict.existPrefix(word)) {
-                    break;
+            wchar_t ch = str.at(atoms[i]._off); 
+            if(!puncs.exists(ch)){
+                for(int j = i + 1; j < atome_size; j++) {
+                    wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
+                    if(dict.getWordInfo(word)) {
+                        result.push_back(Token(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off));
+                        lastj = j;
+                    } else if(!dict.existPrefix(word)) {
+                        break;
+                    }
                 }
             }
             if(i > lastj) {
@@ -259,17 +263,26 @@ protected:
                   const wstring &str, const vector<Token> & atoms,
                   vector<Token> &result)
     {
+        const PunctionDictionary & puncs = DictFactory::Puntions();
         for(int i = 0; i < atoms.size(); ) {
-            int j = i + 1;
-            for(; j < atoms.size(); j++) {
-                wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
-                if(!dict.existPrefix(word)) {
-                    break;
+           
+            wchar_t ch = str.at(atoms[i]._off);     
+            int maxj = i;
+            if(!puncs.exists(ch)){
+                for(int j = i+1; j < atoms.size(); j++) {
+                    wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
+                    if(dict.getWordInfo(word)){
+                        maxj = j;
+                    }else if(!dict.existPrefix(word)) {
+                        break;
+                    }
                 }
             }
 
-            result.push_back(Token(atoms[i]._off,atoms[j-1]._off + atoms[j-1]._len - atoms[i]._off));
-            i = j;
+
+            result.push_back(Token(atoms[i]._off,atoms[maxj]._off + atoms[maxj]._len - atoms[i]._off));
+            i = maxj + 1;
+ 
         }
     }
 
@@ -352,11 +365,12 @@ protected:
             }
 
             // add word that not exist in dictionary.
-            if(i > lastj) {
-                graph.setVal(atoms[i]._off, atoms[i]._off + atoms[i]._len, UNIGRAM_SMOTH_PROB);
-            }
+            graph.setVal(atoms[i]._off, atoms[i]._off + atoms[i]._len, UNIGRAM_SMOTH_PROB);
 
         }
+#if _DEBUG
+        cout<<"The split word graph is:"<<graph<<endl;
+#endif
     }
 
     void genBigramWordGraph(const Dictionary & coredict,const Dictionary & bigramdict,
