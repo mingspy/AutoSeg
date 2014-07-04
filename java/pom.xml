@@ -10,6 +10,7 @@
 		<module>utils</module>
 		<module>nlp</module>
     <module>solrTokenizer</module>
+    <module>toolkits</module>
   </modules>
 	<dependencies>
 		<dependency>

@@ -1,4 +1,4 @@
-package com.mingspy.utils;
+package com.mingspy.toolkits;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
