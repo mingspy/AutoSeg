@@ -181,7 +181,8 @@ void testSegment()
 }
 
 
-void printHelp(const char * name){
+void printHelp(const char * name)
+{
     cout<<"Welcome use"<<name<<endl
         <<"to build core.dict using:"<<endl
         <<"\t -b input output "<<endl
@@ -198,7 +199,7 @@ int main(int argc, char ** argv)
 #else
     cout<<"not runing on windows!"<<endl;
 #endif
-   
+
     //CheckMemLeaks();
     {
         cout<<"sizeof(wchar_t):"<<sizeof(wchar_t)<<endl;

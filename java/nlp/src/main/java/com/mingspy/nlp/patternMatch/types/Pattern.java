@@ -15,217 +15,244 @@ import java.util.List;
  * @author xiuleili
  *
  */
-public class Pattern implements Serializable{
-	private static final long serialVersionUID = 3778486122323407669L;
+public class Pattern implements Serializable
+{
+    private static final long serialVersionUID = 3778486122323407669L;
 
-	public static final String SEPARATOR = ";"; // 分隔符
-	
-	protected long patternId;
-	protected int score;
-	protected List<Item> items;
-	protected String patternstr;
-	protected String topic;
+    public static final String SEPARATOR = ";"; // 分隔符
 
-	public Pattern(long id, int score, String patternstr, String topic) {
-		this.patternId = id;
-		this.score = score;
-		this.patternstr = patternstr;
-		this.topic = topic;
-		if (patternstr != null) {
-			parse();
-		}
-	}
+    protected long patternId;
+    protected int score;
+    protected List<Item> items;
+    protected String patternstr;
+    protected String topic;
 
-	public Pattern(long id, int score, List<Item> items, String topic) {
-		this.patternId = id;
-		this.score = score;
-		this.items = items;
-		this.topic = topic;
-	}
+    public Pattern(long id, int score, String patternstr, String topic)
+    {
+        this.patternId = id;
+        this.score = score;
+        this.patternstr = patternstr;
+        this.topic = topic;
+        if (patternstr != null) {
+            parse();
+        }
+    }
 
-	public String getTopic() {
-		return topic;
-	}
+    public Pattern(long id, int score, List<Item> items, String topic)
+    {
+        this.patternId = id;
+        this.score = score;
+        this.items = items;
+        this.topic = topic;
+    }
 
-	public long getPatternId() {
-		return patternId;
-	}
+    public String getTopic()
+    {
+        return topic;
+    }
 
-	public int getScore() {
-		return score;
-	}
+    public long getPatternId()
+    {
+        return patternId;
+    }
 
-	public final List<Item> getItems() {
-		return items;
-	}
+    public int getScore()
+    {
+        return score;
+    }
 
-	public final Item getItem(int index) {
-		return items.get(index);
-	}
-	
-	/**
-	 * get the items size.
-	 * @return
-	 */
-	public final int itemsSize(){
-		if(items != null){
-			return items.size();
-		}
-		return 0;
-	}
-	
-	public String getPatternstr() {
-		return patternstr;
-	}
+    public final List<Item> getItems()
+    {
+        return items;
+    }
+
+    public final Item getItem(int index)
+    {
+        return items.get(index);
+    }
+
+    /**
+     * get the items size.
+     * @return
+     */
+    public final int itemsSize()
+    {
+        if(items != null) {
+            return items.size();
+        }
+        return 0;
+    }
+
+    public String getPatternstr()
+    {
+        return patternstr;
+    }
 
 
-	@Override
-	public String toString() {
-		if (patternstr == null && items != null) {
-			StringBuilder s = new StringBuilder();
-			for (int i = 0; i < items.size(); i++) {
-				s.append(items.get(i).getKey());
-				if (i != items.size() - 1) {
-					s.append(SEPARATOR);
-				}
-			}
+    @Override
+    public String toString()
+    {
+        if (patternstr == null && items != null) {
+            StringBuilder s = new StringBuilder();
+            for (int i = 0; i < items.size(); i++) {
+                s.append(items.get(i).getKey());
+                if (i != items.size() - 1) {
+                    s.append(SEPARATOR);
+                }
+            }
 
-			patternstr = s.toString();
-		}
+            patternstr = s.toString();
+        }
 
-		return "pattern { id:" + patternId 
-				+ " score:" + score 
-				+ " str:[" + patternstr + "] topic:" 
-				+ topic + "}";
-	}
+        return "pattern { id:" + patternId
+               + " score:" + score
+               + " str:[" + patternstr + "] topic:"
+               + topic + "}";
+    }
 
-	private void parse() {
-		if (patternstr == null)
-			return;
+    private void parse()
+    {
+        if (patternstr == null)
+            return;
 
-		items = new LinkedList<Item>();
-		String[] words = patternstr.split(SEPARATOR);
-		for (String w : words) {
-			items.add(new Item(w));
-		}
-	}
+        items = new LinkedList<Item>();
+        String[] words = patternstr.split(SEPARATOR);
+        for (String w : words) {
+            items.add(new Item(w));
+        }
+    }
 
-	public void addItem(String s) {
-		if (s == null)
-			return;
-		addItem(new Item(s));
-	}
+    public void addItem(String s)
+    {
+        if (s == null)
+            return;
+        addItem(new Item(s));
+    }
 
-	public void addItem(Item s) {
-		if (s == null)
-			return;
-		if (items == null) {
-			items = new LinkedList<Item>();
-		}
-		items.add(new Item(s));
-		patternstr = null;
-	}
+    public void addItem(Item s)
+    {
+        if (s == null)
+            return;
+        if (items == null) {
+            items = new LinkedList<Item>();
+        }
+        items.add(new Item(s));
+        patternstr = null;
+    }
 
-	public class Item implements Serializable{
-		private static final long serialVersionUID = -523929108527959121L;
-		private ItemType type;
-		private String key;
-		private int score;
-		public static final String STAR = "*"; // 通配符
-		public static final String STARTWITH = "^"; // 开始
-		public static final String ENDWITH = "$"; // 结束
-		public static final int SYMBOL_SCORE = 80;
-		public static final int KEYWORD_SCORE = 60;
-		public static final int CONSTENT_SCORE = 100;
+    public class Item implements Serializable
+    {
+        private static final long serialVersionUID = -523929108527959121L;
+        private ItemType type;
+        private String key;
+        private int score;
+        public static final String STAR = "*"; // 通配符
+        public static final String STARTWITH = "^"; // 开始
+        public static final String ENDWITH = "$"; // 结束
+        public static final int SYMBOL_SCORE = 80;
+        public static final int KEYWORD_SCORE = 60;
+        public static final int CONSTENT_SCORE = 100;
 
-		public Item(String w) {
-			key = w;
-			if (w.equals(STAR) || w.equals(STARTWITH) || w.equals(ENDWITH)) {
-				type = ItemType.KEYWORD;
-				score = KEYWORD_SCORE;
-			} else if (w.startsWith("[") && w.endsWith("]")) {
-				type = ItemType.SYMBOL;
-				score = SYMBOL_SCORE;
-			} else {
-				type = ItemType.CONSTENT;
-				score = CONSTENT_SCORE;
-			}
-		}
+        public Item(String w)
+        {
+            key = w;
+            if (w.equals(STAR) || w.equals(STARTWITH) || w.equals(ENDWITH)) {
+                type = ItemType.KEYWORD;
+                score = KEYWORD_SCORE;
+            } else if (w.startsWith("[") && w.endsWith("]")) {
+                type = ItemType.SYMBOL;
+                score = SYMBOL_SCORE;
+            } else {
+                type = ItemType.CONSTENT;
+                score = CONSTENT_SCORE;
+            }
+        }
 
-		@Override
-		public String toString() {
-			StringBuilder sb = new StringBuilder();
-			sb.append(key);
-			sb.append("[");
-			sb.append(type);
-			sb.append("]");
-			return sb.toString();
-		}
+        @Override
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(key);
+            sb.append("[");
+            sb.append(type);
+            sb.append("]");
+            return sb.toString();
+        }
 
-		public Item(Item it) {
-			key = it.key;
-			score = it.score;
-			type = it.type;
-		}
+        public Item(Item it)
+        {
+            key = it.key;
+            score = it.score;
+            type = it.type;
+        }
 
-		public ItemType getType() {
-			return type;
-		}
+        public ItemType getType()
+        {
+            return type;
+        }
 
-		public void setType(ItemType type) {
-			this.type = type;
-		}
+        public void setType(ItemType type)
+        {
+            this.type = type;
+        }
 
-		public String getKey() {
-			return key;
-		}
+        public String getKey()
+        {
+            return key;
+        }
 
-		public void setKey(String key) {
-			this.key = key;
-		}
+        public void setKey(String key)
+        {
+            this.key = key;
+        }
 
-		public int getScore() {
-			if (score <= 0) {
-				if (type == ItemType.SYMBOL) {
-					score = SYMBOL_SCORE;
-				} else if (type == ItemType.KEYWORD) {
-					score = KEYWORD_SCORE;
-				} else if (type == ItemType.CONSTENT) {
-					score = CONSTENT_SCORE;
-				}
-			}
-			return score;
-		}
+        public int getScore()
+        {
+            if (score <= 0) {
+                if (type == ItemType.SYMBOL) {
+                    score = SYMBOL_SCORE;
+                } else if (type == ItemType.KEYWORD) {
+                    score = KEYWORD_SCORE;
+                } else if (type == ItemType.CONSTENT) {
+                    score = CONSTENT_SCORE;
+                }
+            }
+            return score;
+        }
 
-		public void setScore(int score) {
-			this.score = score;
-		}
+        public void setScore(int score)
+        {
+            this.score = score;
+        }
 
-		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof Item) {
-				if (((Item) obj).key.equalsIgnoreCase(this.key)) {
-					return true;
-				}
-			} else {
-				if (obj instanceof String) {
-					if (((String) obj).equalsIgnoreCase(this.key)) {
-						return true;
-					}
-				}
-			}
-			return false;
-		}
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (obj instanceof Item) {
+                if (((Item) obj).key.equalsIgnoreCase(this.key)) {
+                    return true;
+                }
+            } else {
+                if (obj instanceof String) {
+                    if (((String) obj).equalsIgnoreCase(this.key)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
-		@Override
-		public int hashCode() {
-			if (key == null)
-				return 0;
-			return key.hashCode();
-		}
+        @Override
+        public int hashCode()
+        {
+            if (key == null)
+                return 0;
+            return key.hashCode();
+        }
 
-		public boolean isstar() {
-			return key.equals(STAR);
-		}
-	}
+        public boolean isstar()
+        {
+            return key.equals(STAR);
+        }
+    }
 }

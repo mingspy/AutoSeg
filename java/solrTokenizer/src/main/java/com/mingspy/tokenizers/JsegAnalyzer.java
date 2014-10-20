@@ -10,24 +10,27 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
-public class JsegAnalyzer extends Analyzer {
+public class JsegAnalyzer extends Analyzer
+{
 
-	public static void main(String[] args) {
-		JsegAnalyzer analyser = new JsegAnalyzer();
-		try {
-			TokenStream ts = analyser.tokenStream("words", new StringReader("他说的确实在理"));
-			ts.addAttribute(CharTermAttribute.class);
-			while(ts.incrementToken()){
-				System.out.println(ts.getAttribute(CharTermAttribute.class));
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+    public static void main(String[] args)
+    {
+        JsegAnalyzer analyser = new JsegAnalyzer();
+        try {
+            TokenStream ts = analyser.tokenStream("words", new StringReader("他说的确实在理"));
+            ts.addAttribute(CharTermAttribute.class);
+            while(ts.incrementToken()) {
+                System.out.println(ts.getAttribute(CharTermAttribute.class));
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
-	@Override
-	public TokenStream tokenStream(String arg0, Reader arg1) {
-		return new JsegTokenizer(arg1);
-	}
+    @Override
+    public TokenStream tokenStream(String arg0, Reader arg1)
+    {
+        return new JsegTokenizer(arg1);
+    }
 }

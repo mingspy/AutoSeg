@@ -61,19 +61,21 @@ public:
     */
     void uniGramSplit(const wstring & str, vector<Token> & result)
     {
-        DoSplit(str, result, 1);        
+        DoSplit(str, result, 1);
     }
 
     void biGramSplit(const wstring & str, vector<Token> & result)
     {
-        DoSplit(str, result, 2);        
+        DoSplit(str, result, 2);
     }
 
-    void mixSplit(const wstring & str, vector<Token> & result){
+    void mixSplit(const wstring & str, vector<Token> & result)
+    {
         DoSplit(str, result, 3);
     }
 
-    void posTagging(const wstring & str, vector<Token> & result){
+    void posTagging(const wstring & str, vector<Token> & result)
+    {
         int delimiter_index = DictFactory::LexicalDict().getNatureIndex(L"w");
         vector<Token>  sentances;
         vector<Token>  tmp;
@@ -124,14 +126,15 @@ public:
     }
 
 private:
-    void DoSplit(const wstring & str, vector<Token> & result, int fn){
+    void DoSplit(const wstring & str, vector<Token> & result, int fn)
+    {
         vector<Token>  sentances;
         sentanceSplit(str, sentances);
         int prevTokes = 0;
         int off = 0;
         for(int i = 0; i < sentances.size(); i++) {
             if(sentances[i]._attr >= 0) {
-                switch(fn){
+                switch(fn) {
                 case 1:
                     _worker.uniGramSplit(str.substr(sentances[i]._off, sentances[i]._len), result);
                     break;
@@ -142,7 +145,7 @@ private:
                     _worker.mixSplit(str.substr(sentances[i]._off, sentances[i]._len), result);
                     break;
                 }
-                
+
                 for(int k = prevTokes; k < result.size(); k++) {
                     result[k]._off += off;
                 }

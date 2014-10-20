@@ -61,7 +61,8 @@ std::string ws2s(const std::wstring& ws)
     return result;
 }
 
-string wc2c(wchar_t t){
+string wc2c(wchar_t t)
+{
     char ch[20];
     wctomb(ch, t);
     return string(ch);

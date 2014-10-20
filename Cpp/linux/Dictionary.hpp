@@ -248,9 +248,11 @@ private:
     WordNature * _unknownNature;
 };
 
-class UserDict:public Dictionary{
+class UserDict:public Dictionary
+{
 public:
-    UserDict(const string & file):Dictionary(file){
+    UserDict(const string & file):Dictionary(file)
+    {
         user_datrie.setDataFreer(WordNatureFreer);
         user_datrie.setDataReader(ReadWordNatureFromFile);
         user_datrie.setDataWriter(WriteWordNatureToFile);
@@ -259,7 +261,7 @@ public:
     virtual const WordNature * getWordInfo(const wstring & word) const
     {
         const WordNature * pinfo =  (const WordNature *)datrie.retrieve(word.c_str());
-        if(pinfo == NULL){
+        if(pinfo == NULL) {
             pinfo = (const WordNature *)user_datrie.retrieve(word.c_str());
         }
 
@@ -268,41 +270,42 @@ public:
 
     virtual bool existPrefix(const wstring & prefix) const
     {
-        if(datrie.containsPrefix(prefix)){
+        if(datrie.containsPrefix(prefix)) {
             return true;
         }
 
         return user_datrie.containsPrefix(prefix);
     }
 
-    void loadUserDict(const vector<string> & files){
+    void loadUserDict(const vector<string> & files)
+    {
         int udf_idx = getNatureIndex(NATURE_UNDEF);
-        if(udf_idx < 0){
+        if(udf_idx < 0) {
             addNature(NATURE_UNDEF);
             udf_idx = getNatureIndex(NATURE_UNDEF);
         }
 
         int count = 0;
-        for(int i = 0; i < files.size(); i++){
-            
+        for(int i = 0; i < files.size(); i++) {
+
             cout<<"\rloading user dictionary:"<<files[i].c_str();
             UTF8FileReader reader(files[i]);
             wstring * line;
-            while((line = reader.getLine())){
-                if(!getWordInfo(*line)){
+            while((line = reader.getLine())) {
+                if(!getWordInfo(*line)) {
                     WordNature *nature = new WordNature();
                     nature->setAttrValue(udf_idx, 1);
                     user_datrie.add(*line, nature);
                     count ++;
-                    if(count % 1000 == 0){
+                    if(count % 1000 == 0) {
                         cout<<"\r added -> "<<count;
                     }
                 }
             }
-           
+
         }
         cout<<endl;
-    } 
+    }
 private:
     UserDict(const UserDict &);
 protected:

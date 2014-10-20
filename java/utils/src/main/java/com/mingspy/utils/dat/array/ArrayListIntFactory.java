@@ -22,30 +22,33 @@ package com.mingspy.utils.dat.array;
  * Implementation of a factory class for IntegerArrayLists. Holds the
  * configuration for creating ArrayLists for <tt>int</tt>s with specified
  * initial size and growth characteristics.
- * 
- * 
+ *
+ *
  */
-public class ArrayListIntFactory {
+public class ArrayListIntFactory
+{
 
-	private static final int initialCapacity = 0;
-	private static final int numerator = 5;
-	private static final int denominator = 4;
-	private static final int fixedInc = 1;
+    private static final int initialCapacity = 0;
+    private static final int numerator = 5;
+    private static final int denominator = 4;
+    private static final int fixedInc = 1;
 
-	/**
-	 * @see org.digitalstain.datrie.store.IntegerListFactory#newListInt()
-	 */
-	public static ListInt newListInt() {
-		return new ArrayListInt(initialCapacity, numerator, denominator, fixedInc);
-	}
+    /**
+     * @see org.digitalstain.datrie.store.IntegerListFactory#newListInt()
+     */
+    public static ListInt newListInt()
+    {
+        return new ArrayListInt(initialCapacity, numerator, denominator, fixedInc);
+    }
 
-	public static ListInt newListInt(int[] array, int from) {
-		ListInt list = new ArrayListInt(array.length - from, numerator, denominator, fixedInc);
-		for (int i = from; i < array.length; i++) {
-			list.add(array[i]);
-		}
+    public static ListInt newListInt(int[] array, int from)
+    {
+        ListInt list = new ArrayListInt(array.length - from, numerator, denominator, fixedInc);
+        for (int i = from; i < array.length; i++) {
+            list.add(array[i]);
+        }
 
-		return list;
-	}
+        return list;
+    }
 
 }

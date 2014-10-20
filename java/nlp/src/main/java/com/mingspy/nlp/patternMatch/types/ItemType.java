@@ -1,7 +1,7 @@
 package com.mingspy.nlp.patternMatch.types;
 
-public enum ItemType{
-	SYMBOL,
-	KEYWORD,
-	CONSTENT,
+public enum ItemType {
+    SYMBOL,
+    KEYWORD,
+    CONSTENT,
 }

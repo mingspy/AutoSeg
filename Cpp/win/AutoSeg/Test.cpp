@@ -205,7 +205,7 @@ int main(int argc, char ** argv)
     //tt.uniGramSplit(L"他说的确实在理", vec);
     Tokenizer::printTokens(vec);
     //CheckMemLeaks();
-    if(0){
+    if(0) {
         cout<<"sizeof(wchar_t):"<<sizeof(wchar_t)<<endl;
         AutoTokenizer t;
         vector<Token> rs;

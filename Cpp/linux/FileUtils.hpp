@@ -142,10 +142,10 @@ string combinPath(const string & path, const string & path2)
 
 void getFiles( const string & path, vector<string>& files )
 {
-     string pathInner = changeToInnerPath(path);
-     if(pathInner.at(pathInner.length() - 1) == '/'){
-         pathInner.erase(pathInner.length() - 1);
-     }
+    string pathInner = changeToInnerPath(path);
+    if(pathInner.at(pathInner.length() - 1) == '/') {
+        pathInner.erase(pathInner.length() - 1);
+    }
 #if _MSC_VER > 1000
     long   hFile   =   0;
     struct _finddata_t fileinfo;
@@ -160,7 +160,7 @@ void getFiles( const string & path, vector<string>& files )
             }
         } while(_findnext(hFile, &fileinfo)  == 0);
         _findclose(hFile);
-    } 
+    }
 #else
     DIR * pDir = opendir(path.c_str());
     if(pDir == NULL) {
@@ -168,12 +168,12 @@ void getFiles( const string & path, vector<string>& files )
     }
 
     dirent * ent = NULL;
-    while((ent = readdir(pDir)) != NULL){
-        if(ent->d_type & DT_DIR){
-            if(strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0) 
+    while((ent = readdir(pDir)) != NULL) {
+        if(ent->d_type & DT_DIR) {
+            if(strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0)
                 continue;
             getFiles(pathInner+"/"+ent->d_name, files);
-        }else{
+        } else {
             files.push_back(pathInner+"/"+ent->d_name);
         }
     }
@@ -211,7 +211,7 @@ public:
 
     wstring * getLine()
     {
-        if(inf.good()){
+        if(inf.good()) {
             string line;
             do {
                 if(getline(inf,line)) {
@@ -254,7 +254,7 @@ public:
 
     string * getLine()
     {
-        if(inf.good()){
+        if(inf.good()) {
             string line;
             do {
                 if(getline(inf,line)) {
@@ -266,11 +266,12 @@ public:
                 }
             } while(!inf.eof());
         }
-        
+
         return NULL;
     }
 
-    size_t size(const string& filename){
+    size_t size(const string& filename)
+    {
         return fileSize(filename);
     }
 

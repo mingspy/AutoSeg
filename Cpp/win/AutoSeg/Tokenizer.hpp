@@ -229,8 +229,8 @@ protected:
         const int atome_size = atoms.size();
         int lastj = -1;
         for(int i = 0; i < atome_size; i++) {
-            wchar_t ch = str.at(atoms[i]._off); 
-            if(!puncs.exists(ch)){
+            wchar_t ch = str.at(atoms[i]._off);
+            if(!puncs.exists(ch)) {
                 for(int j = i + 1; j < atome_size; j++) {
                     wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
                     if(dict.getWordInfo(word)) {
@@ -265,15 +265,15 @@ protected:
     {
         const PunctionDictionary & puncs = DictFactory::Puntions();
         for(int i = 0; i < atoms.size(); ) {
-           
-            wchar_t ch = str.at(atoms[i]._off);     
+
+            wchar_t ch = str.at(atoms[i]._off);
             int maxj = i;
-            if(!puncs.exists(ch)){
+            if(!puncs.exists(ch)) {
                 for(int j = i+1; j < atoms.size(); j++) {
                     wstring word = str.substr(atoms[i]._off, atoms[j]._off + atoms[j]._len - atoms[i]._off);
-                    if(dict.getWordInfo(word)){
+                    if(dict.getWordInfo(word)) {
                         maxj = j;
-                    }else if(!dict.existPrefix(word)) {
+                    } else if(!dict.existPrefix(word)) {
                         break;
                     }
                 }
@@ -282,7 +282,7 @@ protected:
 
             result.push_back(Token(atoms[i]._off,atoms[maxj]._off + atoms[maxj]._len - atoms[i]._off));
             i = maxj + 1;
- 
+
         }
     }
 

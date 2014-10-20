@@ -6,11 +6,13 @@ import org.junit.Test;
 /**
  * Unit test for simple App.
  */
-public class AppTestDemo {
+public class AppTestDemo
+{
 
 
-	@Test
-	public void somefoo() {
-		Assert.assertTrue(true);
-	}
+    @Test
+    public void somefoo()
+    {
+        Assert.assertTrue(true);
+    }
 }

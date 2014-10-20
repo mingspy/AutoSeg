@@ -79,7 +79,7 @@ void estimateTokenizer(const vector<wstring>& test_datas, int testSize,
 
             int m = 0;//max(0, j - 4);
             int n = refer_datas[i].size();//min(j+4, refer_datas[i].size());
-            if(choice >=3){
+            if(choice >=3) {
                 m = max(0, j - 4);
                 n = min(j+4, refer_datas[i].size());
             }
@@ -220,9 +220,9 @@ int main(int argc, char ** argv)
         }
         string arg1 = argv[1];
         if(arg1 == "-t") {
-            if(argc == 3){
+            if(argc == 3) {
                 estimateSegmetors(argv[2]);
-            }else{
+            } else {
                 estimateSegmetors("../data/estimate/");
             }
         } else if(arg1 == "-b") {

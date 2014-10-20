@@ -48,7 +48,7 @@ static const string DEFAULT_ISLOAD_INVS = "false";
 
 const string ENV_AUTOSEG_CONF_PATH = "AUTOSEG_CONF_PATH"; // seg config key in environment
 // keys in config file :
-const string KEY_CONF_PATH = "CONF_PATH";  
+const string KEY_CONF_PATH = "CONF_PATH";
 const string KEY_CORE_PATH = "CORE_DICT_PATH";
 const string KEY_BIGRAM_PATH = "BIGRAM_DICT_PATH";
 const string KEY_INVS_PATH = "INVS_DICT_PATH";
@@ -131,7 +131,7 @@ private:
         LineFileReader reader(path);
         string * line = NULL;
         while((line = reader.getLine()) != NULL) {
-            if(line->at(0) == '#'){
+            if(line->at(0) == '#') {
                 continue;
             }
             int idx = line->find_first_of('=');

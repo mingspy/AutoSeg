@@ -50,10 +50,10 @@ public:
         string userDictPath = conf.getString(KEY_UDF_DICT_PATH);
         vector<string> files;
         getFiles(userDictPath, files);
-        if(files.size() == 0){
+        if(files.size() == 0) {
             _coreDict = new Dictionary(conf.getString(KEY_CORE_PATH));
 
-        }else{
+        } else {
             UserDict * dict = new UserDict(conf.getString(KEY_CORE_PATH));
             dict->loadUserDict(files);
             _coreDict = dict;
@@ -64,10 +64,10 @@ public:
         }
 
         _lexicalDict = new ShiftContext(conf.getString(KEY_LEXICAL_PATH));
-        if(!conf.getString(KEY_BIGRAM_PATH).empty()){
+        if(!conf.getString(KEY_BIGRAM_PATH).empty()) {
             _biDict = new Dictionary(conf.getString(KEY_BIGRAM_PATH));
         }
-        
+
         _loaded = true;
         atexit(clean);
     }
@@ -85,7 +85,7 @@ public:
         if(!_loaded) {
             initialize();
         }
-        if(_biDict){
+        if(_biDict) {
             return *_biDict;
         }
 
@@ -128,18 +128,18 @@ public:
                 delete _inverseCoreDict;
                 _inverseCoreDict = NULL;
             }
-            if(_biDict){
+            if(_biDict) {
                 delete _biDict;
                 _biDict = NULL;
             }
-            if(_lexicalDict){
+            if(_lexicalDict) {
                 delete _lexicalDict;
                 _lexicalDict = NULL;
             }
             _loaded = false;
         }
     }
-   
+
 };
 
 Dictionary * DictFactory::_coreDict = NULL;
