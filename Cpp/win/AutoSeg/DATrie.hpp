@@ -32,14 +32,19 @@ namespace mingspy
 class DATrie
 {
 private:
-    DoubleArray da;
-    Tail tail;
+    DoubleArray _da;
+    Tail _tail;
     bool is_dirty;
 
 public:
-    DATrie(TailDataFree fn = NULL):is_dirty(false)
+    DATrie(TailDataFreer fn = NULL):is_dirty(false)
     {
-        tail.setDataFreer(fn);
+        _tail.setDataFreer(fn);
+    }
+
+    Tail & getTail()
+    {
+        return _tail;
     }
 
     /**
@@ -75,11 +80,11 @@ public:
     {
         int t;
         /* walk through branches */
-        int s = da.getRoot();
+        int s = _da.getRoot();
         int keylen = key.length();
         const wchar_t * p = key.c_str();
         for (; !isSeparate(s); p++) {
-            if (!da.walk(&s, *p)) {
+            if (!_da.walk(&s, *p)) {
                 return false;
             }
             if (0 == *p)
@@ -90,16 +95,16 @@ public:
         t = getTailIndex(s);
         int suffix_idx = 0;
         for (; ; p++) {
-            if (!tail.walkChar(t, &suffix_idx, *p)) {
+            if (!_tail.walkChar(t, &suffix_idx, *p)) {
                 return false;
             }
             if (0 == *p)
                 break;
         }
 
-        tail.remove(t);
-        da.setBase(s, TRIE_INDEX_ERROR);
-        da.prune(s);
+        _tail.remove(t);
+        _da.setBase(s, TRIE_INDEX_ERROR);
+        _da.prune(s);
 
         is_dirty = true;
         return true;
@@ -123,10 +128,10 @@ public:
     void * retrieve(const wstring & key) const
     {
         /* walk through branches */
-        int s = da.getRoot();
+        int s = _da.getRoot();
         const wchar_t * p = key.c_str();
         for (; !isSeparate(s); p++) {
-            if (!da.walk(&s, *p)) {
+            if (!_da.walk(&s, *p)) {
                 return NULL;
             }
             if (0 == *p)
@@ -137,7 +142,7 @@ public:
         s = getTailIndex(s);
         int suffix_idx = 0;
         for (; ; p++) {
-            if (!tail.walkChar(s, &suffix_idx, *p)) {
+            if (!_tail.walkChar(s, &suffix_idx, *p)) {
                 return NULL;
             }
             if (0 == *p)
@@ -145,18 +150,18 @@ public:
         }
 
         /* found, set the val and return */
-        return tail.getData(s);
+        return _tail.getData(s);
     }
 
     bool containsPrefix(const wstring & prefix) const
     {
         /* walk through branches */
-        int s = da.getRoot();
+        int s = _da.getRoot();
         const wchar_t * p = prefix.c_str();
         for (; !isSeparate(s); p++) {
             if (0 == *p)
                 return true;
-            if (!da.walk(&s, *p)) {
+            if (!_da.walk(&s, *p)) {
                 return false;
             }
         }
@@ -167,7 +172,7 @@ public:
         for (; ; p++) {
             if (0 == *p)
                 return true;
-            if (!tail.walkChar(s, &suffix_idx, *p)) {
+            if (!_tail.walkChar(s, &suffix_idx, *p)) {
                 return false;
             }
 
@@ -176,24 +181,10 @@ public:
         return true;
     }
 
-    inline void setDataFreer( TailDataFree fn )
-    {
-        tail.setDataFreer(fn);
-    }
-
-    inline void setDataWriter( WriteTailDataToFile fn )
-    {
-        tail.setDataWriter(fn);
-    }
-
-    inline void setDataReader( ReadTailDataFromFile fn )
-    {
-        tail.setDataReader(fn);
-    }
 
     inline void setMemPool( MemoryPool<>* mem_pool )
     {
-        tail.setMemPool(mem_pool);
+        _tail.setMemPool(mem_pool);
     }
 
     bool writeToFile(const char * file)
@@ -212,7 +203,7 @@ public:
 
     bool writeToFile(FILE * pfile)
     {
-        if(!da.writeToFile(pfile) || !tail.writeToFile(pfile)) {
+        if(!_da.writeToFile(pfile) || !_tail.writeToFile(pfile)) {
             return false;
         }
         return true;
@@ -233,7 +224,7 @@ public:
 
     bool readFromFile(FILE * pfile)
     {
-        if(!da.readFromFile(pfile) || !tail.readFromFile(pfile)) {
+        if(!_da.readFromFile(pfile) || !_tail.readFromFile(pfile)) {
             fclose(pfile);
             return false;
         }
@@ -244,12 +235,12 @@ public:
 private:
     inline bool isSeparate(int s) const
     {
-        return da.getBase(s) < 0;
+        return _da.getBase(s) < 0;
     }
 
     inline int getTailIndex(int s) const
     {
-        return -da.getBase(s);
+        return -_da.getBase(s);
     }
 
     /**
@@ -269,18 +260,18 @@ private:
      *         multi-thread applications, as race condition can be avoided.
      *         Available since: 0.2.4
      */
-    bool storeIfAbsent(const wstring & key, void * data)
+    inline bool storeIfAbsent(const wstring & key, void * data)
     {
-        return storeConditionally(key, data, false);
+        return storeConditionally(key, data,false);
     }
 
     bool storeConditionally(const wstring & key, void * data, bool is_overwrite)
     {
         /* walk through branches */
-        int s = da.getRoot();
+        int s = _da.getRoot();
         const wchar_t * p = key.c_str();
         for (; !isSeparate(s); p++) {
-            if (!da.walk(&s, *p)) {
+            if (!_da.walk(&s, *p)) {
                 return branchInBranch(s, p, data);
             }
             if (0 == *p)
@@ -292,7 +283,7 @@ private:
         int t = getTailIndex(s);
         int suffix_idx = 0;
         for (; ; p++) {
-            if (!tail.walkChar(t, &suffix_idx, *p)) {
+            if (!_tail.walkChar(t, &suffix_idx, *p)) {
                 return branchInTail(s, sep, data);
 
             }
@@ -304,14 +295,14 @@ private:
         if (!is_overwrite) {
             return false;
         }
-        tail.setData(t, data);
+        _tail.setData(t, data);
         is_dirty = true;
         return true;
     }
 
     inline void setTailIndex(int s, int v)
     {
-        da.setBase(s, -v);
+        _da.setBase(s, -v);
     }
 
     bool branchInBranch(int sep_node, const wchar_t * suffix, void * data)
@@ -319,15 +310,14 @@ private:
         int new_da, new_tail;
 
         int i = 0;
-        new_da = da.insertBranch(sep_node, *suffix);
+        new_da = _da.insertBranch(sep_node, *suffix);
         if (TRIE_INDEX_ERROR == new_da)
             return false;
 
         if (0 != *suffix)
             ++suffix;
-
-        new_tail = tail.addSuffix(suffix);
-        tail.setData(new_tail, data);
+        new_tail = _tail.addSuffix(suffix);
+        _tail.setData(new_tail, data);
         setTailIndex(new_da, new_tail);
 
         is_dirty = true;
@@ -339,25 +329,25 @@ private:
 
         /* adjust separate point in old path */
         int old_tail = getTailIndex(sep_node);
-        wchar_t * old_suffix = tail.getSuffix(old_tail);
+        const wchar_t * old_suffix = _tail.getSuffix(old_tail);
         if (old_suffix == NULL)
             return false;
 
         int s = sep_node;
-        wchar_t * p = old_suffix;
+        const wchar_t * p = old_suffix;
         for (; *p == *suffix; p++, suffix ++) {
-            int t = da.insertBranch(s, *suffix);
+            int t = _da.insertBranch(s, *suffix);
             if (TRIE_INDEX_ERROR == t) {
-                da.pruneUpto(sep_node, s);
+                _da.pruneUpto(sep_node, s);
                 setTailIndex(sep_node, old_tail);
                 return false;
             }
             s = t;
         }
 
-        int old_da = da.insertBranch(s, *p);
+        int old_da = _da.insertBranch(s, *p);
         if (TRIE_INDEX_ERROR == old_da) {
-            da.pruneUpto(sep_node, s);
+            _da.pruneUpto(sep_node, s);
             setTailIndex(sep_node, old_tail);
             return false;
         }
@@ -366,7 +356,7 @@ private:
         // save old left suffix.
         if (0 != *p)
             ++p;
-        tail.setSuffix(old_tail, p);
+        _tail.setSuffix(old_tail, p);
         setTailIndex(old_da, old_tail);
 
         /* insert the new branch at the new separate point */

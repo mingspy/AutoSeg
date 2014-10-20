@@ -68,6 +68,7 @@ string wc2c(wchar_t t)
     return string(ch);
 }
 
+
 #if _MSC_VER > 1000
 wstring Utf8ToUnicode( const string& str )
 {

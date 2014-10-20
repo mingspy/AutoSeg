@@ -24,21 +24,12 @@
 #include "Matrix.hpp"
 #include "NShortPath.hpp"
 #include "Viterbi.hpp"
+#include "Token.hpp"
+#include "SplitResult.hpp"
 using namespace std;
 
 namespace mingspy
 {
-
-struct Token {
-    int _attr; // type of this token or attribute index.
-    int _off; // start index.
-    int _len; // len
-    //wstring _word; // maybe empty
-    Token(int start = 0, int len = 0, int attr = 0)
-        :_off(start),_len(len),_attr(attr)
-    {
-    }
-};
 
 
 class ITokenizer
@@ -96,7 +87,7 @@ public:
 
     static void printTokenWithTag(const vector<Token> & result)
     {
-        const ShiftContext & context = DictFactory::LexicalDict();
+        const NatureProbTable & context = DictFactory::LexicalDict();
         for(int i = 0; i< result.size(); i++) {
             wcout<<"("<<result[i]._off<<","<<result[i]._len<<","<<context.getNature(result[i]._attr)<<")";
         }
@@ -116,11 +107,11 @@ class Tokenizer: public ITokenizer
 public:
     Tokenizer()
     {
-        MAX_NPATH = Configuration::instance().getInt("MAX_NPATH", 8);
-        TOTAL_FREQ = Configuration::instance().getInt("TOTAL_FREQ", 9000000);
+        MAX_NPATH = Configuration::instance().getInt("MAX_NPATH", 6);
+        TOTAL_FREQ = Configuration::instance().getInt("TOTAL_FREQ", 10000000);
         UNIGRAM_SMOTH_PROB = Configuration::instance().getDouble("UNIGRAM_SMOTH_PROB", 1.0/TOTAL_FREQ);
         BIGRAM_SMOTH_FACTOR = Configuration::instance().getDouble("BIGRAM_SMOTH_FACTOR", 0.2);
-        cout<<"BIGRAM_SMOTH_FACTOR = "<<BIGRAM_SMOTH_FACTOR<<endl;
+        //cout<<"BIGRAM_SMOTH_FACTOR = "<<BIGRAM_SMOTH_FACTOR<<endl;
     }
 
     /*
@@ -161,7 +152,7 @@ public:
     {
         Graph wordGraph;
         // get all words
-        genWordGraph(DictFactory::CoreDict(), str, wordGraph);
+        genWordGraph(DictFactory::CoreDict(), str, wordGraph, true);
 
         doNShotPath(wordGraph, str, result);
     }
@@ -169,43 +160,55 @@ public:
     void biGramSplit(const wstring & str, vector<Token> & result)
     {
         Graph wordGraph;
-        // get all words
         genWordGraph(DictFactory::CoreDict(), str, wordGraph, false);
         genBigramWordGraph(DictFactory::CoreDict(), DictFactory::BigramDict(), str, wordGraph, false);
-        // n-short path
         doNShotPath(wordGraph, str, result);
     }
 
     void mixSplit(const wstring & str, vector<Token> & result)
     {
         Graph wordGraph;
-        // get all words
         genWordGraph(DictFactory::CoreDict(), str, wordGraph, true);
         genBigramWordGraph(DictFactory::CoreDict(), DictFactory::BigramDict(), str, wordGraph, true);
-        // n-short path
         doNShotPath(wordGraph, str, result);
     }
 
     void posTagging(const wstring & str, vector<Token> & result)
     {
-        uniGramSplit(str, result);
-        vector<const WordNature *> observs;
-        WordNature * tmp = NULL;
-        const Dictionary & coreDict = DictFactory::CoreDict();
-        const ShiftContext & shiftContext = DictFactory::LexicalDict();
-        for(int i = 0; i < result.size(); i++) {
-            const WordNature * info = coreDict.getWordInfo(str.substr(result[i]._off, result[i]._len));
-            if(info == NULL) {
-                info = shiftContext.getUnknownNature();
+        //uniGramSplit(str, result);
+        //doPosTagging(str, DictFactory::CoreDict(), DictFactory::LexicalDict(), result);
+        Graph wordGraph;
+        // get all words
+        genWordGraph(DictFactory::CoreDict(), str, wordGraph, true);
+
+        NShortPath shortPath(wordGraph, MAX_NPATH, str.length());
+        shortPath.calcPaths();
+
+        vector<SplitResult> splitResults;
+        int paths = 0;
+        for(int i = 0; i< MAX_NPATH; i++) {
+            splitResults.push_back(SplitResult());
+            if(shortPath.getBestResult(i, splitResults[i].tokens, &splitResults[i].score)) {
+                splitResults[i].score += 0.4 * doPosTagging(str, DictFactory::CoreDict(),
+                                         DictFactory::LexicalDict(), splitResults[i].tokens);
+                paths ++;
+            } else {
+                break;
             }
-            observs.push_back(info);
+
         }
 
-        SparseInstance<int> bestPos;
-        Viterbi::viterbi(observs, shiftContext, bestPos);
-        for(int i = 0; i < result.size(); i++) {
-            result[i]._attr = bestPos.valueAt(i);
+        double minScore = 100000000;
+        int minIndx = 0;
+        for(int i = 0; i < paths; i++) {
+            if(splitResults[i].score  < minScore) {
+                minScore = splitResults[i].score;
+                minIndx = i;
+            }
         }
+        result = splitResults[minIndx].tokens;
+        //cout<<minIndx<<endl;
+
     }
 
     void setMaxPaths(int maxs)
@@ -278,7 +281,6 @@ protected:
                     }
                 }
             }
-
 
             result.push_back(Token(atoms[i]._off,atoms[maxj]._off + atoms[maxj]._len - atoms[i]._off));
             i = maxj + 1;
@@ -355,7 +357,7 @@ protected:
                 if((info = dict.getWordInfo(word))) {
                     double totalfrequnce = UNIGRAM_SMOTH_PROB;
                     if(queryFreqTotal) {
-                        totalfrequnce = (dict.getTotalFreq(word) + 1.0) / TOTAL_FREQ;
+                        totalfrequnce = dict.getProb(word);
                     }
                     graph.setVal(atoms[i]._off, atoms[j]._off + atoms[j]._len, totalfrequnce);
                     lastj = j;
@@ -365,7 +367,8 @@ protected:
             }
 
             // add word that not exist in dictionary.
-            graph.setVal(atoms[i]._off, atoms[i]._off + atoms[i]._len, UNIGRAM_SMOTH_PROB);
+            if(lastj < i)
+                graph.setVal(atoms[i]._off, atoms[i]._off + atoms[i]._len, UNIGRAM_SMOTH_PROB);
 
         }
 #if _DEBUG
@@ -389,9 +392,9 @@ protected:
                 SparseInstance<double> &insTo = graph[to];
                 for( int k = insTo.numValues() - 1; k >=0 ; k--) {
                     int toEnd = insTo.attrAt(k);
-                    wstring w = word1 + L"@" + str.substr(to, toEnd - to);
                     double twoFreq = 1.0;
-                    twoFreq += bigramdict.getTotalFreq(w);
+                    twoFreq += bigramdict.getNatureFreq(word1, str.substr(to, toEnd - to));
+
                     double probTwo = twoFreq / wordFreq;
                     if(addWordFrq) {
                         probTwo = BIGRAM_SMOTH_FACTOR * probTwo + (1 - BIGRAM_SMOTH_FACTOR) * insTo.valueAt(k);
@@ -408,24 +411,42 @@ protected:
         }
     }
 
-    void doNShotPath( Graph & wordGraph, const wstring &str, vector<Token> &result )
+    double doNShotPath( Graph & wordGraph, const wstring &str, vector<Token> &result )
     {
         // n-short path
         NShortPath shortPath(wordGraph, MAX_NPATH, str.length());
         shortPath.calcPaths();
+        double score = 0;
+        shortPath.getBestResult(0, result, &score);
+        return score;
+    }
 
-        Path p;
-        if(!shortPath.getBestPath(0, p)) return;
-        for(int i = 0; i < p.numValues(); i ++) {
-            int start = p.attrAt(i);
-            int len = p.valueAt(i) - start;
-            result.push_back(Token(start, len));
+    double doPosTagging(const wstring & str, const Dictionary & dict,
+                        const NatureProbTable & context, vector<Token> & result)
+    {
+        vector<const WordNature *> observs;
+        WordNature * tmp = NULL;
+        for(int i = 0; i < result.size(); i++) {
+            const WordNature * info = dict.getWordInfo(
+                                          str.substr(result[i]._off, result[i]._len));
+            if(info == NULL) {
+                info = context.getUnknownNature();
+            }
+            observs.push_back(info);
         }
+
+        SparseInstance<int> bestPos;
+        double score = Viterbi::viterbi(observs, context, bestPos);
+        for(int i = 0; i < result.size(); i++) {
+            result[i]._attr = bestPos.valueAt(i);
+        }
+        return score;
     }
 private:
     int MAX_NPATH;
-    double TOTAL_FREQ;
+
     double UNIGRAM_SMOTH_PROB;
     double BIGRAM_SMOTH_FACTOR;
+    double TOTAL_FREQ;
 };
 }

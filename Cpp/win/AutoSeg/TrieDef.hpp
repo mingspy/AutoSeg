@@ -23,6 +23,8 @@
 #include "FileUtils.hpp"
 #include "MemoryPool.hpp"
 #include "MemLeaksCheck.h"
+#include "IntStrArray.hpp"
+#include "Serializer.hpp"
 
 using namespace std;
 
@@ -35,31 +37,16 @@ const int TRIE_INDEX_ERROR = 0;
 const void * TRIE_DATA_ERROR = NULL;
 const int TRIE_CHILD_MAX = 65536; // how many children a char can have in dat.
 
-/**
-* The length of a TrieStr
-
-int TrieStrLen(const TrieChar * str)
-{
-    if(str != NULL)
-    {
-        const TrieChar * p = str;
-        int len = 0;
-        while(*p++ != TrieChar(0))
-        {
-            len ++;
-        }
-        return len;
-    }
-    return 0;
-}
-*/
+const wchar_t wordSeperator = L'\t';
+const wstring natureSeperator = L",";
+const wchar_t freqSeperator = L':';
 
 /**
 * Tail data delete call back functions
 */
-typedef void (*TailDataFree)(void * );
+typedef void (*TailDataFreer)(void * );
 
-void TrieCharFreeFunc(void * ptr)
+inline void TrieStrFreer(void * ptr)
 {
     wchar_t * p = (wchar_t *) ptr;
     delete [] p;
@@ -69,7 +56,7 @@ void TrieCharFreeFunc(void * ptr)
 /**
 * Write data to a given file, which used for tail to serialize.
 */
-typedef void (*WriteTailDataToFile)(FILE * file, const void * data);
+typedef void (*TailDataWriter)(FILE * file, const void * data);
 
 /*
 * Reads data from given file, which used for tail unserialize.
@@ -78,48 +65,27 @@ typedef void (*WriteTailDataToFile)(FILE * file, const void * data);
 * MemoryPool only safe when used to save simple objects that not
 * holds other objects which need to free.
 */
-typedef void *(*ReadTailDataFromFile)(FILE * file, MemoryPool<> * pmem);
+typedef void *(*TailDataReader)(FILE * file);
 
-void WriteTrieStrToFile(FILE * file, const void * str)
+void TrieStrWriter(FILE * file, const void * str)
 {
     if(str != NULL) {
-        wstring wstr = (wchar_t *)str;
-        int len = wstr.length() + 1;
-        assert(len < 0xffff);
-        if(!file_write_int16(file, len)) {
-            assert(false);
-        }
-        if(fwrite(str, sizeof(wchar_t), len, file) != len) {
-            assert(false);
-        }
+        Serializer serializer(file);
+        serializer.writeWstr(static_cast<const wchar_t *>(str));
     } else {
         assert(false);
     }
 }
 
-void * ReadTrieStrFromFile(FILE * file, MemoryPool<> * pmem)
+/*
+* read wstring from file, and return
+* a wchar_t * allocated in heap, caller
+* need delete the result when not use.
+*/
+void * TrieStrReader(FILE * file)
 {
-    unsigned short len;
-    if(!file_read_int16(file, (short *)&len)) {
-        assert(false);
-        return NULL;
-    }
-    wchar_t * str = NULL;
-    if(pmem) {
-        str = (wchar_t *)pmem->allocAligned(len * sizeof(wchar_t));
-    } else {
-        str = new wchar_t[len];
-    }
-
-    if(fread(str, sizeof(wchar_t), len, file) != len) {
-        assert(false);
-        if(!pmem) {
-            delete [] str;
-        }
-        return NULL;
-    }
-
-    return str;
+    Serializer serializer(file);
+    return serializer.readWstr();
 }
 }
 

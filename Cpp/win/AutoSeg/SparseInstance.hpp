@@ -285,17 +285,18 @@ public:
     static void DoWriteSIToFile(FILE * file, const SparseInstance<T> * data)
     {
         long old_pos = ftell(file);
+        Serializer serializer(file);
         if(data != NULL) {
-            if(!file_write_int32(file, data->m_NumValues)) {
+            if(!serializer.writeInt32(data->m_NumValues)) {
                 goto exit_write;
             }
 
             if(data->m_NumValues > 0) {
-                if(fwrite(data->m_Indices, sizeof(int), data->m_NumValues, file) != data->m_NumValues) {
+                if(!serializer.write(data->m_Indices, sizeof(int), data->m_NumValues)) {
                     goto exit_write;
                 }
 
-                if(fwrite(data->m_AttValues, sizeof(T), data->m_NumValues, file) != data->m_NumValues) {
+                if(!serializer.write(data->m_AttValues, sizeof(T), data->m_NumValues)) {
                     goto exit_write;
                 }
             }
@@ -308,49 +309,30 @@ exit_write:
         assert(false);
     }
 
-    static SparseInstance<T> * DoReadSIFromFile(FILE * file, MemoryPool<> * pmem)
+    static SparseInstance<T> * DoReadSIFromFile(FILE * file)
     {
         long old_pos = ftell(file);
-        int num = 0;
-        SparseInstance<T> * inst = NULL;
+        Serializer serializer(file);
+        int num = serializer.readInt32();
+        SparseInstance<T> * inst = new SparseInstance<T>();
 
-        if(!file_read_int32(file, &num)) {
-            goto exit_read;
-        }
-
-        if(pmem != NULL) {
-            inst = (SparseInstance<T> *)pmem->allocAligned(sizeof(SparseInstance<T>));
-        } else {
-            inst = new SparseInstance<T>();
-        }
         inst->_sumVs = ZERO;
         inst->m_NumValues = num;
         if(num > 0) {
-            if(pmem != NULL) {
-                inst->m_Indices = (int *)pmem->allocAligned(num * sizeof(int));
-            } else {
-                inst->m_Indices = new int[num];
-            }
-
-            if(fread(inst->m_Indices, sizeof(int), inst->m_NumValues, file) != inst->m_NumValues) {
+            inst->m_Indices = new int[num];
+            if(!serializer.read(inst->m_Indices, sizeof(int), inst->m_NumValues)) {
                 goto exit_read_inst;
             }
 
-            if(pmem != NULL) {
-                inst->m_AttValues = (T *)pmem->allocAligned(num * sizeof(T));
-            } else {
-                inst->m_AttValues = new T[num];
-            }
-
-            if(fread(inst->m_AttValues, sizeof(T), inst->m_NumValues, file) != inst->m_NumValues) {
+            inst->m_AttValues = new T[num];
+            if(!serializer.read(inst->m_AttValues, sizeof(T), inst->m_NumValues)) {
                 goto exit_read_inst;
             }
         }
 
         return inst;
 exit_read_inst:
-        if(!pmem)
-            delete inst;
+        delete inst;
 exit_read:
         fseek(file, old_pos, SEEK_SET);
         assert(false);
@@ -401,13 +383,13 @@ void WordNatureFreer(void * ptr)
 /*
 * Reads data from given file, which used for tail unserialize.
 */
-void * ReadWordNatureFromFile(FILE * file, MemoryPool<> * pmem)
+void * WordNatureReader(FILE * file)
 {
-    return WordNature::DoReadSIFromFile(file, pmem);
+    return WordNature::DoReadSIFromFile(file);
 }
 
 
-void WriteWordNatureToFile(FILE * file, const void * data)
+void WordNatureWriter(FILE * file, const void * data)
 {
     WordNature::DoWriteSIToFile(file, static_cast<WordNature *>(const_cast<void *>(data)));
 }

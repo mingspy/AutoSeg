@@ -38,6 +38,11 @@
 using namespace std;
 namespace mingspy
 {
+
+// A help class used to
+// make the suffix be safe-use.
+
+
 class Tail
 {
 
@@ -52,14 +57,15 @@ class Tail
 private:
     static const int TAIL_START_BLOCKNO = 1;
     static const int TAIL_SIGNATURE = 0xffddabaa;
+    static const int INCREASEMENT_SIZE = 16;
 private:
     int num_tails;
     TailBlock * tails;
     int first_free;
-    TailDataFree _data_free_func;
-    WriteTailDataToFile _data_writer;
-    ReadTailDataFromFile _data_reader;
-    MemoryPool<> * pmem;
+    MemoryPool<> * _pmem;
+    TailDataReader _data_reader;
+    TailDataWriter _data_writer;
+    TailDataFreer  _data_freer;
 public:
     Tail()
     {
@@ -69,30 +75,30 @@ public:
         tails[0].suffix = NULL;
         tails[0].next_free = TAIL_SIGNATURE;
         first_free = 0;
-        _data_free_func = NULL;
-        _data_writer = NULL;
+        _pmem = NULL;
         _data_reader = NULL;
-        pmem = NULL;
-    }
-
-    inline void setDataFreer( TailDataFree fn )
-    {
-        _data_free_func = fn;
-    }
-
-    inline void setDataWriter( WriteTailDataToFile fn )
-    {
-        _data_writer = fn;
-    }
-
-    inline void setDataReader( ReadTailDataFromFile fn )
-    {
-        _data_reader = fn;
+        _data_writer = NULL;
+        _data_freer =  NULL;
     }
 
     inline void setMemPool(MemoryPool<> * pmemory)
     {
-        pmem = pmemory;
+        _pmem = pmemory;
+    }
+
+    inline void setDataReader(TailDataReader reader)
+    {
+        _data_reader = reader;
+    }
+
+    inline void setDataWriter(TailDataWriter writer)
+    {
+        _data_writer = writer;
+    }
+
+    inline void setDataFreer(TailDataFreer freer)
+    {
+        _data_freer = freer;
     }
 
     ~Tail()
@@ -112,7 +118,7 @@ public:
      *         Get suffix from tail with given index. The returned string is
      *         allocated. The caller should free it with free().
      */
-    inline wchar_t * getSuffix(int index) const
+    inline const wchar_t * getSuffix(int index) const
     {
         index -= TAIL_START_BLOCKNO;
         return (index < num_tails) ? tails[index].suffix : NULL;
@@ -126,32 +132,32 @@ public:
      * @param index
      *            : the index of the suffix
      * @param suffix
-     *            : the new suffix
-     *            Set suffix of existing entry of given index in tail.
+     *            : the suffix to be set, notice:the suffix[len - 1] must be zero.
+     * @param len : the len of suffix.
      */
-    bool setSuffix(int index, const wchar_t * suffix)
+    bool setSuffix(int index, const wstring & suffix)
     {
         index -= TAIL_START_BLOCKNO;
+
         if (index < num_tails) {
             /*
              * suffix and tails[index].suffix may overlap; so, dup it before
              * it's overwritten
              */
-
-            int len = wcslen(suffix);
+            int size = suffix.length() + 1;
             wchar_t * tmp = NULL;
-            if(!pmem) {
-                tmp = new wchar_t[len + 1];
+            if(!_pmem) {
+                tmp = new wchar_t[size];
             } else {
-                tmp = (wchar_t *)pmem->allocAligned((len + 1) * sizeof(wchar_t));
+                tmp = (wchar_t *)_pmem->allocAligned((size)*sizeof(wchar_t));
             }
-            memcpy(tmp, suffix, (len+1)*sizeof(wchar_t));
-
-            if(tails[index].suffix != NULL&&!pmem) {
+            memcpy(tmp, suffix.c_str(), (size)*sizeof(wchar_t));
+            if(tails[index].suffix != NULL&&!_pmem) {
                 delete [] tails[index].suffix;
             }
 
             tails[index].suffix = tmp;
+            //tails[index].suffix_len = len;
             return true;
         }
         return false;
@@ -160,16 +166,12 @@ public:
     /**
      * @brief Add a new suffix
      *
-     * @param t
-     *            : the tail data
      * @param suffix
-     *            : the new suffix
-     *
+     *            : the new suffix notice:the suffix[len - 1] must be zero.
+     * @param len : the len of suffix.
      * @return the index of the newly added suffix.
-     *
-     *         Add a new suffix entry to tail.
      */
-    int addSuffix(const wchar_t * suffix)
+    int addSuffix(const wstring & suffix)
     {
         int new_block = allocBlock();
         setSuffix(new_block, suffix);
@@ -203,7 +205,7 @@ public:
      *            : the index of the suffix
      * @param data
      *            : the data to set
-     *
+     * @param bytes : how many bytes the data has.
      * @return bool indicating success
      *         Set data associated to suffix entry index in tail data.
      */
@@ -211,6 +213,9 @@ public:
     {
         index -= TAIL_START_BLOCKNO;
         if (index < num_tails) {
+            if(tails[index].data && _data_freer) {
+                _data_freer(tails[index].data);
+            }
             tails[index].data = data;
             return true;
         }
@@ -254,7 +259,7 @@ public:
      */
     int walkStr(int s, int * suffix_idx, wchar_t * str, int len)
     {
-        wchar_t * suffix = getSuffix(s);
+        const wchar_t * suffix = getSuffix(s);
         if (suffix == NULL)
             return 0;
 
@@ -265,7 +270,7 @@ public:
                 break;
             ++i;
             /* stop and stay at null-terminator */
-            if ((wchar_t)0 == suffix[j])
+            if (0 == suffix[j])
                 break;
             ++j;
         }
@@ -291,11 +296,11 @@ public:
      *         updated to the next character. Otherwise, it returns false, and
      *         *suffix_idx is left unchanged.
      */
-    inline bool walkChar(int s, int * suffix_idx, wchar_t c) const
+    inline bool walkChar(int s, int * suffix_idx, int c) const
     {
         int suffix_char;
 
-        wchar_t * suffix = getSuffix(s);
+        const wchar_t * suffix = getSuffix(s);
         if (suffix == NULL)
             return false;
 
@@ -314,23 +319,26 @@ public:
     */
     bool writeToFile(FILE * file)
     {
-        if (!file_write_int32 (file, TAIL_SIGNATURE) ||
-                !file_write_int32 (file, first_free)  ||
-                !file_write_int32 (file, num_tails)) {
+        Serializer serializer(file);
+        if (!serializer.writeInt32(TAIL_SIGNATURE) ||
+                !serializer.writeInt32(first_free)  ||
+                !serializer.writeInt32(num_tails)) {
             return false;
         }
 
-        if(fwrite(tails, sizeof(TailBlock), num_tails, file) != num_tails) {
+        if(!serializer.write(tails, sizeof(TailBlock), num_tails)) {
             return false;
         }
 
         for (int i = 1; i < num_tails; i++) {
             if(tails[i].data != NULL) {
-                _data_writer(file, tails[i].data);
+                _data_writer(file,tails[i].data);
             }
 
             if(tails[i].suffix != NULL) {
-                WriteTrieStrToFile(file, tails[i].suffix);
+                int len = wcslen(tails[i].suffix);
+                serializer.writeInt16(len);
+                serializer.writeWstrData(tails[i].suffix, len);
             }
         }
 
@@ -339,50 +347,47 @@ public:
 
     bool readFromFile(FILE * file)
     {
-        long        save_pos;
-        int   i;
-        int      sig;
-
+        long save_pos = ftell (file);
+        int suffixlen;
+        Serializer serializer(file);
         /* check signature */
-        save_pos = ftell (file);
-        if (!file_read_int32 (file, &sig) || TAIL_SIGNATURE != sig)
+        int sig;
+        if ((sig = serializer.readInt32()) != TAIL_SIGNATURE)
             goto exit_file_read;
         clear();
 
-        if (!file_read_int32 (file, &first_free) ||
-                !file_read_int32 (file, &num_tails)) {
-            goto exit_file_read;
-        }
+        first_free = serializer.readInt32();
+        num_tails = serializer.readInt32();
         if (num_tails > SIZE_MAX / sizeof (TailBlock))
             goto exit_file_read;
         tails = (TailBlock *) malloc (num_tails * sizeof (TailBlock));
         if (!tails)
             goto exit_file_read;
 
-        if(fread(tails, sizeof(TailBlock), num_tails, file) != num_tails) {
+        if(!serializer.read(tails, sizeof(TailBlock), num_tails)) {
             free(tails);
             goto exit_file_read;
         }
+        int i = 0;
         for (i = 1; i < num_tails; i++) {
             if(tails[i].data != NULL) {
-                void * data = _data_reader(file, pmem);
-                if(!data) {
-                    goto exit_in_loop;
-                }
-                tails[i].data = data;
+                tails[i].data = _data_reader(file);
             }
 
             if(tails[i].suffix != NULL) {
-                wchar_t * str = (wchar_t *)ReadTrieStrFromFile(file, pmem);
-                if(!str) {
+                suffixlen = serializer.readInt16();
+                if(_pmem) {
+                    tails[i].suffix = (wchar_t * )_pmem->allocAligned((suffixlen+1)*sizeof(wchar_t));
+                } else {
+                    tails[i].suffix = new wchar_t[suffixlen+1];
+                }
+                if(!serializer.readWstrData(suffixlen,tails[i].suffix)) {
                     goto exit_in_loop;
                 }
-                tails[i].suffix = str;
             }
         }
 
         return true;
-
 exit_in_loop:
         num_tails = i;
         clear();
@@ -398,19 +403,27 @@ private:
     void clear()
     {
         if(tails != NULL) {
-            if(!pmem) {
-                for(int i = 1; i < num_tails; i++) {
-                    if(_data_free_func != NULL && tails[i].data != NULL) {
-                        _data_free_func(tails[i].data);
-                    }
 
+            if(_data_freer) {
+                for(int i = 1; i < num_tails; i++) {
+                    if(tails[i].data != NULL) {
+                        _data_freer(tails[i].data);
+                    }
+                }
+            }
+
+            if(!_pmem) {
+                for(int i = 1; i < num_tails; i++) {
                     if(tails[i].suffix != NULL) {
                         delete [] tails[i].suffix;
                     }
                 }
+
             }
+
             free(tails);
         }
+
         tails = NULL;
         num_tails = 0;
     }
@@ -422,19 +435,17 @@ private:
             block = first_free;
             first_free = tails[block].next_free;
         } else {
+            tails = (TailBlock *)realloc(tails, (INCREASEMENT_SIZE+num_tails)*sizeof(TailBlock));
+            memset(tails+num_tails, 0, sizeof(TailBlock) * INCREASEMENT_SIZE);
             block = num_tails;
-            /*
-            TailBlock * tmp = (TailBlock *)new TailBlock *[++num_tails];
-            memcpy(tmp, tails, block * sizeof(TailBlock ));
-            delete [] tails;
-            tails = tmp;
-            */
-            tails = (TailBlock *)realloc(tails, ++num_tails*sizeof(TailBlock));
-        }
-        tails[block].next_free = -1;
-        tails[block].data = NULL;
-        tails[block].suffix = NULL;
+            num_tails += INCREASEMENT_SIZE;
+            first_free = block + 1;
+            for(int i = first_free; i < num_tails - 1; i++) {
+                tails[i].next_free = i + 1;
+            }
+            tails[num_tails - 1].next_free = 0;
 
+        }
         return block + TAIL_START_BLOCKNO;
     }
 
@@ -443,27 +454,21 @@ private:
         block -= TAIL_START_BLOCKNO;
         if (block >= num_tails)
             return;
-        if(tails[block].suffix != NULL) {
+        if(tails[block].suffix != NULL&&!_pmem) {
             delete [] tails[block].suffix;
         }
 
-        if(tails[block].data != NULL && _data_free_func != NULL) {
-            _data_free_func(tails[block].data);
+        if(tails[block].data != NULL&& _data_freer) {
+            _data_freer(tails[block].data);
         }
+
         tails[block].data = NULL;
         tails[block].suffix = NULL;
 
-        /* find insertion point */
-        int i, j = 0;
-        for (i = first_free; i != 0 && i < block; i = tails[i].next_free)
-            j = i;
-
-        /* insert free block between j and i */
-        tails[block].next_free = i;
-        if (0 != j)
-            tails[j].next_free = block;
-        else
-            first_free = block;
+        // insert block to free list, as the
+        // first one.
+        tails[block].next_free = first_free;
+        first_free = block;
     }
 
 };

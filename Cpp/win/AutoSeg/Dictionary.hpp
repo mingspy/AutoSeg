@@ -27,6 +27,8 @@
 
 #include "HashMapDef.hpp"
 #include <string>
+#include "Configuration.hpp"
+#include <wchar.h>
 
 using namespace std;
 
@@ -35,6 +37,7 @@ namespace mingspy
 
 const wstring  NATURE_UNDEF = L"UDF";
 const wstring NATURE_FREQTOTAL=L"FREQTOL";
+const int MAX_WORD_LEN = 2000;
 class Dictionary
 {
 private:
@@ -42,17 +45,14 @@ private:
 public:
     Dictionary()
     {
-        datrie.setDataFreer(WordNatureFreer);
-        datrie.setDataReader(ReadWordNatureFromFile);
-        datrie.setDataWriter(WriteWordNatureToFile);
+        init();
     }
 
     // read binary data from a file.
     Dictionary(const string & file)
     {
-        datrie.setMemPool(&mem_pool);
-        datrie.setDataReader(ReadWordNatureFromFile);
-        datrie.setDataWriter(WriteWordNatureToFile);
+        init();
+        cout<<"loading file: "<<file.c_str()<<endl;
         FILE * pfile = fopen(file.c_str(),"rb");
         //assert(pfile != NULL);
         if(!pfile) {
@@ -97,7 +97,7 @@ public:
 
     virtual const WordNature * getWordInfo(const wstring & word) const
     {
-        return (const WordNature *)datrie.retrieve(word.c_str());
+        return (const WordNature *)datrie.retrieve(word);
     }
 
     int getNatureFreq(const wstring & word, const wstring & nature) const
@@ -123,6 +123,10 @@ public:
         return 0;
     }
 
+    double getProb(const wstring & word) const
+    {
+        return (getTotalFreq(word) + 1.0) / TOTAL_FREQ;
+    }
     virtual bool existPrefix(const wstring & prefix) const
     {
         return datrie.containsPrefix(prefix);
@@ -132,15 +136,16 @@ public:
     {
         FILE * pfile = fopen(file.c_str(),"wb");
         assert(pfile != NULL);
+        Serializer serializer(pfile);
         bool result = false;
         int nature_size = natures.size();
-        if(!file_write_int32(pfile, DICT_SIGNATURE)
-                || !file_write_int32(pfile, nature_size)) {
+        if(!serializer.writeInt32(DICT_SIGNATURE)
+                || !serializer.writeInt32(nature_size)) {
             goto end_write;
         }
 
         for(int i = 0; i < nature_size; i++) {
-            WriteTrieStrToFile(pfile, natures[i].c_str());
+            serializer.writeWstr(natures[i]);
         }
 
         if(!datrie.writeToFile(pfile)) {
@@ -155,27 +160,36 @@ end_write:
 
 private:
     Dictionary(const Dictionary &);
+
+    void init()
+    {
+        datrie.setMemPool(&mem_pool);
+        datrie.getTail().setDataFreer(WordNatureFreer);
+        datrie.getTail().setDataReader(WordNatureReader);
+        datrie.getTail().setDataWriter(WordNatureWriter);
+        TOTAL_FREQ = Configuration::instance().getInt("TOTAL_FREQ", 10000000);
+    }
+
     void readFromFile(FILE * pfile)
     {
         // read header
+        Serializer serializer(pfile);
         int signature;
-        if(!file_read_int32(pfile, &signature) || signature != DICT_SIGNATURE) {
+        if((signature = serializer.readInt32()) != DICT_SIGNATURE) {
             assert(false);
             return;
         }
 
         // read Natures.
-        int nature_size;
-        if(!file_read_int32(pfile, &nature_size)
-                || nature_size > 0x0fffffff
+        int nature_size = serializer.readInt32();
+        if( nature_size > 0x0fffffff
                 || nature_size < 0) {
             assert(false);
             return;
         }
-
+        wchar_t buf[512];
         for(int i = 0; i < nature_size; i++) {
-            wstring nature = (wchar_t *)ReadTrieStrFromFile(pfile, &mem_pool);
-            addNature(nature);
+            addNature(serializer.readWstr(buf));
         }
         // read dat
         datrie.readFromFile(pfile);
@@ -186,23 +200,24 @@ protected:
     vector<wstring> natures;
     hash_map<wstring, int> nature_index;
     MemoryPool<> mem_pool;
+    double TOTAL_FREQ;
 
 };
 
-class ShiftContext:public Dictionary
+class NatureProbTable:public Dictionary
 {
 public:
-    ShiftContext():Dictionary()
+    NatureProbTable():Dictionary()
     {
         genUnknownNauture();
     }
 
-    ShiftContext(const string & file):Dictionary(file)
+    NatureProbTable(const string & file):Dictionary(file)
     {
         genUnknownNauture();
     }
 
-    ~ShiftContext()
+    ~NatureProbTable()
     {
         if(_unknownNature) {
             delete _unknownNature;
@@ -212,21 +227,23 @@ public:
     int getNatureTotal(int natureIndex) const
     {
         if(natureIndex < natures.size()) {
-            getTotalFreq(natures[natureIndex]);
+            return getTotalFreq(natures[natureIndex]);
         }
         return 0;
     }
 
     double getCoProb(int from, int to) const
     {
-        if(from < natures.size() || to < natures.size()) {
+        if(from < natures.size() && to < natures.size()) {
             const WordNature * fromInfo = getWordInfo(natures[from]);
-            double toFreq = fromInfo->getAttrValue(to) + 1.0;
-            double FromTotal = fromInfo->sumOfValues() + 44.0;
-            return toFreq / FromTotal;
+            if(fromInfo) {
+                double toFreq = fromInfo->getAttrValue(to) + 1.0;
+                double FromTotal = fromInfo->sumOfValues() + 44.0;
+                return toFreq / FromTotal;
+            }
         }
 
-        return 0.000001;
+        return 3.0/TOTAL_FREQ;
     }
 
     const WordNature * getUnknownNature() const
@@ -235,7 +252,7 @@ public:
     }
 
 private:
-    ShiftContext(const ShiftContext &);
+    NatureProbTable(const NatureProbTable &);
     void genUnknownNauture()
     {
         _unknownNature = new WordNature();
@@ -253,9 +270,6 @@ class UserDict:public Dictionary
 public:
     UserDict(const string & file):Dictionary(file)
     {
-        user_datrie.setDataFreer(WordNatureFreer);
-        user_datrie.setDataReader(ReadWordNatureFromFile);
-        user_datrie.setDataWriter(WriteWordNatureToFile);
     }
 
     virtual const WordNature * getWordInfo(const wstring & word) const
@@ -292,14 +306,65 @@ public:
             UTF8FileReader reader(files[i]);
             wstring * line;
             while((line = reader.getLine())) {
-                if(!getWordInfo(*line)) {
-                    WordNature *nature = new WordNature();
-                    nature->setAttrValue(udf_idx, 1);
-                    user_datrie.add(*line, nature);
-                    count ++;
-                    if(count % 1000 == 0) {
-                        cout<<"\r added -> "<<count;
+                wstring::size_type wordIndex = line->find_first_of(wordSeperator);
+                wstring word;
+                wstring wordinfo;
+                if(wordIndex == wstring::npos) {
+                    word = *line;
+                } else {
+                    word = line->substr(0, wordIndex);
+                    if(wordIndex < line->length()) {
+                        wordinfo = line->substr(wordIndex + 1);
                     }
+                }
+                if(wordinfo.empty()) {
+                    if(!getWordInfo(word)) {
+                        WordNature *nature = new WordNature();
+                        nature->setAttrValue(udf_idx, 1);
+                        user_datrie.add(word, nature);
+                        count ++;
+                    }
+                } else {
+                    WordNature * info = new WordNature();
+                    vector<wstring> infos;
+                    split(wordinfo, natureSeperator, infos);
+                    for(int i = 0; i < infos.size(); i++) {
+                        wstring::size_type freqIndex = infos[i].find_first_of(freqSeperator);
+                        wstring nature;
+                        int d_freq = 1;
+                        if(freqIndex == wstring::npos) {
+                            nature = infos[i];
+                        } else {
+                            nature = infos[i].substr(0,freqIndex);
+                            wstring freq = infos[i].substr(freqIndex + 1);
+                            d_freq = wcstol(freq.c_str(), NULL, 10);
+                        }
+
+                        int index = getNatureIndex(nature);
+                        if(index == -1) {
+                            wcerr<<L"The nature not exist in nature list of the file header:"
+                                 <<nature<<" line:"<<*line<<endl;
+                            addNature(nature);
+                            index = getNatureIndex(nature);
+                        }
+                        info->setAttrValue(index, d_freq);
+                    }
+
+                    WordNature * natures = (WordNature *)getWordInfo(word);
+                    if(natures == NULL) {
+                        user_datrie.add(word, info);
+                    } else {
+                        for(int i = 0; i< info->numValues(); i++) {
+                            int freq = info->valueAt(i) + natures->getAttrValue(info->attrAt(i));
+                            natures->setAttrValue(info->attrAt(i), freq);
+                        }
+                        delete info;
+                    }
+                    count++;
+                }
+
+                if(count % 1000 == 0) {
+                    cout<<"\r added -> "<<count;
                 }
             }
 

@@ -204,6 +204,25 @@ void buildCoreDict(int argc, char ** argv)
     }
     DictFileBuilder::buildDict(files, output);
 }
+
+void doQueryDict()
+{
+    string input;
+    while(true) {
+        cout<<">";
+        cin>>input;
+        if(input == "quit") break;
+        wstring word = s2ws(input);
+        const WordNature * p = DictFactory::CoreDict().getWordInfo(word);
+        if(p) {
+            cout<<"\n\tfound:"<<*p<<endl;
+        } else {
+            cout<<"\n\t not found:"<<endl;
+        }
+    }
+    cout<<"bye"<<endl;
+}
+
 int main(int argc, char ** argv)
 {
 #if _MSC_VER > 1000
@@ -228,6 +247,8 @@ int main(int argc, char ** argv)
             }
         } else if(arg1 == "-b") {
             buildCoreDict(argc, argv);
+        } else if(arg1 == "-q") {
+            doQueryDict();
         }
 
     }

@@ -19,6 +19,7 @@
 #include <vector>
 #include "SparseInstance.hpp"
 #include "Dictionary.hpp"
+#include <assert.h>
 using namespace std;
 
 namespace mingspy
@@ -27,7 +28,7 @@ const double PROB_INFINT = 1000000000;
 class Viterbi
 {
 public:
-    static double viterbi( const vector<const WordNature *> & Observs, const ShiftContext & shiftContext,
+    static double viterbi( const vector<const WordNature *> & Observs, const NatureProbTable & shiftContext,
                            SparseInstance<int> & bestPos)
     {
         int T = Observs.size();
@@ -37,7 +38,8 @@ public:
         // 1. Initialize.
         for(int i = 0; i< Observs[0]->numValues(); i++) {
             double emitp = -log((Observs[0]->valueAt(i) + 1.0)/ (
-                                    shiftContext.getNatureTotal(Observs[0]->attrAt(i)) + 44));
+                                    shiftContext.getNatureTotal(Observs[0]->attrAt(i)) + 66));
+            assert(emitp >= 0);
             delta[0].setAttrValue(Observs[0]->attrAt(i), emitp);
         }
 
@@ -65,7 +67,8 @@ public:
                 }
                 psi[ t ].setAttrValue(j,index);
                 double emitProb = -log((Observs[t]->valueAt(j) + 1.0)/ (
-                                           shiftContext.getNatureTotal(Observs[t]->attrAt(j)) + 44));
+                                           shiftContext.getNatureTotal(Observs[t]->attrAt(j)) + 66));
+                assert(emitProb >= 0);
                 delta[ t ].setAttrValue(j, minProb + emitProb);
             }
         }
@@ -93,6 +96,7 @@ public:
         for ( int i = 0; i < T; i++ ) {
             bestPos.setAttrValue(i, Observs[i]->attrAt(bestPos.valueAt(i)));
         }
+        assert(minProb >=0);
         return minProb;
     }
 };

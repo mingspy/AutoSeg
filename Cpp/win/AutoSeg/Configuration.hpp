@@ -46,15 +46,15 @@ static const string DEFAULT_UDF_DICT_PATH = "/opt/apps/autoseg/data/userDicts/";
 #endif
 static const string DEFAULT_ISLOAD_INVS = "false";
 
-const string ENV_AUTOSEG_CONF_PATH = "AUTOSEG_CONF_PATH"; // seg config key in environment
+static const string ENV_AUTOSEG_CONF_PATH = "AUTOSEG_CONF_PATH"; // seg config key in environment
 // keys in config file :
-const string KEY_CONF_PATH = "CONF_PATH";
-const string KEY_CORE_PATH = "CORE_DICT_PATH";
-const string KEY_BIGRAM_PATH = "BIGRAM_DICT_PATH";
-const string KEY_INVS_PATH = "INVS_DICT_PATH";
-const string KEY_UDF_DICT_PATH = "UDF_DICT_PATH";
-const string KEY_LEXICAL_PATH = "LEXICAL_DICT_PATH";
-const string KEY_ISLOAD_INVS = "ISLOAD_INVS";
+static const string KEY_CONF_PATH = "CONF_PATH";
+static const string KEY_CORE_PATH = "CORE_DICT_PATH";
+static const string KEY_BIGRAM_PATH = "BIGRAM_DICT_PATH";
+static const string KEY_INVS_PATH = "INVS_DICT_PATH";
+static const string KEY_UDF_DICT_PATH = "UDF_DICT_PATH";
+static const string KEY_LEXICAL_PATH = "LEXICAL_DICT_PATH";
+static const string KEY_ISLOAD_INVS = "ISLOAD_INVS";
 
 static ResGuard _confGuard;
 

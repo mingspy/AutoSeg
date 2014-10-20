@@ -32,9 +32,6 @@ using namespace std;
 
 namespace mingspy
 {
-static const wchar_t wordSeperator = L'\t';
-static const wstring natureSeperator = L",";
-static const wchar_t freqSeperator = L':';
 
 class DictFileBuilder
 {
@@ -81,6 +78,12 @@ public:
 
         }
 
+        const WordNature * info = dict.getWordInfo(L"中国");
+        if(info != NULL) {
+            cout<<*info<<endl;
+        } else {
+            cout<<"not found."<<endl;
+        }
         double load_word_end_time = timer.elapsed();
         cout<<"\n all words added. now write to file."<<endl;
         bool result = dict.writeToFile(output);
@@ -116,7 +119,8 @@ public:
                     if(index == -1) {
                         wcerr<<L"The nature not exist in nature list of the file header:"
                              <<nature<<" line:"<<*line<<endl;
-                        exit(-1);
+                        dict.addNature(nature);
+                        index = dict.getNatureIndex(nature);
                     }
                     info->setAttrValue(index, d_freq);
                 }
@@ -167,9 +171,6 @@ public:
                 dict.addNature(vec[i]);
             }
 
-            wchar_t wordSeperator = L'\t';
-            wstring natureSeperator = L",";
-            wchar_t freqSeperator = L':';
             // 处理词信息
             while((line = reader.getLine()) != NULL) {
                 wstring::size_type wordIndex = line->find_first_of(wordSeperator);

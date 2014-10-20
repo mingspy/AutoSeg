@@ -15,45 +15,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-/*
-* implementation of ResGuard.
-* See <POSIX Muti-threads programming>
-* by xiuleili 2013-7-5
-*/
-
 #pragma once
-#include<iostream>
-#include<ctime>
-using namespace std;
+
+#include <iostream>
 
 namespace mingspy
 {
-class MSTimer
-{
-private:
-    clock_t start_time;
-    clock_t end_time;
-public:
-    MSTimer()
-    {
-        start_time = clock();
-    }
 
-    void restart()
+struct Token {
+    int _attr; // type of this token or attribute index.
+    int _off; // start index.
+    int _len; // len
+    //wstring _word; // maybe empty
+    Token(int start = 0, int len = 0, int attr = 0)
+        :_off(start),_len(len),_attr(attr)
     {
-        start_time = clock();
-    }
-
-    double elapsed()
-    {
-        end_time = clock();
-        return (double)(end_time - start_time) / CLOCKS_PER_SEC;
-    }
-
-    friend ostream & operator<< (ostream & out, MSTimer & timer)
-    {
-        out<<" elapsed: "<<timer.elapsed()<<"s";
-        return out;
     }
 };
 

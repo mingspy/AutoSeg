@@ -90,9 +90,6 @@
     <ClInclude Include="AutoTokenizer.hpp">
       <Filter>头文件\Seg</Filter>
     </ClInclude>
-    <ClInclude Include="MinHeap.hpp">
-      <Filter>头文件\Seg</Filter>
-    </ClInclude>
     <ClInclude Include="CodeUtils.hpp">
       <Filter>头文件\utils</Filter>
     </ClInclude>
@@ -116,6 +113,21 @@
     </ClInclude>
     <ClInclude Include="Viterbi.hpp">
       <Filter>头文件\Seg</Filter>
+    </ClInclude>
+    <ClInclude Include="IntStrArray.hpp">
+      <Filter>头文件\DAT</Filter>
+    </ClInclude>
+    <ClInclude Include="Serializer.hpp">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Token.hpp">
+      <Filter>头文件\Seg</Filter>
+    </ClInclude>
+    <ClInclude Include="SplitResult.hpp">
+      <Filter>头文件\Seg</Filter>
+    </ClInclude>
+    <ClInclude Include="MinHeap.hpp">
+      <Filter>头文件\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

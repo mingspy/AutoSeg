@@ -22,6 +22,7 @@
 #include <vector>
 #include "TrieDef.hpp"
 #include "MemLeaksCheck.h"
+#include "Serializer.hpp"
 
 
 using namespace std;
@@ -107,7 +108,7 @@ public:
      * @param c
      * @return
      */
-    inline bool walk(int * s, wchar_t c) const
+    inline bool walk(int * s, int c) const
     {
         int next = getBase(*s) + (unsigned)c;
         if (getCheck(next) == *s) {
@@ -149,7 +150,7 @@ public:
 
                 int new_base;
                 /* relocate BASE[s] */
-                vector<wchar_t> symbols;
+                vector<int> symbols;
                 findAllChildren(s, symbols);
                 symbols.push_back(c);
                 new_base = findFreeBase(symbols);
@@ -162,7 +163,7 @@ public:
             }
         } else {
             int new_base;
-            vector<wchar_t>symbols;
+            vector<int>symbols;
             symbols.push_back(c);
             new_base = findFreeBase(symbols);
 
@@ -236,12 +237,13 @@ public:
 
     bool writeToFile(FILE * file)
     {
-        if (!file_write_int32 (file, DA_SIGNATURE) ||
-                !file_write_int32 (file, num_cells)) {
+        Serializer serializer(file);
+        if (!serializer.writeInt32(DA_SIGNATURE) ||
+                !serializer.writeInt32 (num_cells)) {
             return false;
         }
 
-        if(fwrite(_cell, sizeof(Cell), num_cells, file) != num_cells) {
+        if(!serializer.write(_cell, sizeof(Cell), num_cells)) {
             assert(false);
             return false;
         }
@@ -252,23 +254,23 @@ public:
     bool readFromFile(FILE * file)
     {
         long pos = ftell(file);
-        int sig;
-        if(!file_read_int32(file, &sig)
-                || sig != DA_SIGNATURE
-                || !file_read_int32(file, &num_cells)) {
+        Serializer serializer(file);
+        int sig = serializer.readInt32();
+        if(sig != DA_SIGNATURE) {
             cerr<<"error: read Double Array signature failed!!!"<<endl;
             cerr<<"DA_SIG="<<DA_SIGNATURE<<" read sig ="<<sig<<endl;
             goto exist_read;
         }
 
         free(_cell);
+        num_cells = serializer.readInt32();
         _cell = (Cell *) malloc(num_cells * sizeof(Cell));
         if(!_cell) {
             cerr<<"error: malloc cells failed!!!"<<endl;
             goto exist_read;
         }
 
-        if(fread(_cell, sizeof(Cell), num_cells, file) != num_cells) {
+        if(!serializer.read(_cell, sizeof(Cell), num_cells)) {
             cerr<<"error: read cell failed!!!"<<endl;
             goto exist_read;
         }
@@ -364,7 +366,7 @@ private:
     void relocateBase(int s, int new_base)
     {
         int old_base = getBase(s);
-        vector<wchar_t> symbols;
+        vector<int> symbols;
         findAllChildren(s, symbols);
 
         for (int i = 0; i < symbols.size(); i++) {
@@ -399,7 +401,7 @@ private:
         setBase(s, new_base);
     }
 
-    int findFreeBase(const vector<wchar_t> & children)
+    int findFreeBase(const vector<int> & children)
     {
         /* find first free cell that is beyond the first symbol */
         int first_child = children[0];
@@ -438,10 +440,10 @@ private:
      * @param children
      * @return
      */
-    bool fitAllChildren(int base, const vector<wchar_t> & children)
+    bool fitAllChildren(int base, const vector<int> & children)
     {
         for (int i = 0; i < children.size(); i++) {
-            wchar_t sym = children[i];
+            int sym = children[i];
 
             /*
              * if (base + sym) > TRIE_INDEX_MAX which means it's overflow, or
@@ -459,13 +461,13 @@ private:
      * @param s
      * @return
      */
-    void findAllChildren(int s, vector<wchar_t> & children)
+    void findAllChildren(int s, vector<int> & children)
     {
         int base = getBase(s);
         int max_c = min(TRIE_CHILD_MAX, TRIE_INDEX_MAX - base);
         for (int c = 0; c < max_c; c++) {
             if (getCheck(base + c) == s)
-                children.push_back((wchar_t) c);
+                children.push_back((int) c);
         }
     }
 
