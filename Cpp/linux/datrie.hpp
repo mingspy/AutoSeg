@@ -12,7 +12,6 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #pragma once
@@ -54,7 +53,7 @@ public: size_t operator()(const char *key) const
 template  <class node_type_,  class node_u_type_,
            class array_type_, class array_u_type_,
            class length_func_ = Length<node_type_> >
-class DoubleArrayImpl
+class DoubleArray
 {
 
 private:
@@ -86,9 +85,9 @@ private:
     bool no_free;
 public:
 
-    explicit DoubleArrayImpl() { init(); }
+    explicit DoubleArray() { init(); }
 
-    ~DoubleArrayImpl() { free(_cell); }
+    ~DoubleArray() { free(_cell); }
 
     inline array_type_ getRoot() const { return DA_ROOT; }
 
@@ -181,10 +180,7 @@ public:
     *            it deletes the node and all its parents which become
     *            non-separate.
     */
-    void prune(array_type_ s)
-    {
-        pruneUpto(getRoot(), s);
-    }
+    void prune(array_type_ s) { pruneUpto(getRoot(), s); }
 
     /**
      * @brief Prune the single branch up to given parent
@@ -227,14 +223,9 @@ private:
         _cell[2].check = 0;
     }
 
-    inline void setCheck(size_t position, array_type_ value) {
-        _cell[position].check = value;
-    }
+    inline void setCheck(size_t position, array_type_ value) { _cell[position].check = value; }
 
-    inline bool checkFreeCell(array_type_ s) {
-        // getCheck < 0 means the cell is a free cell
-        return extendPool(s) && getCheck(s) < 0;
-    }
+    inline bool checkFreeCell(array_type_ s) { return extendPool(s) && getCheck(s) < 0; }
 
     /* allocate a cell from the free list
      *  by link the prev cell to next cell
@@ -250,8 +241,7 @@ private:
     {
         // find insertion point
         array_type_ i = -getCheck(FREE_LIST_HEAD);
-        while (i != FREE_LIST_HEAD && i < cell)
-            i = -getCheck(i);
+        while (i != FREE_LIST_HEAD && i < cell) i = -getCheck(i);
         array_type_ prev = -getBase(i);
 
         // insert cell before i
@@ -263,8 +253,8 @@ private:
 
     bool extendPool(array_type_ to_index)
     {
-        if (to_index <= 0 || TRIE_INDEX_MAX <= to_index || to_index < num_cells)
-            return false;
+        if (to_index < num_cells) return true;
+        if (to_index <= 0 || TRIE_INDEX_MAX <= to_index) return false;
 
         array_type_ new_begin = num_cells;
         _cell = (Cell *)realloc(_cell, (to_index + 1)*sizeof(Cell));
@@ -282,9 +272,7 @@ private:
         setBase(new_begin, -free_tail);
         setCheck(to_index, -FREE_LIST_HEAD);
         setBase(FREE_LIST_HEAD, -to_index);
-
-        // update header cell
-        _cell[0].check = to_index + 1;
+        _cell[0].check = to_index + 1; // update header cell
 
         return true;
     }
@@ -309,8 +297,8 @@ private:
             // reset children[i]'s children point to child_new_idx 
             if (child_base > 0) {
                 array_type_ max_c = min(TRIE_CHILD_MAX, TRIE_INDEX_MAX - child_base);
-                for (node_u_type_ c = 0; c < max_c; c++) {
-                    if (getCheck(child_base + c) == child_old_idx)
+                for (int c = 0; c < max_c; c++) {
+                    if (getCheck(child_base + c) == child_old_idx) 
                         setCheck(child_base + c, child_new_idx);
                 }
             }
@@ -325,7 +313,7 @@ private:
 
     int findFreeBase(const vector<node_u_type_> & children)
     {
-        /* find first free cell that is beyond the first symbol */
+        // find first free cell that is beyond the first symbol
         node_u_type_ first_child = children[0];
         array_type_ s = -getCheck(FREE_LIST_HEAD);
         while (s != FREE_LIST_HEAD && s < first_child + DA_POOL_BEGIN) {
@@ -333,10 +321,8 @@ private:
         }
         if (s == FREE_LIST_HEAD) {
             for (s = first_child + DA_POOL_BEGIN;; ++s) {
-                if (!extendPool(s))
-                    return TRIE_INDEX_ERROR;
-                if (getCheck(s) < 0)
-                    break;
+                if (!extendPool(s)) return TRIE_INDEX_ERROR;
+                if (getCheck(s) < 0) break;
             }
         }
 
@@ -344,7 +330,7 @@ private:
         while (!fitAllChildren(s - first_child, children)) {
             /* extend pool before getting exhausted */
             if (-getCheck(s) == FREE_LIST_HEAD) {
-                if (!extendPool(num_cells))
+                if (!extendPool(num_cells+children.size()))
                     return TRIE_INDEX_ERROR;
             }
 
@@ -352,7 +338,6 @@ private:
         }
 
         return s - first_child;
-
     }
 
     /**
@@ -379,7 +364,6 @@ private:
 
     /**
      * Find all children of s.<br>
-     *
      * @param s
      * @return
      */
@@ -408,7 +392,7 @@ template  <class node_type_,  class node_u_type_,
            class length_func_ = Length<node_type_> >
 class Tail
 {
-private:
+public:
     class TailBlock
     {
     public :
@@ -430,7 +414,7 @@ public:
     {
         num_tails = 1;
         tails = (TailBlock *) malloc(sizeof(TailBlock));
-        tails[0].data = NULL;
+        tails[0].data = (data_type_) 0 ;
         tails[0].suffix = NULL;
         tails[0].next_free = TAIL_SIGNATURE;
         first_free = 0;
@@ -443,10 +427,8 @@ public:
 
     /**
      * @brief Get suffix
-     *
      * @param t      : the tail data
      * @param index  : the index of the suffix
-     *
      * @return an allocated string of the indexed suffix.
      *         Get suffix from tail with given index. The returned string is
      *         allocated. The caller should free it with free().
@@ -469,12 +451,10 @@ public:
     {
         index -= TAIL_START_BLOCKNO;
         if (index < num_tails) {
-            /*
-             * suffix and tails[index].suffix may overlap; so, dup it before
-             * it's overwritten
-             */
+            //  suffix and tails[index].suffix may overlap; so, dup it before
+            //  it's overwritten
             int size = (length_func_()(suffix) + 1) * sizeof(node_type_);
-            node_type_ * tmp =  malloc(size);
+            node_type_ * tmp = (node_type_ *) malloc(size);
             memcpy(tmp, suffix, size);
             if(tails[index].suffix != NULL) {
                 free(tails[index].suffix);
@@ -488,7 +468,6 @@ public:
 
     /**
      * @brief Add a new suffix
-     *
      * @param suffix   : the new suffix notice:the suffix[len - 1] must be zero.
      * @param len      : the len of suffix.
      * @return the index of the newly added suffix.
@@ -503,22 +482,18 @@ public:
 
     /**
      * @brief Get data associated to suffix entry
-     *
      * @param t      : the tail data
      * @param index  : the index of the suffix
-     *
      * @return the data associated to the suffix entry
      *         Get data associated to suffix entry index in tail data.
      */
-    inline data_type_ getData(int index) const
-    {
+    inline data_type_ getData(int index) const {
         index -= TAIL_START_BLOCKNO;
-        return (index < num_tails) ? tails[index].data : NULL;
+        return (index < num_tails) ? tails[index].data : (data_type_) 0;
     }
 
     /**
      * @brief Set data associated to suffix entry
-     *
      * @param t     : the tail data
      * @param index : the index of the suffix
      * @param data  : the data to set
@@ -538,11 +513,8 @@ public:
 
     /**
      * @brief Delete suffix entry
-     *
-     * @param t
-     *            : the tail data
-     * @param index
-     *            : the index of the suffix to delete
+     * @param t        : the tail data
+     * @param index    : the index of the suffix to delete
      *            Delete suffix entry from the tail data.
      */
     void remove(array_type_ index)
@@ -552,18 +524,11 @@ public:
 
     /**
      * @brief Walk in tail with a string
-     *
-     * @param t
-     *            : the tail data
-     * @param s
-     *            : the tail data index
-     * @param suffix_idx
-     *            : pointer to current character index in suffix
-     * @param str
-     *            : the string to use in walking
-     * @param len
-     *            : total characters in str to walk
-     *
+     * @param t    : the tail data
+     * @param s    : the tail data index
+     * @param suffix_idx   : pointer to current character index in suffix
+     * @param str          : the string to use in walking
+     * @param len  : total characters in str to walk
      * @return total number of characters successfully walked
      *         Walk in the tail data t at entry s, from given character position
      *         *suffix_idx, using len characters of given string str. On
@@ -580,12 +545,10 @@ public:
         int i = 0;
         int j = *suffix_idx;
         while (i < len) {
-            if (str[i] != suffix[j])
-                break;
+            // stop and stay at null-terminator
+            if (str[i] != suffix[j]) break;
             ++i;
-            /* stop and stay at null-terminator */
-            if (0 == suffix[j])
-                break;
+            if (0 == suffix[j]) break;
             ++j;
         }
         *suffix_idx = j;
@@ -594,16 +557,10 @@ public:
 
     /**
      * @brief Walk in tail with a character
-     *
-     * @param t
-     *            : the tail data
-     * @param s
-     *            : the tail data index
-     * @param suffix_idx
-     *            : pointer to current character index in suffix
-     * @param c
-     *            : the character to use in walking
-     *
+     * @param t    : the tail data
+     * @param s    : the tail data index
+     * @param suffix_idx   : pointer to current character index in suffix
+     * @param c    : the character to use in walking
      * @return true indicating success Walk in the tail data t at entry s, from
      *         given character position suffix_idx, using given character c. If
      *         the walk is successful, it returns true, and *suffix_idx is
@@ -614,8 +571,7 @@ public:
     {
         node_type_ suffix_char;
         const node_type_ * suffix = getSuffix(s);
-        if (suffix == NULL)
-            return false;
+        if (suffix == NULL) return false;
 
         suffix_char = suffix[*suffix_idx];
         if (suffix_char == c) {
@@ -660,7 +616,6 @@ private:
                 tails[i].next_free = i + 1;
             }
             tails[num_tails - 1].next_free = 0;
-
         }
         return block + TAIL_START_BLOCKNO;
     }
@@ -668,8 +623,7 @@ private:
     void freeBlock(int block)
     {
         block -= TAIL_START_BLOCKNO;
-        if (block >= num_tails)
-            return;
+        if (block >= num_tails) return;
         if(tails[block].suffix != NULL) {
             free( tails[block].suffix);
         }
@@ -689,78 +643,61 @@ private:
 namespace mingspy
 {
 
-#if 0
+template  <class node_type_,  class node_u_type_,
+           class array_type_, class array_u_type_,
+           class data_type_ = int,
+           class length_func_ = Length<node_type_> >
 class DATrie
 {
 private:
-    DoubleArray _da;
-    Tail _tail;
+    typedef DoubleArray<node_type_, node_u_type_, array_type_, array_u_type_, length_func_> _DA_;
+    typedef Tail<node_type_, node_u_type_, array_type_, array_u_type_, data_type_, length_func_> _TAIL_;
+    _DA_ _da;
+    _TAIL_  _tail;
     bool is_dirty;
+    bool is_readonly;
 
 public:
-    DATrie(TailDataFreer fn = NULL):is_dirty(false)
-    {
-        _tail.setDataFreer(fn);
-    }
-
-    Tail & getTail()
-    {
-        return _tail;
-    }
+    explicit DATrie(bool readonly=false):is_dirty(false),is_readonly(readonly) { }
+    _TAIL_ & getTail() { return _tail; }
 
     /**
      * @brief Store a value for an entry to trie
-     *
-     * @param trie
-     *            : the trie
-     * @param key
-     *            : the key for the entry to retrieve
-     * @param data
-     *            : the data associated to the entry
-     *
+     * @param trie        : the trie
+     * @param key         : the key for the entry to retrieve
+     * @param data        : the data associated to the entry
      * @return boolean value indicating the success of the process Store a data
      *         for the given key in trie. If key does not exist in trie, it will
      *         be appended. If it does, its current data will be overwritten.
      */
-    inline bool add(const wstring & key, void * val)
-    {
+    inline bool add(const node_type_ * key, data_type_ val) {
+        if (is_readonly) return false;
         return storeConditionally(key, val, true);
     }
     /**
     * @brief Delete an entry from trie
-    *
-    * @param trie
-    *            : the trie
-    * @param key
-    *            : the key for the entry to delete
-    *
+    * @param trie   : the trie
+    * @param key    : the key for the entry to delete
     * @return boolean value indicating whether the key exists and is removed
     *         Delete an entry for the given key from trie.
     */
-    bool remove(const wstring & key)
+    bool remove(const node_type_ * key)
     {
-        int t;
+        array_type_ t;
         /* walk through branches */
-        int s = _da.getRoot();
-        int keylen = key.length();
-        const wchar_t * p = key.c_str();
+        array_type_ s = _da.getRoot();
+        const node_type_ * p = key;
         for (; !isSeparate(s); p++) {
-            if (!_da.walk(&s, *p)) {
-                return false;
-            }
-            if (0 == *p)
-                break;
+            if (!_da.walk(&s, *p)) { return false; }
+            if ((node_type_)0 == *p) break;
         }
 
         /* walk through tail */
         t = getTailIndex(s);
         int suffix_idx = 0;
         for (; ; p++) {
-            if (!_tail.walkChar(t, &suffix_idx, *p)) {
-                return false;
-            }
-            if (0 == *p)
-                break;
+            if (!_tail.walkChar(t, &suffix_idx, *p)) { return false; }
+            if ((node_type_)0 == *p) break;
         }
 
         _tail.remove(t);
@@ -773,147 +710,68 @@ public:
 
     /**
      * @brief Retrieve an entry from trie
-     *
-     * @param trie
-     *            : the trie
-     * @param key
-     *            : the key for the entry to retrieve
-     * @param o_data
-     *            : the storage for storing the entry data on return
-     *
-     * @return boolean value indicating the existence of the entry.
+     * @param key       : the key for the entry to retrieve
+     * @param o_data    : the storage for storing the entry data on return
+     * @return 0 value indicating the existence of the entry.
      *         Retrieve an entry for the given key from trie. On return, if key
      *         is found and o_data is not NULL, *o_data is set to the data
      *         associated to key.
      */
-    void * retrieve(const wstring & key) const
+    bool find(const node_type_ * key, data_type_ * data = NULL) const
     {
-        /* walk through branches */
-        int s = _da.getRoot();
-        const wchar_t * p = key.c_str();
+        // walk through branches
+        array_type_ s = _da.getRoot();
+        const node_type_ * p = key;
         for (; !isSeparate(s); p++) {
-            if (!_da.walk(&s, *p)) {
-                return NULL;
-            }
-            if (0 == *p)
-                break;
+            if (!_da.walk(&s, *p)) { return false; }
+            if ((node_type_)0 == *p) break;
         }
 
-        /* walk through tail */
+        // walk through tail
         s = getTailIndex(s);
         int suffix_idx = 0;
         for (; ; p++) {
-            if (!_tail.walkChar(s, &suffix_idx, *p)) {
-                return NULL;
-            }
-            if (0 == *p)
-                break;
+            if (!_tail.walkChar(s, &suffix_idx, *p)) { return false; }
+            if ((node_type_)0 == *p) break;
         }
 
-        /* found, set the val and return */
-        return _tail.getData(s);
+        // found, set the val and return
+        if (data) *data =  _tail.getData(s);
+        return true;
     }
 
-    bool containsPrefix(const wstring & prefix) const
+    bool hasPrefix(const node_type_ * prefix) const
     {
-        /* walk through branches */
-        int s = _da.getRoot();
-        const wchar_t * p = prefix.c_str();
+        // walk through branches 
+        array_type_ s = _da.getRoot();
+        const node_type_ * p = prefix;
         for (; !isSeparate(s); p++) {
-            if (0 == *p)
-                return true;
-            if (!_da.walk(&s, *p)) {
-                return false;
-            }
+            if ((node_type_)0 == *p) return true;
+            if (!_da.walk(&s, *p)) { return false; }
         }
 
-        /* walk through tail */
+        // walk through tail
         s = getTailIndex(s);
         int suffix_idx = 0;
         for (; ; p++) {
-            if (0 == *p)
-                return true;
-            if (!_tail.walkChar(s, &suffix_idx, *p)) {
-                return false;
-            }
-
-        }
-
-        return true;
-    }
-
-
-    inline void setMemPool( MemoryPool<>* mem_pool )
-    {
-        _tail.setMemPool(mem_pool);
-    }
-
-    bool writeToFile(const char * file)
-    {
-        FILE * pfile = fopen(file, "wb");
-        if(!pfile) {
-            return false;
-        }
-
-        bool res = writeToFile(pfile);
-
-        fflush(pfile);
-        fclose(pfile);
-        return res;
-    }
-
-    bool writeToFile(FILE * pfile)
-    {
-        if(!_da.writeToFile(pfile) || !_tail.writeToFile(pfile)) {
-            return false;
-        }
-        return true;
-    }
-
-    bool readFromFile(const char * file)
-    {
-        FILE * pfile = fopen(file, "rb");
-        if(!pfile) {
-            return false;
-        }
-
-        bool res = readFromFile(pfile);
-
-        fclose(pfile);
-        return res;
-    }
-
-    bool readFromFile(FILE * pfile)
-    {
-        if(!_da.readFromFile(pfile) || !_tail.readFromFile(pfile)) {
-            fclose(pfile);
-            return false;
+            if ((node_type_)0 == *p) return true;
+            if (!_tail.walkChar(s, &suffix_idx, *p)) { return false; }
         }
 
         return false;
     }
 
-private:
-    inline bool isSeparate(int s) const
-    {
-        return _da.getBase(s) < 0;
-    }
 
-    inline int getTailIndex(int s) const
-    {
-        return -_da.getBase(s);
-    }
+private:
+    inline bool isSeparate(int s) const { return _da.getBase(s) < 0; }
+    // save -idx in da.base when s' suffix in tail.
+    inline array_type_ getTailIndex(int s) const { return - _da.getBase(s); }
 
     /**
      * @brief Store a value for an entry to trie only if the key is not present
-     *
-     * @param trie
-     *            : the trie
-     * @param key
-     *            : the key for the entry to retrieve
-     * @param data
-     *            : the data associated to the entry
-     *
+     * @param trie      : the trie
+     * @param key       : the key for the entry to retrieve
+     * @param data      : the data associated to the entry
      * @return boolean value indicating the success of the process Store a data
      *         for the given key in trie. If key does not exist in trie, it will
      *         be appended. If it does, the function will return failure and the
@@ -921,83 +779,66 @@ private:
      *         multi-thread applications, as race condition can be avoided.
      *         Available since: 0.2.4
      */
-    inline bool storeIfAbsent(const wstring & key, void * data)
-    {
+    inline bool storeIfAbsent(const node_type_ * key, data_type_ data) {
         return storeConditionally(key, data,false);
     }
 
-    bool storeConditionally(const wstring & key, void * data, bool is_overwrite)
+    bool storeConditionally(const node_type_ * key, data_type_ data, bool is_overwrite)
     {
-        /* walk through branches */
-        int s = _da.getRoot();
-        const wchar_t * p = key.c_str();
+        // walk through branches 
+        array_type_ s = _da.getRoot();
+        const node_type_ * p = key;
         for (; !isSeparate(s); p++) {
-            if (!_da.walk(&s, *p)) {
-                return branchInBranch(s, p, data);
-            }
-            if (0 == *p)
-                break;
+            if (!_da.walk(&s, *p)) { return branchInBranch(s, p, data); }
+            if ((node_type_)0 == *p) break;
         }
 
-        /* walk through tail */
-        const wchar_t * sep = p;
+        // walk through tail
+        const node_type_ * sep = p;
         int t = getTailIndex(s);
         int suffix_idx = 0;
         for (; ; p++) {
-            if (!_tail.walkChar(t, &suffix_idx, *p)) {
-                return branchInTail(s, sep, data);
-
-            }
-            if (0 == *p)
-                break;
+            if (!_tail.walkChar(t, &suffix_idx, *p)) { return branchInTail(s, sep, data); }
+            if ((node_type_)0 == *p) break;
         }
 
-        /* duplicated key, overwrite val if flagged */
-        if (!is_overwrite) {
-            return false;
-        }
+        // duplicated key, overwrite val if flagged
+        if (!is_overwrite) { return false; }
         _tail.setData(t, data);
         is_dirty = true;
         return true;
     }
 
-    inline void setTailIndex(int s, int v)
-    {
-        _da.setBase(s, -v);
-    }
+    inline void setTailIndex(size_t s, int v) { _da.setBase(s, -v); }
 
-    bool branchInBranch(int sep_node, const wchar_t * suffix, void * data)
-    {
-        int new_da, new_tail;
-
-        int i = 0;
+    /**
+     * add suffix as children of sep_node
+     * only happened when suffix[0] not a child of sep_node yet.
+     */
+    bool branchInBranch(array_type_ sep_node, const node_type_ * suffix, data_type_ data) {
+        array_type_ new_da, new_tail;
         new_da = _da.insertBranch(sep_node, *suffix);
-        if (TRIE_INDEX_ERROR == new_da)
-            return false;
+        if (TRIE_INDEX_ERROR == new_da) return false;
 
-        if (0 != *suffix)
-            ++suffix;
+        if ((node_type_)0 != *suffix)  ++suffix;
         new_tail = _tail.addSuffix(suffix);
         _tail.setData(new_tail, data);
         setTailIndex(new_da, new_tail);
-
         is_dirty = true;
         return true;
     }
 
-    bool branchInTail(int sep_node,const wchar_t * suffix, void * data)
+    bool branchInTail(array_type_ sep_node,const node_type_ * suffix, data_type_ data)
     {
-
-        /* adjust separate point in old path */
-        int old_tail = getTailIndex(sep_node);
-        const wchar_t * old_suffix = _tail.getSuffix(old_tail);
-        if (old_suffix == NULL)
-            return false;
-
-        int s = sep_node;
-        const wchar_t * p = old_suffix;
+        // adjust separate point in old path
+        array_type_ old_tail = getTailIndex(sep_node);
+        const node_type_ * old_suffix = _tail.getSuffix(old_tail);
+        if (old_suffix == NULL)  return false;
+        array_type_ s = sep_node;
+        const node_type_ * p = old_suffix;
+        // all equal node are saved to double-array as separate node.
         for (; *p == *suffix; p++, suffix ++) {
-            int t = _da.insertBranch(s, *suffix);
+            array_type_ t = _da.insertBranch(s, *suffix);
             if (TRIE_INDEX_ERROR == t) {
                 _da.pruneUpto(sep_node, s);
                 setTailIndex(sep_node, old_tail);
@@ -1015,15 +856,16 @@ private:
 
         // when run here, all equals prefix are added.
         // save old left suffix.
-        if (0 != *p)
-            ++p;
+        if ((node_type_)0 != *p)  ++p;
         _tail.setSuffix(old_tail, p);
         setTailIndex(old_da, old_tail);
 
-        /* insert the new branch at the new separate point */
+        // insert the new branch at the new separate point
         return branchInBranch(s, suffix, data);
     }
 
 };
-#endif
+
+typedef DATrie<char, unsigned char, int, unsigned int, int> CharTrie;
 }
+
