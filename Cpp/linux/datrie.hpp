@@ -22,6 +22,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
 
 #ifndef SIZE_MAX
 #ifdef _WIN64
@@ -82,13 +83,13 @@ private:
     };
     Cell * _cell;
     int num_cells;
-    bool no_free;
 public:
 
     explicit DoubleArray() { init(); }
 
-    ~DoubleArray() { free(_cell); }
+    ~DoubleArray() { clear();}
 
+    void clear() { free(_cell);  _cell = NULL; num_cells = 0;}
     inline array_type_ getRoot() const { return DA_ROOT; }
 
     inline array_type_ getBase(size_t position) const {
@@ -211,6 +212,23 @@ public:
     }
 
 
+    bool save(ofstream & outf) {
+        outf.write(reinterpret_cast<char *>(&num_cells), sizeof(int));
+        outf.write(reinterpret_cast<char *>(_cell), sizeof(Cell) * num_cells);
+        return true;
+    }
+
+    bool open(ifstream & inf) {
+        clear();
+        if (!inf.read(reinterpret_cast<char *>(&num_cells), sizeof(int))){
+            return false;
+        }
+        _cell = reinterpret_cast<Cell *>(malloc(sizeof(Cell) * num_cells));
+        if (!inf.read(reinterpret_cast<char *>(_cell), sizeof(Cell) * num_cells)){
+            return false;
+        }
+        return true;
+    }
 private:
     void init() {
         _cell = (Cell *) malloc(DA_POOL_BEGIN * sizeof(Cell));
@@ -582,6 +600,43 @@ public:
         return false;
     }
 
+    bool save(ofstream & outf){
+        cout<<"tails first_free"<<first_free<<" num_tails"<<num_tails<<endl;
+        outf.write(reinterpret_cast<char *>(&first_free), sizeof(int));
+        outf.write(reinterpret_cast<char *>(&num_tails), sizeof(int));
+        outf.write(reinterpret_cast<char *>(tails), sizeof(TailBlock)*num_tails);
+        int len;
+        for(int i = 1; i < num_tails; i++) {
+            if(tails[i].suffix != NULL) {
+                len = sizeof(node_type_)*(length_func_()(tails[i].suffix)+1);
+                outf.write(reinterpret_cast<char *>(&len), sizeof(int));
+                outf.write(reinterpret_cast<char *>(tails[i].suffix), len);
+            }
+        }
+        return true;
+    }
+    bool open(ifstream & inf) {
+        clear();
+        if (!inf.read(reinterpret_cast<char *>(&first_free), sizeof(int))){
+            return false;
+        }
+        if (!inf.read(reinterpret_cast<char *>(&num_tails), sizeof(int))){
+            return false;
+        }
+        tails = reinterpret_cast<TailBlock *>(malloc(sizeof(TailBlock) * num_tails));
+        if (!inf.read(reinterpret_cast<char *>(tails), sizeof(TailBlock)*num_tails)){
+            return false;
+        }
+        int len;
+        for(int i = 1; i < num_tails; i++) {
+            if(tails[i].suffix != NULL) {
+                inf.read(reinterpret_cast<char *>(&len),sizeof(int));
+                tails[i].suffix = reinterpret_cast<node_type_ *>(malloc(len));
+                inf.read(reinterpret_cast<char *>(tails[i].suffix), len);
+            }
+        }
+        return true;
+    }
 private:
 
     void clear()
@@ -761,6 +816,33 @@ public:
         return false;
     }
 
+    bool save(const string & filepath) {
+        ofstream outf(filepath.c_str(), ios::binary|ios::out);
+        if(!_da.save(outf)){
+            return false;
+        }
+
+        if(!_tail.save(outf)){
+            return false;
+        }
+
+        outf.flush();
+        outf.close();
+        cout<<"save datrie finished"<<endl;
+        return true;
+    }
+
+    bool open(const string &filepath) {
+        ifstream inf(filepath.c_str(), ios::binary|ios::in);
+        if(!_da.open(inf)){
+            return false;
+        }
+
+        if(!_tail.open(inf)){
+            return false;
+        }
+        return true;
+    }
 
 private:
     inline bool isSeparate(int s) const { return _da.getBase(s) < 0; }

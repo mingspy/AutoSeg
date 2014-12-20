@@ -2,23 +2,12 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <ext/hash_map>
+#include <map>
 #include <vector>
 #include <ctime>
 
-using __gnu_cxx::hash_map;
-
 using namespace mingspy;
 using namespace std;
-namespace __gnu_cxx
-{
-template<> struct hash<string> {
-size_t operator()(const string& s) const
- {
- return __stl_hash_string(s.c_str());
- }
- };
-}
 
 //注意：当字符串为空时，也会返回一个空字符串  
 void split(const std::string& s, const std::string& delim,std::vector< std::string >& ret)  
@@ -189,7 +178,7 @@ void test_datrie(){
 void press_test(const string &filepath){
     ifstream inf(filepath.c_str());
     string line;
-    hash_map<string, int> words;
+    map<string, int> words;
     vector<string> ws;
     int id = 0;
     while(getline(inf,line)){
@@ -212,7 +201,7 @@ void press_test(const string &filepath){
     CharTrie trie;
     int cnt = 0;
     clock_t start = clock();
-    for(hash_map<string,int>::iterator it = words.begin(); it != words.end(); it++){
+    for(map<string,int>::iterator it = words.begin(); it != words.end(); it++){
        if(! trie.add(it->first.c_str(), it->second)){
            add_errors ++;
            cerr<<"failded add "<<it->first<<endl;
@@ -224,7 +213,7 @@ void press_test(const string &filepath){
 
     int find_errors = 0;
     start = clock();
-    for(hash_map<string,int>::iterator it = words.begin(); it != words.end(); it++){
+    for(map<string,int>::iterator it = words.begin(); it != words.end(); it++){
        if(! trie.find(it->first.c_str(), &id) || id != it->second){
            find_errors ++;
            cerr<<"failed find "<<it->first<<endl;
@@ -236,10 +225,25 @@ void press_test(const string &filepath){
     cout<<"add items :"<<words.size()
         <<" used:" <<(add_time/CLOCKS_PER_SEC)
         <<" find used:"<<(find_time/CLOCKS_PER_SEC)<<endl;
+    trie.save("./tt.da");
+    CharTrie trie2;
+    cout<<"loading trie"<<endl;
+    trie2.open("./tt.da");
+    find_errors = 0;
+    start = clock();
+    for(map<string,int>::iterator it = words.begin(); it != words.end(); it++){
+       if(! trie2.find(it->first.c_str(), &id) || id != it->second){
+           find_errors ++;
+           cerr<<"failed find "<<it->first<<endl;
+       }
+    }
+    end = clock();
+    find_time = end -start;
+    cout<<"finding errors = "<<find_errors<<endl;
 }
 
 int main(){
 //    test_da();
 //    test_datrie();
-    press_test("/data0/home/xiulei/workspace/data/w2v_corpus.txt");
+    press_test("./words.txt");
 }
